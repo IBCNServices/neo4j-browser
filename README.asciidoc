@@ -1,56 +1,15 @@
-= Neo4j Browser =
+# Tengu Browser
 
-*Explore the graph, one query at a time.*
+Tengu browser is a UI to create and manage Sojobo's and Hauchiwa's.
 
-Neo4j Browser is http://github.com/neo4j/neo4j/[Neo4j's] built-in client application, a mashup of a REPL, data visualization and lightweight IDE.
+## Development
 
-== Goals ==
+**Set up your environment**
 
-* developer focused
-* every interaction is a demonstration
-* uses only public APIs
-* for modern browsers, with reasonable fallbacks
+  * Install [NodeJs](https://nodejs.org/)
+  * run `npm install` in this directory. *This installs npm modules needed to build the browser code.*
+  * run `npm install -g grunt-cli`. *This puts the grunt command on your path.*
 
-== Development ==
+**Run in development mode**
 
-Set up your environment::
-
-  * Install https://nodejs.org/[node.js]
-  * Clone this Github repository
-  * `npm install`
-+
-This installs npm modules needed to build the browser code.
-
-  * `npm install -g grunt-cli`
-+
-This puts the `grunt` command on your path.
-
-Run in development mode::
-
-  * Run Neo4j server (from a downloaded distribution of Neo4j, or from your IDE)
-  * `grunt server`
-+
-This listens on port 9000, serving up static documents, and forwarding other HTTP requests to Neo4j on port 7474. Bolt requests are not forwarded, they are sent directly to the Neo4j server on port 7687.
-Any local changes to the browser code will be applied immediatley by reloading the page.
-
-Sync server::
-To setup a local sync login server go to project root and invoke `node sync-server/server.js`.  
-An express server now started on https://localhost:9001 with self signed TLS certificates.  
-
-== Feedback ==
-
-* Questions or comments? - Join the http://neo4j.com/blog/public-neo4j-users-slack-group/[Neo4j users Slack community]
-
-== Adding a new Cypher keyword ==
-
-Look at:
-
-* Detecting Cypher: app/scripts/init/commandInterpreters.coffee
-* app/components/cypher/index.js
-* app/scripts/codemirror-cypher.coffee
-
-== Contributing ==
-All bug reports, feature requests and pull requests are very welcome.
-
-== Licensing == 
-Neo4j is an open source product. We support a Community edition under the GPLv3 license.
+Run `grunt server` in this directory. *This listens on **port 9000**. Any local changes to the browser code will be applied immediatley by reloading the page.*
