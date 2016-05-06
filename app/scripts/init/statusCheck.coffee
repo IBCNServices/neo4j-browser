@@ -63,24 +63,21 @@ angular.module('neo4jApp').run([
           error(2)
           r
       )
-      ###
-      No authorization is not always a problem in Tengu
+      # Although Tengu does not require a user to be auhorized, we still add this 
+      # code here to set the correct parameters
       .then(
         (r) ->
-          AuthService.isConnected().then(
-            ->
-              $scope.unauthorized = no
-          ,
-            (response) ->
-              if response.status in [401, 403, 429]
-                $scope.offline = no
-                $scope.unauthorized = yes
-              else
-                $scope.offline = yes
-                $scope.unauthorized = no
-          ).then(-> $scope.refresh() )
+          if AuthService.hasValidAuthorization
+            $scope.unauthorized = no
+          else
+            if AuthService.isConnected
+              $scope.offline = no
+              $scope.unauthorized = yes
+            else
+              error(Settings.offline_heartbeat)
           r
+
       )
-      ###
+
     $timeout($scope.check, 20000)
 ])
