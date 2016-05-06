@@ -3,30 +3,39 @@
   h5 Introduction
   ul
     li
-      a(play-topic='intro') Getting started
-    li
-      a(play-topic='graphs') Basic graph concepts
-    li
-      a(play-topic='cypher') Writing Cypher queries
-
+      a(play-topic='tengu') Try the predefined Tengu setups
+    
   h5 Reference Library
   ul.undecorated
     li
-      a(href="{{ neo4j.version | neo4jDeveloperDoc }}/") Developer Manual
-    li
-      a(href="{{ neo4j.version | neo4jOperationsDoc }}/") Operations Manual
-    li
-      a(href="{{ neo4j.version | neo4jCypherRefcardDoc }}/") Cypher
-    li
-      a(href='http://graphgist.neo4j.com/') GraphGists
+      a(href='http://tengu.io/') Tengu Website
+    //
+      li
+        a(href="{{ neo4j.version | neo4jDeveloperDoc }}/") Developer Manual
+      li
+        a(href="{{ neo4j.version | neo4jOperationsDoc }}/") Operations Manual
+      li
+        a(href="{{ neo4j.version | neo4jCypherRefcardDoc }}/") Cypher
+      li
+        a(href='http://graphgist.neo4j.com/') GraphGists
 
-  h5 Help
+  h5 Examples
   ul
     li
-      a(help-topic='help') Help
+      a(tengu-bundle='storm') Stream Processing
     li
-      a(help-topic='cypher') Cypher syntax
+      a(tengu-bundle='spark') Batch Processing
     li
-      a(help-topic='commands') Available commands
-    li
-      a(help-topic='keys') Keyboard shortcuts
+      a(tengu-bundle='cityot') City-of-Things
+
+  //
+    h5 Help
+    ul
+      li
+        a(help-topic='help') Help
+      li
+        a(help-topic='cypher') Cypher syntax
+      li
+        a(help-topic='commands') Available commands
+      li
+        a(help-topic='keys') Keyboard shortcuts

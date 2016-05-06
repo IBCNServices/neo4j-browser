@@ -1,12 +1,12 @@
 #drawer(ng-switch on="whichDrawer")
   div.pane.animate-drawer(ng-switch-when="database")
-    include drawer-database
+    include drawer-tengu
   div.pane.animate-drawer(ng-switch-when="scripts")
     include drawer-scripts
   div.pane.animate-drawer(ng-switch-when="info")
     include drawer-info
-  div.pane.animate-drawer(ng-switch-when="profile")
-    include drawer-profile
+  //div.pane.animate-drawer(ng-switch-when="profile")
+  //  include drawer-profile
   div.pane.animate-drawer(ng-switch-when='preferences')
     include drawer-preferences
   div.pane.animate-drawer(ng-switch-when="credits")
