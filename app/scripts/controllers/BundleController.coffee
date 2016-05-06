@@ -9,7 +9,7 @@ angular.module('neo4jApp.controllers')
     '$scope', 'Settings', 'ConnectionStatusService', '$http', '$timeout', '$base64', 'Frame'
   ($scope, Settings, ConnectionStatusService, $http, $timeout, $base64, Frame) ->
 
-    console.log("use sojobo? "+Settings.useSojobo)
+    console.log("use sojobo? " + Settings.useSojobo)
 
     $scope.new_hauchiwa = ''
     $scope.ssh_key = ''
@@ -43,19 +43,26 @@ angular.module('neo4jApp.controllers')
       return if $scope.frame.getDetailedErrorText().length
 
       if Settings.useSojobo
-        $scope.sojobo_url = Settings.endpoint.tengu+"/hauchiwa/"+$scope.new_hauchiwa
-        #bundle = $scope.bundle.replace(/hhh-/g, "")
+        $scope.sojobo_url = Settings.endpoint.tengu + Settings.sojobo_models[0]
+        bundle = $scope.bundle.replace(/hhh-/g, "")
       else
-        $scope.sojobo_url = Settings.endpoint.tengu+"/bundle"
-        #bundle = $scope.bundle.replace(/hhh/g, $scope.new_hauchiwa.toLowerCase())
+        $scope.sojobo_url = Settings.endpoint.tengu + Settings.sojobo_models[0]
+        bundle = $scope.bundle.replace(/hhh/g, $scope.new_hauchiwa.toLowerCase())
+      # "ssh-keys" : $scope.ssh_key, "bundle" : $base64.encode(bundle)
 
-      console.log(bundle)
+      hauchiwa_bundle = hauchiwa_bundle.replace(/{{servicename}}/g, $scope.new_hauchiwa)
+      if $scope.ssh_key
+        hauchiwa_bundle = hauchiwa_bundle.replace(/{{sshkeys}}/g, "," + $scope.ssh_key)
+      else
+        hauchiwa_bundle = hauchiwa_bundle.replace(/{{sshkeys}}/g, "")
+      hauchiwa_bundle = hauchiwa_bundle.replace(/{{s4cert}}/g, $scope.certificate)
+      hauchiwa_bundle = hauchiwa_bundle.replace(/{{bundle}}/g, $base64.encode(bundle))
 
       req = {
         "method"  : "PUT"
         "url"     : $scope.sojobo_url
-        "headers" : { "Content-Type" : "application/json", "emulab-s4-cert" : $scope.certificate }
-        "data"    : { "ssh-keys" : $scope.ssh_key, "bundle" : $base64.encode(bundle) }
+        "headers" : { "Content-Type" : "text/plain"}
+        "data"    : { hauchiwa_bundle }
       }
 
       $http(req).then(

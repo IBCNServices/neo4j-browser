@@ -15,18 +15,15 @@ angular.module('neo4jApp.controllers')
 
     $scope.$watch 'frame.response', (resp) ->
       return unless resp
-      console.log("WOLOLOO")
-      console.log(resp)
       $scope.hauchiwa = resp.hauchiwa
       $scope.data = resp.data
       $scope.location = resp.location
       if $scope.location == "sojobo"
         $scope.sojobo_url = Settings.endpoint.tengu + "/" + Settings.sojobo_models[0] + "/" + $scope.hauchiwa
-        console.log($scope.sojobo_url)
         lookForHauchiwa(resp.data)
       else if $scope.location == "local"
         $scope.status = "bundle-check"
-        $scope.hauchiwa_url = Settings.endpoint.tengu + "/" + Settings.sojobo_models[0] + "/"
+        $scope.hauchiwa_url = Settings.endpoint.tengu + "/" + Settings.sojobo_models[0]
         $scope.bundle = resp.data
       else if $scope.location.startsWith("http")
         if resp.data.charm?
@@ -39,8 +36,8 @@ angular.module('neo4jApp.controllers')
             $scope.hauchiwa = resp.data.environment
             $scope.bundle = resp.data
           else if resp.data.name
-            hauchiwa_models = resp.data.models
-            $scope.hauchiwa_url = $scope.location + "/" + hauchiwa_models[0] + "/"
+            $scope.hauchiwa_models = resp.data.models
+            $scope.hauchiwa_url = $scope.location + "/" + $scope.hauchiwa_models[0]
             refreshBundle()
           else
             $scope.frame.setError "Could not determine how to reach the Hauchiwa."
@@ -56,8 +53,24 @@ angular.module('neo4jApp.controllers')
         hauchiwa_ipPort = message.replace(pfPattern, '$1')
         if hauchiwa_ipPort.length != message.length
           $scope.status = "bundle-check"
-          $scope.hauchiwa_url = "http://" + hauchiwa_ipPort + "/"
-          refreshBundle()
+          hauchiwa_rooturl = "http://" + hauchiwa_ipPort
+
+          req = {
+            "method"  : "GET"
+            "url"     : hauchiwa_rooturl
+          }
+
+          $http(req).then(
+            (response) ->
+              $scope.hauchiwa_models = response.data.models
+              $scope.hauchiwa_url = hauchiwa_rooturl + "/" + $scope.hauchiwa_models[0]
+              console.log("got hauchiwa url: " + $scope.hauchiwa_url)
+              refreshBundle()
+            , (r) ->
+              $scope.frame.setError "Could not retrieve models from hauchiwa"
+          )
+
+
         else
           console.log("Message '" + message + "' does not contain the correct portforwarding.")
       else
@@ -74,7 +87,7 @@ angular.module('neo4jApp.controllers')
           (response) ->
             lookForHauchiwa(response.data)
           , (r) ->
-            console.log("Could not connect to the Sojobo: "+Settings.endpoint.tengu+"/"+$scope.hauchiwa)
+            console.log("Could not connect to the Sojobo: " + Settings.endpoint.tengu + "/" + $scope.hauchiwa)
             $scope.frame.setError "Could not connect to the Sojobo."
         )
       else
@@ -85,10 +98,8 @@ angular.module('neo4jApp.controllers')
       if $scope.status == "bundle-check"
         req = {
           "method"  : "GET"
-          #"url"     : "http://localhost:9000/content/bundles/iot_get_status.json"
           "url"     : $scope.hauchiwa_url
         }
-
         $http(req).then(
           (response) ->
             if $scope.hauchiwa == "unknown"

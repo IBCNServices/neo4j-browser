@@ -149,7 +149,6 @@ angular.module('neo4jApp.controllers')
         node.services?
 
       $scope.$watch '$parent.bundle', (data) ->
-        console.log(JSON.stringify(data, null, 2))
         return unless data
         if !$scope.bundleName
           loadBundleMapping(data.services)
