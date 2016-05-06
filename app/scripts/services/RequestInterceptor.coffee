@@ -41,5 +41,5 @@ angular.module('neo4jApp.services')
 ])
 
 angular.module('neo4jApp.services').config(['$httpProvider', ($httpProvider) ->
-  $httpProvider.interceptors.push 'RequestInterceptor'
+  #$httpProvider.interceptors.push 'RequestInterceptor'
 ])

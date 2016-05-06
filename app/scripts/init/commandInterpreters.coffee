@@ -292,22 +292,22 @@ angular.module('neo4jApp')
     FrameProvider.interpreters.push
       type: 'auth'
       fullscreenable: false
-      templateUrl: 'views/frame-connect.html'
+      templateUrl: 'views/frame-geni-connect.html'
       matches: (input) ->
         pattern = new RegExp("^#{cmdchar}server connect")
         input.match(pattern)
-      exec: ['AuthService', (AuthService) ->
+      exec: ['GeniAuthService', (AuthService) ->
         (input, q) -> q.resolve()
       ]
 
     FrameProvider.interpreters.push
       type: 'auth'
       fullscreenable: false
-      templateUrl: 'views/frame-disconnect.html'
+      templateUrl: 'views/frame-geni-disconnect.html'
       matches:  (input) ->
         pattern = new RegExp("^#{cmdchar}server disconnect")
         input.match(pattern)
-      exec: ['Settings', 'AuthService', (Settings, AuthService) ->
+      exec: ['Settings', 'GeniAuthService', (Settings, AuthService) ->
         (input, q) ->
           q.resolve()
       ]
@@ -477,5 +477,128 @@ angular.module('neo4jApp')
     #        .error(->q.reject(error("No such help section")))
     #        q.promise
     #    ]
+
+    # Tengu bundle handler
+    FrameProvider.interpreters.push
+      type: 'tengu'
+      templateUrl: 'views/frame-bundle.html'
+      matches:  (input) ->
+        pattern = new RegExp("^#{cmdchar}tengu bundle")
+        input.match(pattern)
+      exec: ['GeniAuthService', '$http', (GeniAuthService, $http) ->
+        (input, q) ->
+          topic = topicalize(input[('tengu bundle'.length+1)..]) or 'blank'
+          if topic != 'blank'
+            req = {
+              "method"  : "GET"
+              "url"     : "content/bundles/#{topic}.yaml"
+              "headers" :
+                "Accept" : "plain/text"
+            }
+
+            $http(req).then(
+              (response) ->
+                q.resolve(
+                  bundle_name: topic
+                  bundle: response.data
+                )
+              , (r) ->
+                q.reject(r)
+            )
+          else
+            q.resolve(
+              bundle_name: 'blank'
+              bundle: ''
+            )
+
+          q.promise
+      ]
+
+    # Tengu monitor hauchiwa
+    FrameProvider.interpreters.push
+      type: 'tengu'
+      templateUrl: 'views/frame-hauchiwa.html'
+      matches:  (input) ->
+        pattern = new RegExp("^#{cmdchar}tengu hauchiwa")
+        input.match(pattern)
+      exec: ['Settings', '$http', (Settings, $http) ->
+        (input, q) ->
+          topic = topicalize(input[('tengu hauchiwa'.length+1)..]) or 'blank'
+          if topic != 'blank'
+            if topic.startsWith("http")
+              url = topic
+              topic = "unknown"
+              hauchiwaLocation = url
+            else if Settings.useSojobo
+              url = Settings.endpoint.tengu + "/" + Settings.sojobo_models[0] + "/" + topic
+              hauchiwaLocation = "sojobo"
+            else
+              url = Settings.endpoint.tengu + "/" + Settings.sojobo_models[0] + "/"
+              hauchiwaLocation = "local"
+
+            console.log(topic)
+            console.log(url)
+
+            req = {
+              "method"  : "GET"
+              "url"     : url
+            }
+
+            $http(req).then(
+              (response) ->
+                q.resolve(
+                  hauchiwa: topic
+                  data: response.data
+                  location: hauchiwaLocation
+                )
+              , (r) ->
+                q.reject(r)
+            )
+          else
+            q.reject("Could not find the Hauchiwa '" + hauchiwa + "'")
+
+          q.promise
+      ]
+
+    # Tengu bundle handler
+    FrameProvider.interpreters.push
+      type: 'tengu'
+      templateUrl: 'views/frame-console.html'
+      matches:  (input) ->
+        pattern = new RegExp("^#{cmdchar}tengu console")
+        input.match(pattern)
+      exec: ['GeniAuthService', 'ConnectionStatusService', 'Settings', '$http', (GeniAuthService, ConnectionStatusService, Settings, $http) ->
+        (input, q) ->
+          hauchiwa = topicalize(input[('tengu console'.length+1)..]) or 'blank'
+          if hauchiwa != 'blank'
+            req = {
+              "method"  : "GET"
+              "url"     : Settings.endpoint.tengu + "/" + Settings.sojobo_models[0] + "/" + hauchiwa
+              "headers" : { "emulab-s4-cert" : ConnectionStatusService.plainConnectionAuthData()[1] }
+            }
+
+            $http(req).then(
+              (response) ->
+                q.resolve(
+                  hauchiwa: hauchiwa
+                  console_url: "https://n097-18b.wall2.ilabt.iminds.be:3000/"
+                )
+              , (r) ->
+                q.reject(r)
+            )
+          else
+            q.reject('no hauchiwa provided')
+
+          q.promise
+      ]
+
+    FrameProvider.interpreters.push
+      type: 'tengu'
+      matches: "#{cmdchar}tengu hauchiwa"
+      exec: ['Frame', (Frame) ->
+        (input, q) ->
+          Frame.create {input: "#{Settings.cmdchar}tengu bundle blank"}
+          return true
+      ]
 
 ])

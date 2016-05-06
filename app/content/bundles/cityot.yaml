@@ -1,0 +1,79 @@
+series: trusty
+services:
+  "hhh-apache-kafka":
+    charm: "local:trusty/apache-kafka"
+    num_units: 1
+    annotations:
+      "gui-x": "1192.5543212890625"
+      "gui-y": "639.5795314404816"
+    to:
+      - "lxc:1"
+  "hhh-wso2-esb":
+    charm: "local:trusty/wso2-esb"
+    num_units: 1
+    annotations:
+      "gui-x": "1178.5289306640625"
+      "gui-y": "-57.470366248831056"
+    to:
+      - "lxc:1"
+  hhh-mongodb:
+    charm: "cs:trusty/mongodb"
+    num_units: 1
+    annotations:
+      "gui-x": "532.5"
+      "gui-y": "289.2949192431123"
+    to:
+      - "lxc:1"
+  hhh-nimbus:
+    charm: "local:trusty/storm"
+    num_units: 1
+    annotations:
+      "gui-x": "332.5"
+      "gui-y": "635.7050807568878"
+    to:
+      - "lxc:3"
+  hhh-worker:
+    charm: "local:trusty/storm"
+    num_units: 3
+    annotations:
+      "gui-x": "633.700927734375"
+      "gui-y": "923.1264569480868"
+    to:
+      - "lxc:1"
+      - "lxc:3"
+  "hhh-apache-zookeeper":
+    charm: "local:trusty/apache-zookeeper"
+    num_units: 1
+    annotations:
+      "gui-x": "842.3792114257812"
+      "gui-y": "633.4127276222257"
+    to:
+      - "lxc:3"
+  "hhh-limeds":
+    charm: "local:trusty/limeds"
+    num_units: 1
+    annotations:
+      "gui-x": "522.7351989746094"
+      "gui-y": "-63.28213001225879"
+    to:
+      - "lxc:3"
+relations:
+  - - "hhh-mongodb:database"
+    - "hhh-limeds:mongodb"
+  - - "hhh-worker:zookeeper"
+    - "hhh-apache-zookeeper:zookeeper"
+  - - "hhh-nimbus:zookeeper"
+    - "hhh-apache-zookeeper:zookeeper"
+  - - "hhh-apache-kafka:zookeeper"
+    - "hhh-apache-zookeeper:zookeeper"
+  - - "hhh-nimbus:master"
+    - "hhh-worker:worker"
+  - - "hhh-apache-kafka:kafka"
+    - "hhh-wso2-esb:kafka"
+machines:
+  "1":
+    series: trusty
+    constraints: "arch=amd64 testbed=wall1 pubipv4=true"
+  "3":
+    series: trusty
+    constraints: "arch=amd64 testbed=wall1 pubipv4=true"

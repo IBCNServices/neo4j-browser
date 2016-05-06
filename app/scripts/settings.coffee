@@ -33,6 +33,9 @@ angular.module('neo4jApp.settings', ['neo4jApp.utils'])
       cypher: "#{restAPI}/cypher"
       transaction: "#{restAPI}/transaction"
       authUser: "#{baseURL}/user"
+      tengu: "http://193.190.127.184:29035"
+    needAuthZ: true
+    useSojobo: true
     host: baseURL
     maxExecutionTime: 3600 # in seconds
     heartbeat: 60 # in seconds
@@ -47,9 +50,9 @@ angular.module('neo4jApp.settings', ['neo4jApp.utils'])
     showVizDiagnostics: false
     acceptsReplies: false
     enableMotd: true
-    initCmd: ":play start"
+    initCmd: ":play tengu"
     refreshInterval: 10 # in seconds
-    userName: "Graph Friend"
+    userName: "Tengu Friend"
     theme: "normal"
     retainConnectionCredentials: yes
     shouldReportUdc: no

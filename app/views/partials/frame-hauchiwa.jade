@@ -1,0 +1,27 @@
+article.help(ng-controller="HauchiwaController")
+  .container-fluid
+    .section.row-fluid.summary(ng-show="status == 'init'")
+      h3 Your Hauchiwa <code>{{hauchiwa}}</code> is still not ready
+      p.lead
+        | Please wait a little longer.
+        | You can use the Auto-refresh functionality or submit another retry manually.
+      br
+      br
+    .section.row-fluid.summary(ng-show="status == 'bundle-check'")
+      h3 Your Hauchiwa <code>{{hauchiwa}}</code> is ready
+      p.lead
+        | We are retrieveing the information about your bundle.
+      include bundle-graph
+  footer.tight
+    .actions
+      .toggle.toggle-footer-margin(ng-click='toggleAutoRefresh()')
+        a.toggle-text Auto-refresh
+        .switch
+          label
+            .switch-inner(ng-class="{right: autoRefresh}")
+              span.right-text
+                | ON
+              .handle
+              span.left-text
+                | OFF
+      a.button.fa.fa-refresh(ng-click="refresh()")

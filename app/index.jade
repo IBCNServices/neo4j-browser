@@ -3,10 +3,10 @@ html(class="no-js", lang="en", ng-app="neo4jApp", ng-controller="MainCtrl")
   head
     meta(charset="utf-8")
     meta(http-equiv='X-UA-Compatible', content='IE=edge,chrome=1')
-    title(ng-bind-template="Neo4j {{kernel.store_dir}}")
-      | Neo4j
-    meta(name="description", content="Neo4j Browser")
-    meta(name="author", content="Neo Technology")
+    title(ng-bind-template="Tengu UI {{kernel.store_dir}}")
+      | Tengu UI
+    meta(name="description", content="Tengu User Interface")
+    meta(name="author", content="tengu.io")
 
     include views/partials/device-icons
 
@@ -24,7 +24,7 @@ html(class="no-js", lang="en", ng-app="neo4jApp", ng-controller="MainCtrl")
       #incompatible
         | Sorry, you need to upgrade to the latest version of Internet Explorer
         br
-        | in order to use the Neo4j browser
+        | in order to use the Tengu UI
 
     #page-container.ng-cloak
       include views/main
@@ -211,4 +211,18 @@ html(class="no-js", lang="en", ng-app="neo4jApp", ng-controller="MainCtrl")
     script(src='scripts/controllers/SyncSigninController.js')
     script(src='lib/helpers.js')
     script(src='lib/serializer.js')
+
+    script(src='scripts/directives/tenguBundle.js')
+    script(src='scripts/directives/IframeSetDimensionsOnload.js')
+    script(src='scripts/directives/dragGraphNode.js')
+    script(src='scripts/controllers/BundleController.js')
+    script(src='scripts/controllers/HauchiwaController.js')
+    script(src='scripts/controllers/BundleGraphController.js')
+    script(src='scripts/controllers/ConsoleController.js')
+    script(src='scripts/services/GeniAuth.js')
+    script(src='scripts/controllers/GeniAuth.js')
+    script(src='scripts/controllers/GeniDisconnect.js')
+    script(src='scripts/controllers/Tengu.js')
     //endbuild
+
+    script(src='lib/geni-auth.js')

@@ -1,0 +1,46 @@
+machines:
+  '2':
+    constraints: arch=amd64 testbed=wall1 pubipv4=true
+    series: trusty
+services:
+  hhh-compute-slave2:
+    charm: cs:trusty/apache-hadoop-compute-slave
+    num_units: 1
+    annotations:
+      gui-x: "300"
+      gui-y: "200"
+    to: lxc:2
+  hhh-hdfs-master2:
+    charm: cs:trusty/apache-hadoop-hdfs-master
+    num_units: 1
+    annotations:
+      gui-x: "600"
+      gui-y: "350"
+    to: lxc:2
+  hhh-yarn-master2:
+    charm: cs:trusty/apache-hadoop-yarn-master
+    num_units: 1
+    annotations:
+      gui-x: "600"
+      gui-y: "100"
+    to: lxc:2
+  hhh-plugin2:
+    charm: cs:trusty/apache-hadoop-plugin
+    annotations:
+      gui-x: "900"
+      gui-y: "200"
+  hhh-spark2:
+    charm: apache-spark
+    num_units: 1
+    annotations:
+      gui-x: "1200"
+      gui-y: "200"
+    to: lxc:2
+series: trusty
+relations:
+  - [hhh-yarn-master2, hhh-hdfs-master2]
+  - [hhh-compute-slave2, hhh-yarn-master2]
+  - [hhh-compute-slave2, hhh-hdfs-master2]
+  - [hhh-plugin2, hhh-yarn-master2]
+  - [hhh-plugin2, hhh-hdfs-master2]
+  - [hhh-spark2, hhh-plugin2]

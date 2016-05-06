@@ -28,7 +28,7 @@ angular.module('neo4jApp.controllers')
       '$q'
       'Server'
       'Frame'
-      'AuthService'
+      'GeniAuthService'
       'AuthDataService'
       'ConnectionStatusService'
       'Settings'
@@ -38,10 +38,36 @@ angular.module('neo4jApp.controllers')
       'Utils'
       'CurrentUser'
       'ProtocolFactory'
-      ($scope, $window,$q, Server, Frame, AuthService, AuthDataService, ConnectionStatusService, Settings, SettingsStore, motdService, UDC, Utils, CurrentUser, ProtocolFactory) ->
+      ($scope, $window, $q, Server, Frame, AuthService, AuthDataService, ConnectionStatusService, Settings, SettingsStore, motdService, UDC, Utils, CurrentUser, ProtocolFactory) ->
         $scope.CurrentUser = CurrentUser
         $scope.ConnectionStatusService = ConnectionStatusService
         initailConnect = yes
+
+        $scope.sojoboMetrics = 
+          is_connected   : false
+          hauchiwas      : 0
+          max_containers : 0
+          max_machines   : 0
+          avg_containers : 0
+          avg_machines   : 0
+
+        setSojoboMetrics = () ->
+          req = {
+            "method"  : "GET"
+            "url"     : $scope.sojobo_url+"/hauchiwa"
+          }
+          $http(req).then(
+            (response) ->
+              containers = 0
+              machines = 0
+              angular.forEach(response.data.services, (unit, key) -> 
+                if key.startsWith "h-"
+                  $scope.sojoboMetrics.hauchiwas++
+                  ## todo metrics from individual hauchiwas
+              )
+            , (r) ->
+              console.log("Not Connected to Sojobo. could not retrieve metrics.")
+          )
 
         $scope.kernel = {}
         $scope.refresh = ->
@@ -60,7 +86,8 @@ angular.module('neo4jApp.controllers')
               $scope.version = res
             )
           ).then( ->
-            fetchJMX()
+            #fetchJMX()
+            setSojoboMetrics()
           )
 
         fetchJMX = ->
@@ -112,6 +139,15 @@ angular.module('neo4jApp.controllers')
             enterpriseEdition: no
         $scope.neo4j.config = {}
 
+        $scope.tengu =
+          license =
+            type: "AGPLv3"
+            version: "0.2"
+            url: "http://www.fsf.org/licensing/licenses/agpl-3.0.html"
+            edition: 'Open Source'
+            enterpriseEdition: no
+        $scope.tengu.config = {}
+
         $scope.$on 'db:changed:labels', $scope.refresh
 
         $scope.today = Date.now()
@@ -142,6 +178,7 @@ angular.module('neo4jApp.controllers')
 
         pickFirstFrame = ->
           CurrentUser.init()
+          ###
           AuthService.hasValidAuthorization(retainConnection = yes).then(
             ->
               Frame.closeWhere "#{Settings.cmdchar}server connect"
@@ -152,6 +189,14 @@ angular.module('neo4jApp.controllers')
               if Settings.onboarding then onboardingSequence()
               else Frame.create({input:"#{Settings.cmdchar}server connect"})
           )
+          ###
+          if AuthService.hasValidAuthorization
+            Frame.closeWhere "#{Settings.cmdchar}server connect"
+            Frame.create({input:"#{Settings.initCmd}"})
+            onboardingSequence() if Settings.onboarding
+          else
+            if Settings.onboarding then onboardingSequence()
+            else Frame.create({input:"#{Settings.cmdchar}server connect"})
 
         pickFirstFrame()
 
@@ -171,6 +216,11 @@ angular.module('neo4jApp.controllers')
           $scope.neo4j.version = val.version
           $scope.neo4j.edition = val.edition
           $scope.neo4j.enterpriseEdition = val.edition is 'enterprise'
+          
+          $scope.tengu.version = val.version
+          $scope.tengu.edition = val.edition
+          $scope.tengu.enterpriseEdition = val.edition is 'enterprise'
+
           $scope.$emit 'db:updated:edition', val.edition
           if val.version then $scope.motd.setCallToActionVersion(val.version)
         , true

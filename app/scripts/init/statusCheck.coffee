@@ -19,13 +19,20 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ###
 
 angular.module('neo4jApp').run([
-  'AuthService'
+  'GeniAuthService'
   '$rootScope'
   '$timeout'
   'Server'
   'Settings'
-  (AuthService, $scope, $timeout, Server, Settings) ->
+  'SettingsStore'
+  (AuthService, $scope, $timeout, Server, Settings, SettingsStore) ->
     timer = null
+
+    error = (multiplier) ->
+      $scope.offline = yes
+      $scope.unauthorized = no
+      timer = $timeout($scope.check, multiplier * 1000)
+
     $scope.check = ->
       $timeout.cancel(timer)
       # There is something wrong with the XHR implementation in IE10:
@@ -36,15 +43,29 @@ angular.module('neo4jApp').run([
       Server.status('?t='+ts).success(
         (r) ->
           $scope.offline = no
-          timer = $timeout($scope.check, Settings.heartbeat * 1000)
+          if r.models? and r.name?
+            Settings.sojobo_models = r.models
+            if r.name.toLowerCase().indexOf("sojobo")
+              Settings.useSojobo = yes
+            else if r.name.toLowerCase().indexOf("hauchiwa")
+              Settings.useSojobo = no
+            else
+              error(Settings.offline_heartbeat)
+              return r
+            timer = $timeout($scope.check, Settings.heartbeat * 1000)
+            SettingsStore.save()
+          else
+            error(Settings.offline_heartbeat)
+            return r
           r
       ).error(
         (r) ->
-          $scope.offline = yes
-          $scope.unauthorized = no
-          timer = $timeout($scope.check, 2 * 1000)
+          error(2)
           r
-      ).then(
+      )
+      ###
+      No authorization is not always a problem in Tengu
+      .then(
         (r) ->
           AuthService.isConnected().then(
             ->
@@ -60,5 +81,6 @@ angular.module('neo4jApp').run([
           ).then(-> $scope.refresh() )
           r
       )
+      ###
     $timeout($scope.check, 20000)
 ])
