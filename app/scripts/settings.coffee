@@ -34,6 +34,7 @@ angular.module('neo4jApp.settings', ['neo4jApp.utils'])
       transaction: "#{restAPI}/transaction"
       authUser: "#{baseURL}/user"
       tengu: "http://193.190.127.184:29035"
+      bundles: "https://raw.githubusercontent.com/IBCNServices/tengu-bundles/master"
     needAuthZ: true
     useSojobo: true
     host: baseURL

@@ -513,17 +513,53 @@ angular.module('neo4jApp')
 
           q.promise
       ]
+      
+    # Tengu hauchiwa create handler
+    FrameProvider.interpreters.push
+      type: 'tengu'
+      templateUrl: 'views/frame-hauchiwa-create.html'
+      matches:  (input) ->
+        pattern = new RegExp("^#{cmdchar}tengu hauchiwa create")
+        input.match(pattern)
+      exec: ['GeniAuthService', 'Frame', 'Settings', '$http', (GeniAuthService, Frame, Settings, $http) ->
+        (input, q) ->
+          if !Settings.useSojobo
+            q.reject("User is not connected to a Sojobo. No need to create a Hauchiwa.")
+          else if GeniAuthService.hasValidAuthorization()
+            hauchiwaName = topicalize(input[('tengu hauchiwa create'.length+1)..]) or 'blank'
+            req = {
+              "method"  : "GET"
+              "url"     : "#{Settings.endpoint.bundles}/hauchiwa.yaml"
+              "headers" :
+                "Accept" : "plain/text"
+            }
 
-    # Tengu monitor hauchiwa
+            $http(req).then(
+              (response) ->
+                q.resolve(
+                  hauchiwaName: hauchiwaName
+                  bundle: response.data
+                )
+              , (r) ->
+                q.reject("Could not retrieve the Hauchiwa bundle information.")
+            )
+          else
+            Frame.createOne({input:"#{cmdchar}server connect"})
+            q.reject("User is not authorized to create Hauchiwas.")
+
+          q.promise
+      ]
+
+    # Tengu hauchiwa status handler
     FrameProvider.interpreters.push
       type: 'tengu'
       templateUrl: 'views/frame-hauchiwa.html'
       matches:  (input) ->
-        pattern = new RegExp("^#{cmdchar}tengu hauchiwa")
+        pattern = new RegExp("^#{cmdchar}tengu hauchiwa status")
         input.match(pattern)
       exec: ['Settings', '$http', (Settings, $http) ->
         (input, q) ->
-          topic = topicalize(input[('tengu hauchiwa'.length+1)..]) or 'blank'
+          topic = topicalize(input[('tengu hauchiwa status'.length+1)..]) or 'blank'
           if topic != 'blank'
             if topic.startsWith("http")
               url = topic

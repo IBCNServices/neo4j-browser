@@ -1,0 +1,34 @@
+article.help(ng-controller="HauchiwaCreateController")
+  .container-fluid
+    .section.row-fluid.summary(ng-hide="status == 'creating'")
+      .summary.col-sm-3
+        h3 Create a new Hauchiwa
+        p.lead
+          | You have to set the name of the new Hauchiwa.
+          | To be able to log into your nodes, you have to provide an SSH key as well.
+      .details.col-sm-9
+        .form
+          .row
+            .col-sm-5
+              | Name of the new Hauchiwa
+              br
+              input.form-control(type='text', on-enter="focus", on-enter-target-id="ssh_key", ng-model="new_hauchiwa", style="margin: 0", tabindex="1")
+              br
+          .row
+            .col-sm-5
+              | Set SSH key
+              br
+              input.form-control(type='text', id="ssh_key", on-enter="click", on-enter-target-id="deploy_bundle", ng-model="ssh_key", style="margin: 0", tabindex="3")
+              br
+          .row
+            .col-sm-5
+              button.btn.btn-default(id="deploy_bundle", ng-disabled="status != 'start'", ng-click="createHauchiwa()", style="margin: 0", ) Create Hauchiwa
+    .section.row-fluid.summary(ng-show="status == 'creating'")
+      p.lead 
+        | Your Hauchiwa <code>{{new_hauchiwa}}</code> is being created. 
+        | This might take a while, sit back and relax.
+      p
+        h4 What's next?
+        ul
+          li Check the status of your Hauchiwa: <code ng-click="checkStatus()">:tengu hauchiwa {{new_hauchiwa}}</code></a>
+          li SSH directly to your Hauchiwa: <i>soon</i>
