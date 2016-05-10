@@ -477,21 +477,23 @@ angular.module('neo4jApp')
     #        .error(->q.reject(error("No such help section")))
     #        q.promise
     #    ]
-
-    # Tengu bundle handler
+      
+    # Tengu model create handler
     FrameProvider.interpreters.push
       type: 'tengu'
-      templateUrl: 'views/frame-bundle.html'
+      templateUrl: 'views/frame-hauchiwa-create.html'
       matches:  (input) ->
-        pattern = new RegExp("^#{cmdchar}tengu bundle")
+        pattern = new RegExp("^#{cmdchar}tengu model create")
         input.match(pattern)
-      exec: ['GeniAuthService', '$http', (GeniAuthService, $http) ->
+      exec: ['GeniAuthService', 'Frame', 'Settings', '$http', (GeniAuthService, Frame, Settings, $http) ->
         (input, q) ->
-          topic = topicalize(input[('tengu bundle'.length+1)..]) or 'blank'
-          if topic != 'blank'
+          modelName = topicalize(input[('tengu model create'.length+1)..]) or 'blank'
+          if modelName == 'blank'
+            q.reject("User cannot create an empty model. If you would like to create an empty Hauchiwa, please use <code>:tengu hauchiwa create</code>.")
+          else if GeniAuthService.hasValidAuthorization()
             req = {
               "method"  : "GET"
-              "url"     : "content/bundles/#{topic}.yaml"
+              "url"     : "#{Settings.endpoint.bundles}/hauchiwa.yaml"
               "headers" :
                 "Accept" : "plain/text"
             }
@@ -499,17 +501,16 @@ angular.module('neo4jApp')
             $http(req).then(
               (response) ->
                 q.resolve(
-                  bundle_name: topic
+                  modelName: modelName
+                  hauchiwaName: 'blank'
                   bundle: response.data
                 )
               , (r) ->
-                q.reject(r)
+                q.reject("Could not retrieve the Hauchiwa bundle information.")
             )
           else
-            q.resolve(
-              bundle_name: 'blank'
-              bundle: ''
-            )
+            Frame.createOne({input:"#{cmdchar}server connect"})
+            q.reject("User is not authorized to create Hauchiwas.")
 
           q.promise
       ]
@@ -596,7 +597,7 @@ angular.module('neo4jApp')
           q.promise
       ]
 
-    # Tengu bundle handler
+    # Tengu console handler
     FrameProvider.interpreters.push
       type: 'tengu'
       templateUrl: 'views/frame-console.html'
