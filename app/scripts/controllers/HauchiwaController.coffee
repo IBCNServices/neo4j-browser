@@ -19,7 +19,7 @@ angular.module('neo4jApp.controllers')
       $scope.data = resp.data
       $scope.location = resp.location
       if $scope.location == "sojobo"
-        $scope.sojobo_url = Settings.endpoint.tengu + "/" + Settings.sojobo_models[0] + "/" + $scope.hauchiwa
+        $scope.sojobo_url = Settings.endpoint.tengu + "/" + Settings.sojobo_models[0] + "/h-" + $scope.hauchiwa
         lookForHauchiwa(resp.data)
       else if $scope.location == "local"
         $scope.status = "bundle-check"

@@ -193,10 +193,11 @@ angular.module('neo4jApp.controllers')
           if AuthService.hasValidAuthorization
             Frame.closeWhere "#{Settings.cmdchar}server connect"
             Frame.create({input:"#{Settings.initCmd}"})
-            onboardingSequence() if Settings.onboarding
+            #onboardingSequence() if Settings.onboarding
           else
-            if Settings.onboarding then onboardingSequence()
-            else Frame.create({input:"#{Settings.cmdchar}server connect"})
+            #if Settings.onboarding then onboardingSequence()
+            #else 
+            Frame.create({input:"#{Settings.cmdchar}server connect"})
 
         pickFirstFrame()
 

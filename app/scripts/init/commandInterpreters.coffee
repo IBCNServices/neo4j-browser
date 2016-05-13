@@ -558,7 +558,7 @@ angular.module('neo4jApp')
       matches:  (input) ->
         pattern = new RegExp("^#{cmdchar}tengu hauchiwa status")
         input.match(pattern)
-      exec: ['Settings', '$http', (Settings, $http) ->
+      exec: ['GeniAuthService', 'Settings', '$http', (GeniAuthService, Settings, $http) ->
         (input, q) ->
           topic = topicalize(input[('tengu hauchiwa status'.length+1)..]) or 'blank'
           if topic != 'blank'
@@ -567,14 +567,11 @@ angular.module('neo4jApp')
               topic = "unknown"
               hauchiwaLocation = url
             else if Settings.useSojobo
-              url = Settings.endpoint.tengu + "/" + Settings.sojobo_models[0] + "/" + topic
+              url = Settings.endpoint.tengu + "/" + Settings.sojobo_models[0] + "/h-" + topic
               hauchiwaLocation = "sojobo"
             else
               url = Settings.endpoint.tengu + "/" + Settings.sojobo_models[0] + "/"
               hauchiwaLocation = "local"
-
-            console.log(topic)
-            console.log(url)
 
             req = {
               "method"  : "GET"
@@ -589,10 +586,16 @@ angular.module('neo4jApp')
                   location: hauchiwaLocation
                 )
               , (r) ->
-                q.reject(r)
+                if r.status = 404
+                  console.log(r.data.msg)
+                  q.reject("Could not find the Hauchiwa '" + topic + "'")
+                else
+                  console.log(r)
+                  q.reject("Unknown error: [" + r.status + ", " + statusText + "] ")
+                  
             )
           else
-            q.reject("Could not find the Hauchiwa '" + hauchiwa + "'")
+            q.reject("User must provide the name of the Hauchiwa.")
 
           q.promise
       ]

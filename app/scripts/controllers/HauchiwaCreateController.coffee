@@ -41,7 +41,7 @@ angular.module('neo4jApp.controllers')
         $scope.frame.addErrorText 'The bundle description is still not loaded. '
       return if $scope.frame.getDetailedErrorText().length
 
-      $scope.sojobo_url = Settings.endpoint.tengu + "/" + Settings.sojobo_models[0]
+      $scope.sojobo_url = Settings.endpoint.tengu + "/" + Settings.sojobo_models[0] + "/"
       
       $scope.bundle = $scope.bundle.replace(/{{servicename}}/g, "h-" + $scope.newHauchiwa)
       

@@ -25,10 +25,17 @@ article.help(ng-controller="HauchiwaCreateController")
               button.btn.btn-default(id="deploy_bundle", ng-disabled="status != 'start'", ng-click="createHauchiwa()", style="margin: 0", ) Create Hauchiwa
     .section.row-fluid.summary(ng-show="status == 'creating'")
       p.lead 
-        | Your Hauchiwa <code>{{new_hauchiwa}}</code> is being created. 
+        | Your Hauchiwa <code>{{newHauchiwa}}</code> is being created. 
         | This might take a while, sit back and relax.
       p
         h4 What's next?
-        ul
-          li Check the status of your Hauchiwa: <code ng-click="checkStatus()">:tengu hauchiwa {{new_hauchiwa}}</code></a>
-          li SSH directly to your Hauchiwa: <i>soon</i>
+        p
+          Check the status of your Hauchiwa: <code ng-click="checkStatus()">:tengu hauchiwa status {{newHauchiwa}}</code>
+          p
+            ul
+              li 
+                | Here you can see the SSH link to your Hauchiwa. Using the SSH keys provided before, you can easily login 
+                | and start using the Tengu scripts to deploy extra services and even extra models.
+              li 
+                | You can also see a graph model of your deployed model and services. When a service has a registered UI, 
+                | you can immediately go there by double clicking the service in the model
