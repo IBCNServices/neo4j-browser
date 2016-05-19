@@ -199,7 +199,7 @@ angular.module('neo4jApp.controllers')
         else
           $scope.bundleName = "storm"
 
-        $http.get('content/bundles/'+$scope.bundleName+'.map').
+        $http.get(Settings.endpoint.bundles + '/' + $scope.bundleName+'.map').
           success((graph) ->
             for node in graph.nodes
               node.logical = true

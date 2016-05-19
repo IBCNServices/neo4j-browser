@@ -23,6 +23,7 @@ article.help(ng-controller="HauchiwaCreateController")
           .row
             .col-sm-5
               button.btn.btn-default(id="deploy_bundle", ng-disabled="status != 'start'", ng-click="createHauchiwa()", style="margin: 0", ) Create Hauchiwa
+              img(src="images/ajax_loader.gif", ng-show="status != 'start'")
     .section.row-fluid.summary(ng-show="status == 'creating'")
       p.lead 
         | Your Hauchiwa <code>{{newHauchiwa}}</code> is being created. 

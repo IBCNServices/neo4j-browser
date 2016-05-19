@@ -9,72 +9,96 @@ angular.module('neo4jApp.controllers')
     '$scope', 'Settings', 'ConnectionStatusService', '$http', '$timeout', '$base64'
   ($scope, Settings, ConnectionStatusService, $http, $timeout, $base64) ->
 
+    $scope.hauchiwa = "unknown"
     $scope.status = "init"
     $scope.frame.resetError()
-    $scope.autoRefresh = false
+    $scope.autoRefresh = true
 
     $scope.$watch 'frame.response', (resp) ->
       return unless resp
-      $scope.hauchiwa = resp.hauchiwa
-      $scope.data = resp.data
-      $scope.location = resp.location
-      if $scope.location == "sojobo"
-        $scope.sojobo_url = Settings.endpoint.tengu + "/" + Settings.sojobo_models[0] + "/h-" + $scope.hauchiwa
-        lookForHauchiwa(resp.data)
-      else if $scope.location == "local"
-        $scope.status = "bundle-check"
-        $scope.hauchiwa_url = Settings.endpoint.tengu + "/" + Settings.sojobo_models[0]
-        $scope.bundle = resp.data
-      else if $scope.location.startsWith("http")
-        if resp.data.charm?
-          $scope.sojobo_url = $scope.location
+      console.log(resp)
+      if resp.location?
+        $scope.hauchiwa = resp.hauchiwa
+        $scope.data = resp.data
+        $scope.location = resp.location
+        if $scope.location == "sojobo"
+          console.log("loc=sojobo")
+          $scope.sojobo_url = Settings.endpoint.tengu + "/" + Settings.sojobo_models[0] + "/h-" + $scope.hauchiwa
           lookForHauchiwa(resp.data)
-        else
+        else if $scope.location == "local"
+          console.log("loc=local")
           $scope.status = "bundle-check"
-          if resp.data.services?
-            $scope.hauchiwa_url = $scope.location
-            $scope.hauchiwa = resp.data.environment
-            $scope.bundle = resp.data
-          else if resp.data.name
-            $scope.hauchiwa_models = resp.data.models
-            $scope.hauchiwa_url = $scope.location + "/" + $scope.hauchiwa_models[0]
-            refreshBundle()
+          $scope.hauchiwa_url = Settings.endpoint.tengu + "/" + Settings.sojobo_models[0]
+          $scope.bundle = resp.data
+        else if $scope.location.startsWith("http")
+          console.log("loc=url")
+          if resp.data.charm?
+            $scope.sojobo_url = $scope.location
+            lookForHauchiwa(resp.data)
           else
-            $scope.frame.setError "Could not determine how to reach the Hauchiwa."
-            console.log("Could not determine how to reach the Hauchiwa: " + $scope.location)
+            $scope.status = "bundle-check"
+            if resp.data.services?
+              $scope.hauchiwa_url = $scope.location
+              $scope.hauchiwa = resp.data.environment
+              $scope.bundle = resp.data
+            else if resp.data.name
+              $scope.hauchiwa_models = resp.data.models
+              $scope.hauchiwa_url = $scope.location + "/" + $scope.hauchiwa_models[0]
+              refreshBundle()
+            else
+              $scope.status = "error"
+              $scope.frame.setError "Could not determine how to reach the Hauchiwa."
+              console.log("Could not determine how to reach the Hauchiwa: " + $scope.location + ".")
+      else
+        $scope.status = "error"
+        $scope.autoRefresh = no
+        $scope.frame.setError resp
 
     lookForHauchiwa = (data) ->
-      if data["service-status"].current == "error"
-        $scope.status = "error"
-        $scope.frame.setError data["service-status"].message
-      else if data["service-status"].current == "active"
-        message = data["service-status"].message
-        pfPattern = /^Ready pf:"(?:.*->[0-9]* )*(.*)->5000.*"/
-        hauchiwa_ipPort = message.replace(pfPattern, '$1')
-        if hauchiwa_ipPort.length != message.length
-          $scope.status = "bundle-check"
-          hauchiwa_rooturl = "http://" + hauchiwa_ipPort
+      if data["service-status"]?
+        if data["service-status"].current? and data["service-status"].current == "error"
+          $scope.status = "error"
+          $scope.frame.setError data["service-status"].message
+        else if data["service-status"].current? and data["service-status"].current == "active"
+          message = data["service-status"].message
+          pfPattern = /^Ready pf:"(?:.*->[0-9]* )*(.*)->5000.*"/
+          hauchiwa_ipPort = message.replace(pfPattern, '$1')
+          if hauchiwa_ipPort.length != message.length
+            $scope.status = "bundle-check"
+            hauchiwa_rooturl = "http://" + hauchiwa_ipPort
+            
+            console.log(hauchiwa_rooturl)
 
-          req = {
-            "method"  : "GET"
-            "url"     : hauchiwa_rooturl
-          }
+            req = {
+              "method"  : "GET"
+              "url"     : hauchiwa_rooturl
+            }
 
-          $http(req).then(
-            (response) ->
-              $scope.hauchiwa_models = response.data.models
-              $scope.hauchiwa_url = hauchiwa_rooturl + "/" + $scope.hauchiwa_models[0]
-              console.log("got hauchiwa url: " + $scope.hauchiwa_url)
-              refreshBundle()
-            , (r) ->
-              $scope.frame.setError "Could not retrieve models from hauchiwa"
-          )
+            $http(req).then(
+              (response) ->
+                if response.data? and response.data.models?
+                  $scope.hauchiwa_models = response.data.models
+                  $scope.hauchiwa_url = hauchiwa_rooturl + "/" + $scope.hauchiwa_models[0]
+                  console.log("got hauchiwa url: " + $scope.hauchiwa_url)
+                  refreshBundle()
+                else if response.data? and response.data == "Welcome to Hauchiwa API v0.1"
+                  console.log("test")
+                  $scope.status = "error"
+                  $scope.frame.setError "The Hauchiwa still has the old version."
+                else
+                  console.log("test2")
+                  $scope.status = "error"
+                  $scope.frame.setError "Could not retrieve models from the Hauchiwa."
+              , (r) ->
+                console.log("test3")
+                $scope.status = "error"
+                $scope.frame.setError "Could not retrieve models from the Hauchiwa."
+            )
 
-
+          else
+            console.log("Message '" + message + "' does not contain the correct portforwarding.")
         else
-          console.log("Message '" + message + "' does not contain the correct portforwarding.")
-      else
-        console.log("'service-status' not 'active' yet.")
+          console.log("'service-status' not 'active' yet.")
 
     refreshHauchiwa = () ->
       if $scope.status != "error" and $scope.status != "bundle-check"
@@ -87,6 +111,7 @@ angular.module('neo4jApp.controllers')
           (response) ->
             lookForHauchiwa(response.data)
           , (r) ->
+            $scope.status = "error"
             console.log("Could not connect to the Sojobo: " + Settings.endpoint.tengu + "/" + $scope.hauchiwa)
             $scope.frame.setError "Could not connect to the Sojobo."
         )
@@ -96,6 +121,7 @@ angular.module('neo4jApp.controllers')
     refreshBundle = () ->
       $scope.frame.resetError()
       if $scope.status == "bundle-check"
+        console.log("still got hauchiwa url: " + $scope.hauchiwa_url)
         req = {
           "method"  : "GET"
           "url"     : $scope.hauchiwa_url
@@ -107,6 +133,7 @@ angular.module('neo4jApp.controllers')
               $scope.hauchiwa = response.data.environment
             $scope.bundle = response.data
           , (r) ->
+            $scope.status = "error"
             $scope.frame.setError "Could not retrieve the status information of the Hauchiwa."
         )
 
@@ -119,8 +146,9 @@ angular.module('neo4jApp.controllers')
     timer = null
     refreshLater = () =>
       $timeout.cancel(timer)
-
-      if $scope.autoRefresh and !$scope.frame.isTerminating
+      if $scope.status == "error"
+        $scope.autoRefresh = no
+      else if $scope.autoRefresh and !$scope.frame.isTerminating
         $scope.refresh()
         timer = $timeout(
           refreshLater

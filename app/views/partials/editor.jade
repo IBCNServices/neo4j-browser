@@ -55,11 +55,11 @@
         a.fa.fa-times-circle(ng-click='editor.showMessage = null')
     .message-bar.info(ng-if='unauthorized && !bolt_connection_failure', ng-class="editor.errorCode")
       span
-        | Database access not available. Please use <code click-to-code="':server connect'">:server connect</code>
-        | to establish connection. There's a graph waiting for you.
+        | Some functionality will not be available. Please use <code click-to-code="':server connect'">:server connect</code>
+        | to establish connection. There's a Hauchiwa waiting for you.
     .message-bar.error.slide-down(ng-if='bolt_connection_failure', ng-class="editor.errorCode")
       span
-        | Can not connect to Neo4j. Please check your Network Connection
+        | Can not connect to Tengu. Please check your Network Connection
         a(ng-click="toggleDrawer('preferences')") &nbsp;
           code settings
         |.
