@@ -1,4 +1,4 @@
-.bundle.graph(ng-controller="BundleGraphCtrl", ng-show="bundleName")
+.bundle.graph(ng-controller="BundleGraphCtrl", ng-show="status != 'init'", style="overflow: scroll")
   svg(class="bundle", ng-attr-width="{{width}}", ng-attr-height="{{height}}")
     defs
       marker(id='end-arrow', viewBox ='0 -5 10 10', refX=6,

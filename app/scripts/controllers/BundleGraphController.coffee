@@ -14,8 +14,7 @@ angular.module('neo4jApp.controllers')
     '$filter'
     'Settings'
     ($scope, $timeout, $document, $http, $sce, $filter, Settings) ->
-      $scope.bundleName = false
-
+      $scope.status = "init"
       $scope.width = 900;
       $scope.height = 700;
 
@@ -33,16 +32,19 @@ angular.module('neo4jApp.controllers')
         if link.logical then "marker-end: url('#end-arrow')" else ""
 
       $scope.linkM = (source, target) ->
-        deltaX = target.x - source.x
-        deltaY = target.y - source.y
-        dist = Math.sqrt(deltaX * deltaX + deltaY * deltaY)
-        normX = deltaX / dist
-        normY = deltaY / dist
-        sourceX = source.x + ((source.r + 5) * normX)
-        sourceY = source.y + ((source.r + 5) * normY)
-        targetX = target.x - ((target.r + 5) * normX)
-        targetY = target.y - ((target.r + 5) * normY)
-        'M' + sourceX + ',' + sourceY + 'L' + targetX + ',' + targetY
+        if source == target
+          console.log("source == target")
+        else
+          deltaX = target.x - source.x
+          deltaY = target.y - source.y
+          dist = Math.sqrt(deltaX * deltaX + deltaY * deltaY)
+          normX = deltaX / dist
+          normY = deltaY / dist
+          sourceX = source.x + ((source.r + 5) * normX)
+          sourceY = source.y + ((source.r + 5) * normY)
+          targetX = target.x - ((target.r + 5) * normX)
+          targetY = target.y - ((target.r + 5) * normY)
+          'M' + sourceX + ',' + sourceY + 'L' + targetX + ',' + targetY
 
       $scope.nodeDetails = (node) ->
         if node.logical
@@ -57,7 +59,7 @@ angular.module('neo4jApp.controllers')
           $sce.trustAsHtml('')
 
       $scope.nodeStatusM = (node) ->
-        if node.cluster_p?
+        if node.cluster_p? and node.cluster_p.length > 0
           status = 0
           status += p for p in node.cluster_p
           status = status/node.cluster_p.length
@@ -138,6 +140,7 @@ angular.module('neo4jApp.controllers')
 
       end = () ->
         console.log("ENDED")
+        $scope.status = "finished"
         forceStopped = true
         ##force.stop()
 
@@ -150,114 +153,187 @@ angular.module('neo4jApp.controllers')
 
       $scope.$watch '$parent.bundle', (data) ->
         return unless data
-        if !$scope.bundleName
+        if $scope.status == "init"
           loadBundleMapping(data.services)
         else
           setBundleInfo(data.services)
 
       loadBundleMapping = (services) ->
+        $scope.nodes = []
+        $scope.links = []
         console.log("loadBundleMapping called")
-        #Hard-coded ;) Should be more intelligent!
-        cityot = 0
-        storm = 0
-        spark = 0
-        angular.forEach(services, (value, key) ->
-          if $scope.$parent.location == "local"
-            h = key.substring(0, key.indexOf("-"))
-            if $scope.$parent.hauchiwa.toLowerCase() != h
-              return
-            else
-              s = key.substring(key.indexOf("-")+1)
-          else
-            s = key
-
-          switch s
-            when "limeds" then cityot++
-            when "apache-kafka" then cityot++
-            when "nimbus"
-              cityot++
-              storm++
-            when "worker"
-              cityot++
-              storm++
-            when "mongodb" then cityot++
-            when "apache-zookeeper"
-              cityot++
-              storm++
-            when "wso2-esb" then cityot++
-            when "yarn-master2" then spark++
-            when "hdfs-master2" then spark++
-            when "spark2" then spark++
-            when "plugin2" then spark++
-            when "compute-slave2" then spark++
-            when "cassandra" then storm++
-        )
-        if cityot > spark and cityot > storm
-          $scope.bundleName = "cityot"
-        else if spark > storm
-          $scope.bundleName = "spark"
+        console.log(services)
+        
+        if services.modelinfo?
+          req = {
+            "method"  : "GET"
+            "url"     : $scope.$parent.hauchiwa_url + "/modelinfo/config"
+          }
+          $http(req).then(
+            (response) ->
+              if response.data.settings?
+                if response.data.settings.type? and response.data.settings.type.value == "web-ui"
+                  console.log("This is a model created according to the web-ui's principles.")
+                  delete services.modelinfo
+                  createNodesAndLinksFromBundle(services, response.data.settings.tag.value)
+            , (r) ->
+              console.log("Could not retrieve the config information of the model. So, only going to show the services.")
+              delete services.modelinfo
+              createNodesAndLinks(services)
+          )
         else
-          $scope.bundleName = "storm"
-
-        $http.get(Settings.endpoint.bundles + '/' + $scope.bundleName+'.map').
+          console.log("No modelinfo service found. Only show the services.")
+          createNodesAndLinks(services)
+          
+      createNodesAndLinksFromBundle = (services, bundleName) ->
+        $http.get(Settings.endpoint.bundles + '/' + bundleName+'.map').
           success((graph) ->
+            relationships = []
+            
+            #handle logical nodes
             for node in graph.nodes
               node.logical = true
               node.r = 40
               node.cluster_p = []
               $scope.nodes.push node
+              
+              #handle services that are part of a logical node
               for service in node.services
                 if $scope.$parent.location == "local"
-                  ss = services[$scope.$parent.hauchiwa.toLowerCase()+"-"+service.name]
+                  key_s = $scope.$parent.hauchiwa.toLowerCase()+"-"+service.name
+                  ss = services[key_s]
                 else
-                  ss = services[service.name]
+                  key_s = service.name
+                  if (services[key_s]?)
+                    ss = services[key_s]
+                  else 
+                    key_s = "hhh-" + service.name
+                    if services[key_s]?
+                      ss = services[key_s]
+                    else
+                      key_s = "NaS[" + service.name + "]"
+                delete services[key_s]
 
                 num_units = 0
 
                 if ss?
-                  angular.forEach(ss.units, (unit, key) ->
+                  angular.forEach(ss.units, (unit, key_u) ->
                     node.cluster_p.push(getClusterP(unit))
                     if node.port? and unit["open-ports"]? and unit["open-ports"].indexOf(node.port+'/tcp') != -1
                       node.href = "http://"+unit["public-address"]+":"+node.port
                       console.log(node.href)
                     num_units++
                   )
-
-                service.logical = false
-                service.r = Math.min(5, num_units)*4 + 10
-                $scope.nodes.push service
-
-            if graph["shared-services"]?
-              for service in graph["shared-services"]
-                if $scope.$parent.location == "local"
-                  ss = services[$scope.$parent.hauchiwa.toLowerCase()+"-"+service.name]
-                else
-                  ss = services[service.name]
-
-                num_units = 0
-
-                if ss?
-                  angular.forEach(ss.units, (unit, key) ->
-                    num_units++
+                  angular.forEach(ss.relations, (relation, key_r) ->
+                    relationships.push
+                      source : key_s
+                      target : relation[0]
+                      label  : key_r
                   )
-
+                
+                #already push relationship between logical node and its service  
+                $scope.links.push
+                  source  : node
+                  target  : service
+                  logical : false
+                  
                 service.logical = false
+                service.name = key_s
                 service.r = Math.min(5, num_units)*4 + 10
                 $scope.nodes.push service
 
+            #handle remaining services
+            angular.forEach(services, (service, key_s) ->
+              node = {
+                "name"      : key_s
+                "cluster_p" : []
+              }
+              
+              num_units = 0
+
+              angular.forEach(service.units, (unit, key_u) ->
+                node.cluster_p.push(getClusterP(unit))
+                num_units++
+              )
+              
+              angular.forEach(service.relations, (relation, key_r) ->
+                relationships.push
+                  source : key_s
+                  target : relation[0]
+                  label  : key_r
+              )
+
+              node.logical = false
+              node.r = Math.min(5, num_units)*4 + 10
+              $scope.nodes.push node
+            )
+
+            #handle logical relationships
             for rel in graph.relationships
               source = $scope.nodes.findIndex((n) -> n.name == rel.source)
               target = $scope.nodes.findIndex((n) -> n.name == rel.target)
               $scope.links.push
-                source: source
-                target: target
-                logical: $scope.nodes[source].logical and $scope.nodes[target].logical
+                source  : source
+                target  : target
+                logical : true
+
+            #handle relationships between regular services
+            for rel in relationships
+              if rel.source != rel.target
+                source = $scope.nodes.findIndex((n) -> n.name == rel.source)
+                target = $scope.nodes.findIndex((n) -> n.name == rel.target)
+                $scope.links.push
+                  source  : source
+                  target  : target
+                  label   : rel.label
+                  logical : false
 
             #$scope.force.drag().on("dragstart", () -> $scope.$apply(()->console.log("dragstart")))
+            
+            $scope.status = "show"
 
             $scope.force.nodes($scope.nodes).links($scope.links).on("tick", tick).on("end", end).start()
-
         )
+      
+      createNodesAndLinks = (services) ->
+        relationships = []
+        angular.forEach(services, (service, key_s) ->
+          node = {
+            "name"      : key_s
+            "cluster_p" : []
+          }
+          
+          num_units = 0
+
+          angular.forEach(service.units, (unit, key_u) ->
+            node.cluster_p.push(getClusterP(unit))
+            num_units++
+          )
+          
+          angular.forEach(service.relations, (relation, key_r) ->
+            relationships.push
+              source : key_s
+              target : relation[0]
+              label  : key_r
+          )
+
+          node.logical = false
+          node.r = Math.min(5, num_units)*4 + 10
+          $scope.nodes.push node
+        )
+        for rel in relationships
+          source = $scope.nodes.findIndex((n) -> n.name == rel.source)
+          target = $scope.nodes.findIndex((n) -> n.name == rel.target)
+          if source != target
+            $scope.links.push
+              source  : source
+              target  : target
+              logical : false
+              label   : rel.label
+        
+        $scope.status = "show"
+        
+        $scope.force.nodes($scope.nodes).links($scope.links).on("tick", tick).on("end", end).start()  
 
       setBundleInfo = (services) ->
         console.log("setBundleInfo called")

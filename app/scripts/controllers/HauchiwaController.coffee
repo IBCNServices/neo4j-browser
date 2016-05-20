@@ -30,6 +30,7 @@ angular.module('neo4jApp.controllers')
           $scope.status = "bundle-check"
           $scope.hauchiwa_url = Settings.endpoint.tengu + "/" + Settings.sojobo_models[0]
           $scope.bundle = resp.data
+          refreshLater()
         else if $scope.location.startsWith("http")
           console.log("loc=url")
           if resp.data.charm?
@@ -44,11 +45,11 @@ angular.module('neo4jApp.controllers')
             else if resp.data.name
               $scope.hauchiwa_models = resp.data.models
               $scope.hauchiwa_url = $scope.location + "/" + $scope.hauchiwa_models[0]
-              refreshBundle()
             else
               $scope.status = "error"
               $scope.frame.setError "Could not determine how to reach the Hauchiwa."
               console.log("Could not determine how to reach the Hauchiwa: " + $scope.location + ".")
+            refreshLater()
       else
         $scope.status = "error"
         $scope.autoRefresh = no
@@ -80,7 +81,6 @@ angular.module('neo4jApp.controllers')
                   $scope.hauchiwa_models = response.data.models
                   $scope.hauchiwa_url = hauchiwa_rooturl + "/" + $scope.hauchiwa_models[0]
                   console.log("got hauchiwa url: " + $scope.hauchiwa_url)
-                  refreshBundle()
                 else if response.data? and response.data == "Welcome to Hauchiwa API v0.1"
                   console.log("test")
                   $scope.status = "error"
@@ -89,6 +89,7 @@ angular.module('neo4jApp.controllers')
                   console.log("test2")
                   $scope.status = "error"
                   $scope.frame.setError "Could not retrieve models from the Hauchiwa."
+                refreshLater()
               , (r) ->
                 console.log("test3")
                 $scope.status = "error"
@@ -97,8 +98,10 @@ angular.module('neo4jApp.controllers')
 
           else
             console.log("Message '" + message + "' does not contain the correct portforwarding.")
+            refreshLater()
         else
           console.log("'service-status' not 'active' yet.")
+          refreshLater()
 
     refreshHauchiwa = () ->
       if $scope.status != "error" and $scope.status != "bundle-check"
@@ -121,7 +124,6 @@ angular.module('neo4jApp.controllers')
     refreshBundle = () ->
       $scope.frame.resetError()
       if $scope.status == "bundle-check"
-        console.log("still got hauchiwa url: " + $scope.hauchiwa_url)
         req = {
           "method"  : "GET"
           "url"     : $scope.hauchiwa_url
