@@ -71,6 +71,7 @@ angular.module('neo4jApp.services')
               @resetError()
               q = $q.defer()
               if not intrPromise or not intrPromise.transaction
+                console.log("test terminate")
                 q.resolve({})
                 return q.promise
               else

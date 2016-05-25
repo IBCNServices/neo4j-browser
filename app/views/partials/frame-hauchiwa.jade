@@ -7,6 +7,13 @@ article.help(ng-controller="HauchiwaController")
         | You can use the Auto-refresh functionality or submit another retry manually.
       br
       br
+    .section.row-fluid.summary(ng-show="status == 'model-choice'")
+      h3 There are multiple models available on your Hauchiwa <code>{{hauchiwa}}</code>.
+      p.lead Please select which model you would like to show?
+      br
+      select.form-control(ng-model="model", style="margin: 0", ng-options="m for m in hauchiwa_models", ng-change="selectModel()")
+      br
+      br
     .section.row-fluid.summary(ng-show="status == 'bundle-check'")
       h3 Your Hauchiwa <code>{{hauchiwa}}</code> is ready
       p.lead

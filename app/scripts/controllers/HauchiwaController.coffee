@@ -28,7 +28,7 @@ angular.module('neo4jApp.controllers')
         else if $scope.location == "local"
           console.log("loc=local")
           $scope.status = "bundle-check"
-          $scope.hauchiwa_url = Settings.endpoint.tengu + "/" + Settings.sojobo_models[0]
+          $scope.hauchiwa_url = Settings.endpoint.tengu
           $scope.bundle = resp.data
           refreshLater()
         else if $scope.location.startsWith("http")
@@ -65,10 +65,8 @@ angular.module('neo4jApp.controllers')
           pfPattern = /^Ready pf:"(?:.*->[0-9]* )*(.*)->5000.*"/
           hauchiwa_ipPort = message.replace(pfPattern, '$1')
           if hauchiwa_ipPort.length != message.length
-            $scope.status = "bundle-check"
+            $scope.status = "models-check"
             hauchiwa_rooturl = "http://" + hauchiwa_ipPort
-            
-            console.log(hauchiwa_rooturl)
 
             req = {
               "method"  : "GET"
@@ -79,19 +77,23 @@ angular.module('neo4jApp.controllers')
               (response) ->
                 if response.data? and response.data.models?
                   $scope.hauchiwa_models = response.data.models
-                  $scope.hauchiwa_url = hauchiwa_rooturl + "/" + $scope.hauchiwa_models[0]
-                  console.log("got hauchiwa url: " + $scope.hauchiwa_url)
+                  if $scope.hauchiwa_models.length == 1
+                    $scope.status = "bundle-check"
+                    $scope.model =  $scope.hauchiwa_models[0]  
+                    $scope.hauchiwa_url = hauchiwa_rooturl + "/" + $scope.model
+                    console.log("Only one model present: " + $scope.hauchiwa_url)
+                    refreshLater()
+                  else if $scope.hauchiwa_models.length > 1
+                    $scope.status = "model-choice"
+                    $scope.hauchiwa_url = hauchiwa_rooturl
+                    console.log("Multiple models available.")
                 else if response.data? and response.data == "Welcome to Hauchiwa API v0.1"
-                  console.log("test")
                   $scope.status = "error"
                   $scope.frame.setError "The Hauchiwa still has the old version."
                 else
-                  console.log("test2")
                   $scope.status = "error"
                   $scope.frame.setError "Could not retrieve models from the Hauchiwa."
-                refreshLater()
               , (r) ->
-                console.log("test3")
                 $scope.status = "error"
                 $scope.frame.setError "Could not retrieve models from the Hauchiwa."
             )
@@ -102,6 +104,12 @@ angular.module('neo4jApp.controllers')
         else
           console.log("'service-status' not 'active' yet.")
           refreshLater()
+          
+    $scope.selectModel = () ->
+      $scope.status = "bundle-check"  
+      $scope.hauchiwa_url = $scope.hauchiwa_url + "/" + $scope.model
+      console.log("User selected model["+$scope.model+"]: " + $scope.hauchiwa_url)
+      refreshLater()
 
     refreshHauchiwa = () ->
       if $scope.status != "error" and $scope.status != "bundle-check"
