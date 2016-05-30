@@ -1,0 +1,35 @@
+article.guide(ng-controller="TenguCtrl")
+  .container-fluid
+    h3 Welcome to the Tengu IMEC demo
+    .section.row-fluid.summary
+      .summary.col-sm-3
+        .box-max
+          br
+          img.img-responsive(src='images/tengu.png')
+          img.img-responsive(src='images/logo_imec.png')
+          br
+
+      .details.col-sm-9(ng-hide="static_is_authenticated")
+        p.lead
+          | Access to Tengu's Sojobo requires your authentication credentials to be present.
+          | Please connect to one of the Fed4FIRE Authority Services.
+        br
+        button.btn.btn-default(id="connect_button", ng-click="authenticate()", style="margin: 0") Connect
+
+      .details.col-sm-9(ng-show="static_is_authenticated")
+        .teaser.teaser-9
+          h3 Simple Sensor Analysis
+          p.lead Process a continuous stream of sensor data with Apache Storm.
+          .icon-holder
+            img.icon(src="images/sensors.png")
+            ul.topic-bullets
+              li easy data-sink API with LimeDS
+              li apache kafka for data archiving
+              li apache storm for data processing
+            .clearfix
+          button.btn.btn-cta(tengu-model="imec-demo") Start sensing
+
+      .status-bar(ng-class='{error: frame.detailedErrorText, loading: frame.isLoading}')
+        .status(ng-show="frame.detailedErrorText")
+          .fa.fa-exclamation-triangle.icon-warning-sign &nbsp;
+          {{frame.detailedErrorText}}

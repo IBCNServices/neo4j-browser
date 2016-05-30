@@ -70,13 +70,13 @@ angular.module('neo4jApp.services')
             @terminate = =>
               @resetError()
               q = $q.defer()
+              @isTerminating = yes
               if not intrPromise or not intrPromise.transaction
                 console.log("test terminate")
                 q.resolve({})
                 return q.promise
               else
                 intrPromise.reject 'cancel main request'
-              @isTerminating = yes
               that = @
               intrPromise.transaction.rollback().then((r) ->
                 that.isTerminating = no
