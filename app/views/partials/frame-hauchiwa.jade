@@ -18,6 +18,9 @@ article.help(ng-controller="HauchiwaController")
       h3 Your Hauchiwa <code>{{hauchiwa}}</code> is ready
       p.lead
         | We are retrieveing the information about your bundle.
+      p.lead(ng-show="ssh")
+        | You can also ssh to your Hauchiwa. Use the SSH keys you provided during creation 
+        | and connect to the following address: <code>{{ssh}}</code>
       br
       include bundle-graph
       br

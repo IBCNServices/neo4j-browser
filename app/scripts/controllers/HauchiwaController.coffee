@@ -67,6 +67,11 @@ angular.module('neo4jApp.controllers')
           if hauchiwa_ipPort.length != message.length
             $scope.status = "models-check"
             hauchiwa_rooturl = "http://" + hauchiwa_ipPort
+            
+            sshPattern = /^Ready pf:"(?:.*->[0-9]* )*(.*)->22.*"/
+            hauchiwa_sshPort = message.replace(sshPattern, '$1')
+            if hauchiwa_sshPort.length != message.length
+              $scope.ssh = "ssh://" + hauchiwa_sshPort
 
             req = {
               "method"  : "GET"
