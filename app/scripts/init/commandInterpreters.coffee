@@ -477,7 +477,18 @@ angular.module('neo4jApp')
     #        .error(->q.reject(error("No such help section")))
     #        q.promise
     #    ]
-      
+    
+    # Sign in with Google
+    FrameProvider.interpreters.push
+      type: 'account'
+      templateUrl: 'views/frame-google-sign-in.html'
+      matches: ["#{cmdchar}signin"]
+      exec: ['CurrentUser', '$rootScope', (CurrentUser, $rootScope) ->
+        (input, q) ->
+          q.resolve("OK")
+          q.promise
+      ]  
+    
     # Tengu model create handler
     FrameProvider.interpreters.push
       type: 'tengu'
