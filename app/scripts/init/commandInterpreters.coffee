@@ -483,11 +483,30 @@ angular.module('neo4jApp')
       type: 'account'
       templateUrl: 'views/frame-google-sign-in.html'
       matches: ["#{cmdchar}signin"]
-      exec: ['CurrentUser', '$rootScope', (CurrentUser, $rootScope) ->
+      exec: ['GAuth2', '$rootScope', (GAuth2, $rootScope) ->
         (input, q) ->
-          q.resolve("OK")
+          GAuth2.isSignedIn().then(
+            (success) ->
+              q.resolve(success)
+          )
           q.promise
-      ]  
+      ]
+      
+    # Sign out from Google
+    FrameProvider.interpreters.push
+      type: 'account'
+      templateUrl: 'views/frame-google-sign-out.html'
+      matches: ["#{cmdchar}signout"]
+      exec: ['CurrentUser', (CurrentUser) ->
+        (input, q) ->
+          CurrentUser.logout().then(
+            () ->
+              q.resolve("Successfully signed out.")
+            , () ->
+              q.reject("There was a problem with signing out.")
+          )
+          q.promise
+      ]
     
     # Tengu model create handler
     FrameProvider.interpreters.push

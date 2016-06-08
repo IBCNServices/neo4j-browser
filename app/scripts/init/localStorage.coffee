@@ -21,5 +21,5 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 angular.module('neo4jApp').config([
   'localStorageServiceProvider'
   (localStorageServiceProvider) ->
-    localStorageServiceProvider.setPrefix('neo4j')
+    localStorageServiceProvider.setPrefix('tengu')
 ])

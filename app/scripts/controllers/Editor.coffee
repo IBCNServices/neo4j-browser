@@ -26,8 +26,8 @@ angular.module('neo4jApp.controllers')
     'Editor'
     'motdService'
     'Settings'
-    'SyncService'
-    ($scope, Editor, motdService, Settings, SyncService) ->
+    #'SyncService'
+    ($scope, Editor, motdService, Settings) ->
       $scope.editor = Editor
       $scope.motd = motdService
       $scope.settings = Settings
@@ -44,7 +44,7 @@ angular.module('neo4jApp.controllers')
       $scope.star = ->
         unless Editor.document
           $scope.toggleDrawer("scripts", true)
-        SyncService.fetchAndUpdate().then((response) =>
+        #SyncService.fetchAndUpdate().then((response) =>
           Editor.saveDocument()
-        )
+        #)
   ]

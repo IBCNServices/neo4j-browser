@@ -29,9 +29,9 @@ angular.module('neo4jApp.services', [
   'neo4jApp.utils',
   'base64',
   'AsciiTableModule',
-  'auth0',
-  'firebase',
-  'angular-jwt'
+  ##'auth0',
+  ##'firebase',
+  ##'angular-jwt'
 ])
 
 app = angular.module('neo4jApp', [
@@ -55,6 +55,7 @@ app = angular.module('neo4jApp', [
   'angularMoment'
   'ngSanitize'
 ])
+###
 .config(['authProvider', 'localStorageServiceProvider', (authProvider, localStorageServiceProvider) ->
   authProvider.init(
     domain: 'neo4j-sync.auth0.com'
@@ -64,3 +65,4 @@ app = angular.module('neo4jApp', [
 ]).run(['auth', (auth) ->
   auth.hookEvents()
 ])
+###

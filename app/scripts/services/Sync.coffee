@@ -90,6 +90,7 @@ angular.module('neo4jApp.services')
         $rootScope.$on 'LocalStorageModule.notification.setitem', (evt, item) =>
           @syncItem item
 
+        ###
         $rootScope.$on 'ntn:authenticated', (evt, authenticated) =>
           @authenticated = authenticated
           documents = getStorage().documents || []
@@ -107,6 +108,7 @@ angular.module('neo4jApp.services')
           syncService.setSyncConnection(isConnected))
 
         $rootScope.$on('ntn:last_synced', -> syncService.setSyncedAt())
+        ###
 
       syncItem: (item) ->
         return @setSyncedAt() if item.key is 'updated_at' and @authenticated

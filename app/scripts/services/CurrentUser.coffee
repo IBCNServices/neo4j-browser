@@ -24,17 +24,18 @@ angular.module('neo4jApp.services')
 .service 'CurrentUser', [
   'Settings'
   'Editor'
-  'AuthService'
-  'NTN'
+  'GeniAuthService'
+  'GAuth2'
+  #'NTN'
   'localStorageService'
   'AuthDataService'
-  'jwtHelper'
+  #'jwtHelper'
   '$q'
   '$rootScope'
-  'UsageDataCollectionService'
+  #'UsageDataCollectionService'
   'DefaultContentService'
-  'GraphStyle'
-  (Settings, Editor, AuthService, NTN, localStorageService, AuthDataService, jwtHelper, $q, $rootScope, UDC, DefaultContentService, GraphStyle) ->
+  #'GraphStyle'
+  (Settings, Editor, AuthService, GAuth2, localStorageService, AuthDataService, $q, $rootScope, DefaultContentService) ->
     class CurrentUser
       _user: {}
       store: null
@@ -68,20 +69,22 @@ angular.module('neo4jApp.services')
             return cred
         return {}
 
-      fetch: ->
-        NTN.fetch @store
+      ##fetch: ->
+      ##  NTN.fetch @store
 
       getToken: (id) ->
         return no unless id
         localStorageService.get "ntn_#{id}"
 
       loadUserFromLocalStorage: ->
+        console.log("loadUserFromLocalStorage called")
         return unless @isAuthenticated()
-        q = $q.defer()
-        that = @
+        ##q = $q.defer()
+        ##that = @
         @_user = localStorageService.get 'ntn_profile' || {}
-        data_token = @getToken 'data_token'
+        ##data_token = @getToken 'data_token'
         @store = no
+        ###
         if @_user and data_token
           NTN.getUserStore(@_user.user_id, data_token).then(
             (store) ->
@@ -93,7 +96,9 @@ angular.module('neo4jApp.services')
 
         else
           q.resolve()
-        q.promise
+        ###
+        $rootScope.$emit 'ntn:authenticated', 'yes', @_user
+        ##q.promise
 
       getStore: ->
         that = @
@@ -118,13 +123,14 @@ angular.module('neo4jApp.services')
       clear: () ->
         localStorageService.clearAll()
         DefaultContentService.resetToDefault()
-        GraphStyle.resetToDefault()
+        #GraphStyle.resetToDefault()
         @loadUserFromLocalStorage()
 
       login: ->
         q = $q.defer()
         that = @
-        NTN.login().then((res) ->
+        GAuth2.login().then((res) ->
+          console.log(res)
           that.persist res
           data = localStorageService.get 'ntn_profile' || {}
           $rootScope.$emit 'ntn:login', data
@@ -135,25 +141,35 @@ angular.module('neo4jApp.services')
         q.promise
 
       logout: ->
-        $rootScope.currentUser = null
-        NTN.logout()
-        @store.unauth()
-        localStorageService.remove 'ntn_token'
-        localStorageService.remove 'ntn_data_token'
-        localStorageService.remove 'ntn_refresh_token'
-        localStorageService.remove 'ntn_profile'
-        localStorageService.remove 'stores'
-        AuthService.forget()
-        @clear()
-        $rootScope.$emit 'ntn:logout'
-        Editor.execScript "#{Settings.cmdchar}server disconnect"
-
+        q = $q.defer()
+        that = @
+        GAuth2.logout().then((res) ->
+          $rootScope.currentUser = null
+          #@store.unauth()
+          localStorageService.remove 'ntn_token'
+          localStorageService.remove 'ntn_data_token'
+          localStorageService.remove 'ntn_refresh_token'
+          localStorageService.remove 'ntn_profile'
+          localStorageService.remove 'stores'
+          AuthService.forget()
+          that.clear()
+          $rootScope.$emit 'ntn:logout'
+          Editor.execScript "#{Settings.cmdchar}server disconnect"
+          q.resolve(res)
+        ,
+          (err) -> q.reject()
+        )
+        q.promise
+        
       instance: -> angular.copy(@_user)
 
       isAuthenticated: -> localStorageService.get 'ntn_data_token'
 
       init: ->
-        NTN.connection()
+        ##NTN.connection()
+        console.log("init called")
+        @loadUserFromLocalStorage()
+        
 
     cu = new CurrentUser
     cu

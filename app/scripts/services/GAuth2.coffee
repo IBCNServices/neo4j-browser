@@ -5,7 +5,7 @@
 'use strict';
 
 angular.module('neo4jApp.services')
-  .service 'GAuth2', [
+  .factory 'GAuth2', [
     'Settings'
     '$window'
     '$document'
@@ -17,12 +17,14 @@ angular.module('neo4jApp.services')
       LOADING_GAE_API = false
       URL = 'https://apis.google.com/js/client:platform.js?onload=_gapiOnLoad'
       OBSERVER_CALLBACKS = []
+      
       auth2 = null
+      profile = null
+      token = null
       
       loadScript = (src) ->
         deferred = $q.defer()
         $window._gapiOnLoad = () -> deferred.resolve()
-        
         script = $document[0].createElement 'script'
         script.onerror = (e) -> $timeout (() -> deferred.reject(e))
         script.src = src
@@ -30,36 +32,96 @@ angular.module('neo4jApp.services')
         console.log('loadScript')
         return deferred.promise
         
-      return {
-        get : () ->
-          deferred = $q.defer()
-          if (LOAD_GAE_API)
-            deferred.resolve(auth2)
-          else if (LOADING_GAE_API)
-            OBSERVER_CALLBACKS.push(deferred)
-          else
-            LOADING_GAE_API = true
-            loadScript(URL).then( () ->
-              $window.gapi.load('auth2', () ->
-                console.log("test")
-                $window.gapi.auth2.init({
-                  fetch_basic_profile: false
-                  scope:'https://www.googleapis.com/auth/plus.login'
-                }).then(() -> 
-                  LOAD_GAE_API = true
-                  LOADING_GAE_API = false
-              
-                  auth2 = $window.gapi.auth2.getAuthInstance()
-                  deferred.resolve(auth2)
-                  for oc in OBSERVER_CALLBACKS
-                    oc.resolve(auth2)
-                    
-                  console.log("test2")
-                )
+      onSignIn = () ->
+        console.log('signed in')
+        user = auth2.currentUser.get()
+        bp = user.getBasicProfile()
+        profile = {
+          name    : bp.getName()
+          picture : bp.getImageUrl()
+          email   : bp.getEmail()
+        }
+        token = user.getAuthResponse().id_token
+        
+      onSignOut = () ->
+        console.log('signed out')
+        auth2.signOut().then( () ->
+          profile = null
+          token = null
+        )
+        
+      updateSignIn = () ->
+        console.log('update sign in state')
+        if (auth2.isSignedIn.get())
+          onSignIn()
+        else
+          onSignOut()
+        
+      _get = () ->
+        q = $q.defer()
+        if (LOAD_GAE_API)
+          q.resolve("success: load_gae_api")
+        else if (LOADING_GAE_API)
+          OBSERVER_CALLBACKS.push(q)
+        else
+          LOADING_GAE_API = true
+          loadScript(URL).then( () ->
+            $window.gapi.load('auth2', () ->
+              #$window.gapi.auth2.init({
+              #  fetch_basic_profile: true
+              #  scope:'https://www.googleapis.com/auth/plus.login'
+              #}).then(() ->
+              $window.gapi.auth2.init().then( () -> 
+                LOAD_GAE_API = true
+                LOADING_GAE_API = false
+            
+                auth2 = $window.gapi.auth2.getAuthInstance()
+                auth2.isSignedIn.listen(updateSignIn)
+                auth2.then(updateSignIn)
+                q.resolve(true)
+                for oc in OBSERVER_CALLBACKS
+                  oc.resolve(true)
+                  
+                console.log("auth2 initialized")
               )
             )
-          return deferred.promise
-          
+          )
+        return q.promise
+      
+      _login = ->
+        q = $q.defer()
+        _get().then( () ->
+          if auth2.isSignedIn.get()
+            console.log("Already Signed in.")
+            updateSignIn()
+            q.resolve {
+              profile    : profile
+              data_token : token
+            }
+          else
+            console.log("Not signed in.")
+            q.reject "Not signed in."
+        )
+        q.promise
         
+      _logout = ->
+        q = $q.defer()
+        _get().then( () ->
+          auth2.signOut()
+          updateSignIn()
+          q.resolve "Successfuly signed out."
+        )
+        q.promise
+        
+      _isSignedIn = ->
+        q = $q.defer()
+        _get().then( () -> q.resolve(auth2.isSignedIn.get()) )
+        q.promise
+          
+      return {
+        get    : _get  
+        login  : _login
+        logout : _logout
+        isSignedIn : _isSignedIn
       }
   ]

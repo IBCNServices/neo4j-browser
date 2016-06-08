@@ -1,13 +1,8 @@
 .inner
   h4.subtitled
-    .sub(ng-if="!currentUser") Neo4j Browser Sync
+    .sub(ng-if="!currentUser") Current Tengu User
     .sub(ng-if="currentUser") {{currentUser.name}}
-      small(ng-if='syncService.inSync && currentUser') Synced&nbsp;
-        span(am-time-ago='syncService.lastSyncedAt')
-      small.error(ng-if='!syncService.inSync && currentUser', ng-click='syncService.push()')
-        a Out of sync
-      small(ng-show='syncService.hasConnection') Connected
-      small(ng-hide='syncService.hasConnection') Not Connected
+      small Connected
 
   h5(ng-if="currentUser") Versions
   div(ng-if="currentUser")

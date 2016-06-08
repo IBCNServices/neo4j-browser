@@ -5,43 +5,24 @@ div(ng-controller="GoogleConnectionController")
       .view-result
         article.help
           .container-fluid
-            .section.row-fluid.summary(ng-show="!signed_in")
+            .section.row-fluid.summary(ng-hide="user != null")
               .summary.col-sm-3
                 h3 Please Sign in with your Google Account
                 p.lead
-                  | Almost all calls to Tengu's Sojobo requires an authenticated connection.
+                  | Almost all calls to Tengu's Sojobo require an authenticated connection.
               .details.col-sm-9
-                .form
-                  .row
-                    .col-sm-5
-                      br
-                      //div.g-signin2(data-onsuccess="onSignIn", data-theme="dark")
-                      .gConnect
-                        .signin-button
-                      button.btn.btn-default(id="sign_in", ng-click="signIn($event)", style="margin: 0") Connect
-            .section.row-fluid.summary(ng-if="static_is_authenticated && !password_change_required && !static_user")
-              .summary.col-sm-3
-                h3 Connection to iMinds Authority Service
-                p.lead
-                  | Connected.
-              .details.col-sm-9
-                p Connected to iMinds Authority Service (no further auth required).
-            .section.row-fluid.summary(ng-show="static_is_authenticated && !password_change_required && static_user")
-              .summary.col-sm-3
-                h3 Connected to iMinds Authority Service
-                p.lead
-                  | Nice to meet you.
-              .details.col-sm-9
-                p
-                ul.big.undecorated
-                  li
-                    span.center-tbl-left-col.inline
-                      | You are connected as user:&nbsp;
-                    code
-                      | {{static_user}}
-                  li
-                    p.lead {{policy_message}}
+                //div.g-signin2(data-onsuccess="onSignIn", data-theme="dark")
+                #signin
+            .section.row-fluid.summary(ng-show="user != null")
+              pre(output-raw = "user", ng-hide="frame.hasErrors")
       .status-bar(ng-class='{error: frame.detailedErrorText, loading: frame.isLoading}')
         .status(ng-show="frame.detailedErrorText")
           .fa.fa-exclamation-triangle.icon-warning-sign &nbsp;
           {{frame.detailedErrorText}}
+          div(ng-hide='frame.hasErrors')
+            div(ng-show='frame.response')
+              .fa.fa-ok
+              | Logged in as {{frame.response.name}} ({{frame.response.identities[0].provider}})
+        span(ng-show='frame.isLoading')
+          .fa.fa-spinner.fa-spin
+          | Initated login...
