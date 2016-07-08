@@ -6,8 +6,8 @@
 
 angular.module('neo4jApp.controllers')
   .controller 'HauchiwaController', [
-    '$scope', 'Settings', 'ConnectionStatusService', '$http', '$timeout', '$base64'
-  ($scope, Settings, ConnectionStatusService, $http, $timeout, $base64) ->
+    '$scope', 'Settings', 'ConnectionStatusService', '$http', '$timeout', '$base64', 'CurrentUser'
+  ($scope, Settings, ConnectionStatusService, $http, $timeout, $base64, CurrentUser) ->
 
     $scope.hauchiwa = "unknown"
     $scope.status = "init"
@@ -71,6 +71,7 @@ angular.module('neo4jApp.controllers')
             req = {
               "method"  : "GET"
               "url"     : hauchiwa_rooturl
+              "header"  : {"id_token" : CurrentUser.getToken('data_token')}
             }
 
             $http(req).then(
@@ -88,8 +89,10 @@ angular.module('neo4jApp.controllers')
                     $scope.hauchiwa_url = hauchiwa_rooturl
                     console.log("Multiple models available.")
                 else if response.data? and response.data == "Welcome to Hauchiwa API v0.1"
-                  $scope.status = "error"
-                  $scope.frame.setError "The Hauchiwa still has the old version."
+                  $scope.status = "bundle-check"
+                  $scope.hauchiwa_url = hauchiwa_rooturl + "/status"
+                  console.log("The Hauchiwa still has the old version, using: "+$scope.hauchiwa_url)
+                  refreshLater()
                 else
                   $scope.status = "error"
                   $scope.frame.setError "Could not retrieve models from the Hauchiwa."
@@ -116,6 +119,7 @@ angular.module('neo4jApp.controllers')
         req = {
           "method"  : "GET"
           "url"     : $scope.sojobo_url
+          "header"  : {"id_token" : CurrentUser.getToken('data_token')}
         }
 
         $http(req).then(
@@ -135,6 +139,7 @@ angular.module('neo4jApp.controllers')
         req = {
           "method"  : "GET"
           "url"     : $scope.hauchiwa_url
+          "header"  : {"id_token" : CurrentUser.getToken('data_token')}
         }
         $http(req).then(
           (response) ->

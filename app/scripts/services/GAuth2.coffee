@@ -53,9 +53,9 @@ angular.module('neo4jApp.services')
       updateSignIn = () ->
         console.log('update sign in state')
         if (auth2.isSignedIn.get())
-          onSignIn()
+          CurrentUser.login()
         else
-          onSignOut()
+          CurrentUser.logout()
         
       _get = () ->
         q = $q.defer()
@@ -76,8 +76,8 @@ angular.module('neo4jApp.services')
                 LOADING_GAE_API = false
             
                 auth2 = $window.gapi.auth2.getAuthInstance()
-                auth2.isSignedIn.listen(updateSignIn)
-                auth2.then(updateSignIn)
+                #auth2.isSignedIn.listen(updateSignIn)
+                #auth2.then(updateSignIn)
                 q.resolve(true)
                 for oc in OBSERVER_CALLBACKS
                   oc.resolve(true)
@@ -93,9 +93,10 @@ angular.module('neo4jApp.services')
         _get().then( () ->
           if auth2.isSignedIn.get()
             console.log("Already Signed in.")
-            updateSignIn()
+            onSignIn()
             q.resolve {
               profile    : profile
+              token      : token
               data_token : token
             }
           else
@@ -108,7 +109,7 @@ angular.module('neo4jApp.services')
         q = $q.defer()
         _get().then( () ->
           auth2.signOut()
-          updateSignIn()
+          onSignOut()
           q.resolve "Successfuly signed out."
         )
         q.promise

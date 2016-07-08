@@ -6,8 +6,8 @@
 
 angular.module('neo4jApp.controllers')
   .controller 'HauchiwaCreateController', [
-    '$scope', 'Settings', 'ConnectionStatusService', '$http', '$timeout', '$base64', 'Frame'
-  ($scope, Settings, ConnectionStatusService, $http, $timeout, $base64, Frame) ->
+    '$scope', 'Settings', 'ConnectionStatusService', '$http', '$timeout', '$base64', 'Frame', 'CurrentUser'
+  ($scope, Settings, ConnectionStatusService, $http, $timeout, $base64, Frame, CurrentUser) ->
     $scope.newHauchiwa = ''
     $scope.ssh_key = ''
     $scope.bundle = ''
@@ -53,11 +53,12 @@ angular.module('neo4jApp.controllers')
       $scope.bundle = $scope.bundle.replace(/{{s4cert}}/g, $scope.certificate)
       
       if $scope.modelName
+        console.log(CurrentUser.getToken('token'))
         req = {
           "method"  : "GET"
           "url"     : "#{Settings.endpoint.bundles}/#{$scope.modelName}.yaml"
-          "headers" :
-            "Accept" : "plain/text"
+          "headers" : 
+            "Accept"   : "plain/text"
         }
 
         $http(req).then(
@@ -81,7 +82,10 @@ angular.module('neo4jApp.controllers')
       req = {
         "method"  : "PUT"
         "url"     : $scope.sojobo_url
-        "headers" : { "Content-Type" : "text/plain"}
+        "headers" : { 
+          "Content-Type" : "text/plain"
+          "id_token"     : CurrentUser.getToken('data_token')
+        }
         "data"    : $scope.bundle
       }
 

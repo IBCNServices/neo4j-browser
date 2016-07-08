@@ -26,16 +26,13 @@ angular.module('neo4jApp.services')
   'Editor'
   'GeniAuthService'
   'GAuth2'
-  #'NTN'
   'localStorageService'
   'AuthDataService'
-  #'jwtHelper'
   '$q'
+  '$window'
   '$rootScope'
-  #'UsageDataCollectionService'
   'DefaultContentService'
-  #'GraphStyle'
-  (Settings, Editor, AuthService, GAuth2, localStorageService, AuthDataService, $q, $rootScope, DefaultContentService) ->
+  (Settings, Editor, AuthService, GAuth2, localStorageService, AuthDataService, $q, $window, $rootScope, DefaultContentService) ->
     class CurrentUser
       _user: {}
       store: null
@@ -165,11 +162,42 @@ angular.module('neo4jApp.services')
 
       isAuthenticated: -> localStorageService.get 'ntn_data_token'
 
+      ###
+      updateSignIn: () ->
+        console.log('update sign in state changed')
+        that = @
+        console.log(that)
+        GAuth2.isSignedIn().then( (res) ->
+          if (res)
+            that.login()
+          else
+            that.logout()
+        )
+      ###
+
       init: ->
         ##NTN.connection()
+        q = $q.defer()
+        that = @
         console.log("init called")
-        @loadUserFromLocalStorage()
+        console.log(that)
+        GAuth2.get().then( () ->
+          auth2 = $window.gapi.auth2.getAuthInstance()
+          auth2.isSignedIn.listen(updateSignIn)
+          auth2.then(updateSignIn)
+          q.resolve("All listeners set.")
+        )
+        q.promise
         
+    updateSignIn = () ->
+      console.log('update sign in state changed')
+      GAuth2.isSignedIn().then( (res) ->
+        if (res)
+          cu.login()
+        else
+          cu.logout()
+      )
+
 
     cu = new CurrentUser
     cu
