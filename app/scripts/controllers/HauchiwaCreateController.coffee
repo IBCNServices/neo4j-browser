@@ -37,8 +37,10 @@ angular.module('neo4jApp.controllers')
 
       if not $scope.newHauchiwa.length
         $scope.frame.addErrorText 'You have to enter a name for the Hauchiwa. '
+        $scope.status = "start"
       if not $scope.bundle.length
         $scope.frame.addErrorText 'The bundle description is still not loaded. '
+        $scope.status = "start"
       return if $scope.frame.getDetailedErrorText().length
 
       $scope.sojobo_url = Settings.endpoint.tengu + "/" + Settings.sojobo_models[0] + "/"

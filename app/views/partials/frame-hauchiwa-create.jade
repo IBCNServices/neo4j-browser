@@ -1,7 +1,12 @@
 article.help(ng-controller="HauchiwaCreateController")
   .container-fluid
     .section.row-fluid.summary(ng-hide="status == 'creating'")
-      .summary.col-sm-3
+      .summary.col-sm-3(ng-hide="modelName == ''")
+        h3 Create a new <code>{{modelName}}</code> model
+        p.lead
+          | You need to give your model a unique name.
+          | To be able to log into your nodes, you have to provide an SSH key as well.
+      .summary.col-sm-3(ng-show="modelName == ''")
         h3 Create a new Hauchiwa
         p.lead
           | You have to set the name of the new Hauchiwa.
@@ -10,7 +15,10 @@ article.help(ng-controller="HauchiwaCreateController")
         .form
           .row
             .col-sm-5
-              | Name of the new Hauchiwa
+              p(ng-hide="modelName == ''")
+                | Name of the new Model
+              p(ng-show="modelName == ''")
+                | Name of the new Hauchiwa
               br
               input.form-control(type='text', on-enter="focus", on-enter-target-id="ssh_key", ng-model="newHauchiwa", style="margin: 0", tabindex="1")
               br
@@ -22,16 +30,19 @@ article.help(ng-controller="HauchiwaCreateController")
               br
           .row
             .col-sm-5
-              button.btn.btn-default(id="deploy_bundle", ng-disabled="status != 'start'", ng-click="createHauchiwa()", style="margin: 0", ) Create Hauchiwa
-              img(src="images/ajax_loader.gif", ng-show="status != 'start'")
+              button.btn.btn-default(id="deploy_bundle", ng-hide="status != 'start'", ng-click="createHauchiwa()", style="margin: 0", ) Start
+              .fa.fa-spinner.fa-spin.fa-2x(ng-show="status != 'start'")
     .section.row-fluid.summary(ng-show="status == 'creating'")
-      p.lead 
+      p.lead(ng-hide="modelName == ''")
+        | Your Model <code>{{newHauchiwa}}</code> is being created. 
+        | This might take a while, sit back and relax.
+      p.lead(ng-show="modelName == ''")
         | Your Hauchiwa <code>{{newHauchiwa}}</code> is being created. 
         | This might take a while, sit back and relax.
       p
         h4 What's next?
         p
-          Check the status of your Hauchiwa: <code ng-click="checkStatus()">:tengu hauchiwa status {{newHauchiwa}}</code>
+          Check the status of your deployment: <code ng-click="checkStatus()">:tengu hauchiwa status {{newHauchiwa}}</code>
           p
             ul
               li 
