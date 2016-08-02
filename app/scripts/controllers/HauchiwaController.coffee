@@ -6,13 +6,17 @@
 
 angular.module('neo4jApp.controllers')
   .controller 'HauchiwaController', [
-    '$scope', 'Settings', 'ConnectionStatusService', '$http', '$timeout', '$base64'
-  ($scope, Settings, ConnectionStatusService, $http, $timeout, $base64) ->
+    '$rootScope', '$scope', 'Settings', 'ConnectionStatusService', '$http', '$timeout', '$base64'
+  ($rootScope, $scope, Settings, ConnectionStatusService, $http, $timeout, $base64) ->
 
     $scope.hauchiwa = "unknown"
     $scope.status = "init"
     $scope.frame.resetError()
     $scope.autoRefresh = true
+    
+    $scope.availableModes = ['hauchiwa']
+    $scope.tab = $rootScope.stickyTab
+    $scope.tab = 'hauchiwa'
 
     $scope.$watch 'frame.response', (resp) ->
       return unless resp
@@ -38,6 +42,8 @@ angular.module('neo4jApp.controllers')
             lookForHauchiwa(resp.data)
           else
             $scope.status = "bundle-check"
+            $scope.availableModes.push('graph')
+            $scope.availableModes.push('table')
             if resp.data.services?
               $scope.hauchiwa_url = $scope.location
               $scope.hauchiwa = resp.data.environment
@@ -84,6 +90,8 @@ angular.module('neo4jApp.controllers')
                   $scope.hauchiwa_models = response.data.models
                   if $scope.hauchiwa_models.length == 1
                     $scope.status = "bundle-check"
+                    $scope.availableModes.push('graph')
+                    $scope.availableModes.push('table')
                     $scope.model =  $scope.hauchiwa_models[0]  
                     $scope.hauchiwa_url = hauchiwa_rooturl + "/" + $scope.model
                     console.log("Only one model present: " + $scope.hauchiwa_url)
@@ -111,10 +119,22 @@ angular.module('neo4jApp.controllers')
           refreshLater()
           
     $scope.selectModel = () ->
-      $scope.status = "bundle-check"  
+      $scope.status = "bundle-check"
+      $scope.availableModes.push('graph')
+      $scope.availableModes.push('table')
       $scope.hauchiwa_url = $scope.hauchiwa_url + "/" + $scope.model
       console.log("User selected model["+$scope.model+"]: " + $scope.hauchiwa_url)
       refreshLater()
+      
+    $scope.setActive = (tab) ->
+      #tab ?= if $scope.tab is 'graph' then 'table' else 'graph'
+      $rootScope.stickyTab = $scope.tab = tab
+
+    $scope.isActive = (tab) ->
+      tab is $scope.tab
+
+    $scope.isAvailable = (tab) ->
+      tab in $scope.availableModes
 
     refreshHauchiwa = () ->
       if $scope.status != "error" and $scope.status != "bundle-check"

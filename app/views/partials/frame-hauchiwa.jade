@@ -1,3 +1,24 @@
+.left-frame-toggle
+  .left-toggle-menu.toggle(ng-if='availableModes.length > 0')
+    .btn-group.toggle-buttons
+      .button-holder(ng-show="isAvailable('hauchiwa')")
+        button.btn(ng-class='{active: isActive("hauchiwa")}', ng-click='setActive("hauchiwa")')
+          i.nf.nf-logo
+          span.mini-menu-item-text Hauchiwa
+        br
+      .button-holder(ng-show="isAvailable('graph')")
+        button.btn(ng-class='{active: isActive("graph")}', ng-click='setActive("graph")')
+          i.fa.fa-table
+          span.mini-menu-item-text Model Graph
+        br
+      .button-holder(ng-show="isAvailable('table')")
+        button.btn(ng-class='{active: isActive("table")}', ng-click='setActive("table")')
+          i.fa.fa-table
+          span.mini-menu-item-text Model Table
+.right-inner-frame.no-indicator(ng-class='{"no-left-menu": frame.type != "cypher" || availableModes.length < 1}')
+  .inner
+    .view-result(ng-class='{error: frame.hasErrors}')
+
 article.help(ng-controller="HauchiwaController")
   .container-fluid
     .section.row-fluid.summary(ng-show="status == 'init'")

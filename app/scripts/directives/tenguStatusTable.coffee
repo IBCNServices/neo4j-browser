@@ -1,0 +1,99 @@
+###!
+Copyright (c) 2002-2016 "Neo Technology,"
+Network Engine for Objects in Lund AB [http://neotechnology.com]
+
+This file is part of Neo4j.
+
+Neo4j is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+###
+
+'use strict';
+angular.module('neo4jApp.directives')
+  .directive('tenguStatusTable', ['Utils', (Utils) ->
+      replace: yes
+      restrict: 'E'
+      link: (scope, elm, attr) ->
+        emptyMarker = ->
+          '<em>(empty)</em>'
+
+        unbind = scope.$watch attr.tableData, (result) ->
+          return unless result
+          elm.html(render(result))
+          unbind()
+
+        json2html = (obj) ->
+          return emptyMarker() unless Object.keys(obj).length
+          html  = "<table class='json-object'><tbody>"
+          html += "<tr><th>#{k}</th><td>#{cell2html(v)}</td></tr>" for own k, v of obj
+          html += "</tbody></table>"
+          html
+
+        cell2html = (cell) ->
+          if angular.isString(cell)
+            return emptyMarker() unless cell.length
+            Utils.escapeHTML(cell)
+          else if angular.isArray(cell)
+            "["+((cell2html(el) for el in cell).join(', '))+"]"
+          else if angular.isObject(cell)
+            json2html(cell)
+          else
+            Utils.escapeHTML(JSON.stringify(cell))
+
+        # Manual rendering function due to performance reasons
+        # (repeat watchers are expensive)
+        render = (result) ->
+          html  = "<h3>Environment: "+result.environment+"</h3>"
+          
+          #Services
+          html += "<h4>Services</h4>"
+          html += "<table class='table data'>"
+          html += "<thead><tr><th>Name</th><th>Status</th><th>Exposed</th><th>Charm</th><th>Units</th></tr></thead>"
+          html += "<tbody>"
+          angular.forEach(result.services, (service, key_s) ->
+            html += "<tr>"
+            html += "<td>" + key_s + "</td>"
+            html += "<td>" + service["service-status"].current + "</td>"
+            html += "<td>" + service.exposed + "</td>"
+            html += "<td>" + service.charm + "</td>"
+            #html += "<td>" + cell2html(service.units) + "</td>"
+            html += "<td><ul>"
+            angular.forEach(service.units, (unit, key_u) ->
+              html += "<li>" + key_u + " <code><small>" + unit["workload-status"].message + "</small></code></li>"
+            )
+            html += "</ul></td>"
+            html += "</tr>"
+          )
+          html += "</tbody>"
+          html += "</table>"
+          
+          #Machines
+          html += "<h4>Machines</h4>"
+          html += "<table class='table data'>"
+          html += "<thead><tr><th>ID</th><th>State</th><th>Version</th><th>Series</th><th>Hardware</th></tr></thead>"
+          html += "<tbody>"
+          angular.forEach(result.machines, (machines, key_m) ->
+            html += "<tr>"
+            html += "<td>" + key_m + "</td>"
+            html += "<td>" + machines["agent-state"] + "</td>"
+            html += "<td>" + machines["agent-version"] + "</td>"
+            html += "<td>" + machines.series + "</td>"
+            html += "<td>" + machines.hardware + "</td>"
+            html += "</tr>"
+          )
+          html += "</tbody>"
+          html += "</table>"
+          
+          html
+
+  ])
