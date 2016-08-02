@@ -3,18 +3,19 @@ article.help
     section.row-fluid.summary
       .summary.col-sm-3
         h3 Server
-        p.lead Server connection management
+        p.lead Sojobo connection management
       .details.col-sm-9
         p
           | The &nbsp;
           code :server
-          |  command lets you manage the connection to Neo4j, such as connecting, disconnecting and viewing metadata for the current connection.
+          |  command lets you manage the connection to Tengu's Sojobo, such as connecting, disconnecting. 
+          | At this moment the command manages how the user maps to the iMinds authority service.      
         table.table-condensed.table-help
           tr
             th Usage:
             td
-              code :server &lt;action&gt;
-          tr
+              code :server &lt;auth&gt;
+          //tr
             th Actions:
             td
               a(server-topic="status") :server status

@@ -3,13 +3,12 @@ article.help
     section.row-fluid.summary
       .summary.col-sm-3
         h3 Commands
-        p.lead Typing commands is 1337
       .details.col-sm-9
         p
-          | In addition to composing and running Cypher queries, the editor bar up above &uarr;
-          | understands a few client-side commands, which begin with a&nbsp;
+          | The editor bar up above &uarr; understands a few client-side commands, which begin with a&nbsp;
           code :
-          | . Without a colon, we'll assume you're trying to enter a Cypher query.
+          | . In contrast to the Neo4j Browser, the Open Source Tengu UI does not support (yet) typing
+          | commands without a colon.
         table.table-condensed.table-help
           tr
             th Information:
@@ -17,26 +16,20 @@ article.help
               a(help-topic="help") :help help
               a(help-topic="play") :help play
           tr
-            th Server connection:
+            th Tengu:
+            td
+              a(help-topic="tengu hauchiwa") :help tengu hauchiwa
+              a(help-topic="tengu model") :help tengu model
+          tr
+            th Sojobo connectivity:
             td
               a(help-topic="server") :help server
-          tr
-            th REST:
-            td
-              a(help-topic='rest-get') :help REST GET
-              a(help-topic='rest-post') :help REST POST
-              a(help-topic='rest-put') :help REST PUT
-              a(help-topic='rest-delete') :help REST DELETE
-          tr
-            th Database:
-            td
-              //- a(click-to-code="':profile'")  :profile
-              a(help-topic="schema") :help schema
+              &nbsp;
+              | (This will drastically change in future releases)
           tr
             th Editor:
             td
               a(help-topic="clear") :help clear
-              //- a(click-to-code="':keys'")  :keys
           tr
             th Command history:
             td

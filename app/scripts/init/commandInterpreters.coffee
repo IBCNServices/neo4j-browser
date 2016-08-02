@@ -462,21 +462,6 @@ angular.module('neo4jApp')
           q.promise.reject = q.reject
           q.promise
       ]
-
-    # Fallback interpretor
-    # offer some advice
-    #  FrameProvider.interpreters.push
-    #    type: 'help'
-    #    matches: -> true
-    #    templateUrl: 'views/frame-help.html'
-    #    exec: ['$http', ($http) ->
-    #      (input, q) ->
-    #        url = "content/help/unknown.html"
-    #        $http.get(url)
-    #        .success(->q.resolve(page: url))
-    #        .error(->q.reject(error("No such help section")))
-    #        q.promise
-    #    ]
       
     # Tengu model create handler
     FrameProvider.interpreters.push
@@ -637,7 +622,7 @@ angular.module('neo4jApp')
       matches: "#{cmdchar}tengu hauchiwa"
       exec: ['Frame', (Frame) ->
         (input, q) ->
-          Frame.create {input: "#{Settings.cmdchar}tengu bundle blank"}
+          Frame.create {input: "#{Settings.cmdchar}tengu hauchiwa create"}
           return true
       ]
 

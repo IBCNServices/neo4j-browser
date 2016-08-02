@@ -6,14 +6,15 @@ article.help
         p.lead What is all this?
       .details.col-sm-9
         p
-          | Neo4j Browser is a command shell. Use the editor bar up above &uarr; to
-          | enter Cypher queries or client-side commands. Each command will produce
-          | a "frame" like this one in the result stream.
+          | The Tengu Open Source UI is based on the Neo4j Browser.
+          | It uses the same mechanism as the Neo4j Browser: the command shell. 
+          | Use the editor bar up above &uarr; to enter client-side commands. 
+          | Each command will produce a "frame" like this one in the result stream.
         p Use the&nbsp;
           code :help
-          |  command to learn about other topics.
+          | command to learn about other topics.
         p
-          | New to Neo4j? Try one of the guides to learn the basics.
+          | New to Tengu? Try one of the guides to learn the basics.
 
         table.table-condensed.table-help
           tr
@@ -23,34 +24,24 @@ article.help
           tr
             th Topics:
             td
-              a(help-topic="cypher") :help cypher
-              | &nbsp;
               a(help-topic="commands") :help commands
-              | &nbsp;
-              a(help-topic="keys") :help keys
           tr
             th Guides:
             td
-              a(play-topic="intro") :play intro
-              | &nbsp;
-              a(play-topic="graphs") :play graphs
-              | &nbsp;
-              a(play-topic="cypher") :play cypher
+              a(play-topic="tengu") :play tengu
           tr
-            th Examples:
+            th Example models:
             td
-              a(play-topic="movie graph") :play movie graph
-              | &nbsp;
-              a(play-topic="northwind graph") :play northwind graph
-              | &nbsp;
-              a(play-topic="query template") :play query template
+              a(tengu-model="storm") :tengu model create storm
+              br
+              a(tengu-model="spark") :tengu model create spark
+              br
+              a(play-topic="cityot") :tengu model create cityot
           tr
             th Reference:
             td
-              a(href="{{ neo4j.version | neo4jDeveloperDoc }}/") Neo4j Manual
+              a(href="http://www.tengu.io") Tengu Product website
               br
-              a(href="http://neo4j.com/developer") Neo4j Developer Pages
-              br
-              a(href="{{ neo4j.version | neo4jCypherRefcardDoc }}/") Cypher Refcard
+              a(href="http://tengu.intec.ugent.be") Tengu Academic website
 
 

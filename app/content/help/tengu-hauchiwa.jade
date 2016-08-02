@@ -1,0 +1,23 @@
+article.help
+  .container-fluid
+    section.row-fluid.summary
+      .summary.col-sm-3
+        h3 Tengu Hauchiwa
+        p.lead
+      .details.col-sm-9
+        p
+          | The &nbsp;
+          code :tengu hauchiwa
+          |  command lets you manage Tengu Hauchiwas. An Hauchiwa is used to control one or more Tengu models.
+          | Via an Hauchiwa a user can easily connect to the services of its deployed models.
+        table.table-condensed.table-help
+          tr
+            th Usage:
+            td
+              code :tengu hauchiwa &lt;action&gt;
+          tr
+            th Actions:
+            td
+              a(hauchiwa-topic="create") :tengu hauchiwa create
+              | &nbsp;
+              a(click-to-command=":tengu hauchiwa status &lt;name|url&gt;") :tengu hauchiwa status &lt;name|url&gt;
