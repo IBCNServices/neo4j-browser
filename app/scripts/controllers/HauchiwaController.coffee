@@ -71,7 +71,7 @@ angular.module('neo4jApp.controllers')
             req = {
               "method"  : "GET"
               "url"     : hauchiwa_rooturl
-              "header"  : {"id_token" : CurrentUser.getToken('data_token')}
+              "headers"  : {"id-token" : CurrentUser.getToken('data_token')}
             }
 
             $http(req).then(
@@ -119,7 +119,7 @@ angular.module('neo4jApp.controllers')
         req = {
           "method"  : "GET"
           "url"     : $scope.sojobo_url
-          "header"  : {"id_token" : CurrentUser.getToken('data_token')}
+          "headers"  : {"id-token" : CurrentUser.getToken('data_token')}
         }
 
         $http(req).then(
@@ -139,7 +139,7 @@ angular.module('neo4jApp.controllers')
         req = {
           "method"  : "GET"
           "url"     : $scope.hauchiwa_url
-          "header"  : {"id_token" : CurrentUser.getToken('data_token')}
+          "headers"  : {"id-token" : CurrentUser.getToken('data_token')}
         }
         $http(req).then(
           (response) ->

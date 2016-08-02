@@ -34,9 +34,11 @@ angular.module('neo4jApp.settings', ['neo4jApp.utils'])
       transaction: "#{restAPI}/transaction"
       authUser: "#{baseURL}/user"
       tengu: "http://193.190.127.184:29035"
-      bundles: "https://raw.githubusercontent.com/IBCNServices/tengu-bundles/master"
+      hauchiwaBundle: "https://api.jujucharms.com/charmstore/v5/~tengu-bot/sojobo/archive/hauchiwa.yaml.template"
+      bundles: "https://api.jujucharms.com/charmstore/v5/~tengu-bot/{{bundlename}}/archive/bundle.yaml"
     needAuthZ: true
     useSojobo: true
+    featureflags: 'FEATURE_FLAG_AUTH'
     host: baseURL
     maxExecutionTime: 3600 # in seconds
     heartbeat: 60 # in seconds

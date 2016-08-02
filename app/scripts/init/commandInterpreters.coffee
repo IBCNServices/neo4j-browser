@@ -523,9 +523,9 @@ angular.module('neo4jApp')
           else if GeniAuthService.hasValidAuthorization()
             req = {
               "method"  : "GET"
-              "url"     : "#{Settings.endpoint.bundles}/hauchiwa.yaml"
+              "url"     : "#{Settings.endpoint.hauchiwaBundle}"
               "headers" :
-                "Accept" : "plain/text"
+                "Accept" : "text/plain"
             }
 
             $http(req).then(
@@ -560,13 +560,14 @@ angular.module('neo4jApp')
             hauchiwaName = topicalize(input[('tengu hauchiwa create'.length+1)..]) or 'blank'
             req = {
               "method"  : "GET"
-              "url"     : "#{Settings.endpoint.bundles}/hauchiwa.yaml"
+              "url"     : "#{Settings.endpoint.hauchiwaBundle}"
               "headers" :
-                "Accept" : "plain/text"
+                "Accept" : "text/plain"
             }
 
             $http(req).then(
               (response) ->
+                console.log(response.data)
                 q.resolve(
                   hauchiwaName: hauchiwaName
                   bundle: response.data
@@ -588,7 +589,7 @@ angular.module('neo4jApp')
       matches:  (input) ->
         pattern = new RegExp("^#{cmdchar}tengu hauchiwa status")
         input.match(pattern)
-      exec: ['GeniAuthService', 'Settings', '$http', (GeniAuthService, Settings, $http) ->
+      exec: ['GeniAuthService', 'CurrentUser', 'Settings', '$http', (GeniAuthService, CurrentUser, Settings, $http) ->
         (input, q) ->
           topic = topicalize(input[('tengu hauchiwa status'.length+1)..]) or 'blank'
           if topic != 'blank'
@@ -606,7 +607,11 @@ angular.module('neo4jApp')
             req = {
               "method"  : "GET"
               "url"     : url
+              "headers"  : {"id-token" : CurrentUser.getToken('data_token')}
             }
+            
+            console.log req
+            
 
             $http(req).then(
               (response) ->

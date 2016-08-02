@@ -67,17 +67,11 @@ angular.module('neo4jApp.services')
           LOADING_GAE_API = true
           loadScript(URL).then( () ->
             $window.gapi.load('auth2', () ->
-              #$window.gapi.auth2.init({
-              #  fetch_basic_profile: true
-              #  scope:'https://www.googleapis.com/auth/plus.login'
-              #}).then(() ->
               $window.gapi.auth2.init().then( () -> 
                 LOAD_GAE_API = true
                 LOADING_GAE_API = false
             
                 auth2 = $window.gapi.auth2.getAuthInstance()
-                #auth2.isSignedIn.listen(updateSignIn)
-                #auth2.then(updateSignIn)
                 q.resolve(true)
                 for oc in OBSERVER_CALLBACKS
                   oc.resolve(true)
