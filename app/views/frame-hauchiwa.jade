@@ -6,18 +6,18 @@ div(ng-controller="HauchiwaController", fullscreen)
         .btn-group.toggle-buttons
           .button-holder(ng-show="isAvailable('hauchiwa')")
             button.btn(ng-class='{active: isActive("hauchiwa")}', ng-click='setActive("hauchiwa")')
-              i.nf.nf-logo
+              i.fa.fa-info
               span.mini-menu-item-text Hauchiwa
             br
           .button-holder(ng-show="isAvailable('graph')")
             button.btn(ng-class='{active: isActive("graph")}', ng-click='setActive("graph")')
-              i.fa.fa-table
-              span.mini-menu-item-text Model Graph
+              i.nf.nf-logo
+              span.mini-menu-item-text Graph
             br
           .button-holder(ng-show="isAvailable('table')")
             button.btn(ng-class='{active: isActive("table")}', ng-click='setActive("table")')
               i.fa.fa-table
-              span.mini-menu-item-text Model Table
+              span.mini-menu-item-text Table
     .right-inner-frame.no-indicator(ng-class='{"no-left-menu": availableModes.length < 1}')
       .inner
         .view-result(ng-class='{error: frame.hasErrors}')
