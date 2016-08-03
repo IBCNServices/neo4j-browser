@@ -55,9 +55,14 @@ angular.module('neo4jApp.controllers')
       $scope.bundle = $scope.bundle.replace(/{{s4cert}}/g, $scope.certificate)
       
       if $scope.modelName
+        # create hauchiwa with model
+        if $scope.modelName.startsWith('http://')
+          model_url = $scope.modelName
+        else
+          model_url = "#{Settings.endpoint.bundles}/#{$scope.modelName}.yaml"
         req = {
           "method"  : "GET"
-          "url"     : "#{Settings.endpoint.bundles}/#{$scope.modelName}.yaml"
+          "url"     : model_url
           "headers" :
             "Accept" : "plain/text"
         }
@@ -74,6 +79,7 @@ angular.module('neo4jApp.controllers')
             $scope.frame.setError "There was an error in creating the Hauchiwa."
         )
       else
+        # only create the hauchiwa
         $scope.bundle = $scope.bundle.replace(/{{bundle}}/g, "")
         deployHauchiwa()
       
