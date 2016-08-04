@@ -184,7 +184,7 @@ angular.module('neo4jApp.controllers')
         else
           console.log("No modelinfo service found. Only show the services.")
           createNodesAndLinks(services)
-          
+      
       createNodesAndLinksFromBundle = (services, bundleName) ->
         $http.get(Settings.endpoint.bundles + '/' + bundleName+'.map').
           success((graph) ->
@@ -294,8 +294,118 @@ angular.module('neo4jApp.controllers')
 
             $scope.force.nodes($scope.nodes).links($scope.links).on("tick", tick).on("end", end).start()
         )
+          
+      _createNodesAndLinksFromBundle = (services, bundleName) ->
+        $http.get(Settings.endpoint.bundles + '/' + bundleName+'.map').
+          success((graph) ->
+            relationships = []
+            
+            #handle logical nodes
+            for node in graph.nodes
+              node.logical = true
+              node.r = 40
+              node.cluster_p = []
+              $scope.nodes.push node
+              
+              #handle services that are part of a logical node
+              for service in node.services
+                if $scope.$parent.location == "local"
+                  key_s = $scope.$parent.hauchiwa.toLowerCase()+"-"+service.name
+                  ss = services[key_s]
+                else
+                  key_s = service.name
+                  if (services[key_s]?)
+                    ss = services[key_s]
+                  else 
+                    key_s = "hhh-" + service.name
+                    if services[key_s]?
+                      ss = services[key_s]
+                    else
+                      key_s = "NaS[" + service.name + "]"
+                delete services[key_s]
+
+                num_units = 0
+
+                if ss?
+                  angular.forEach(ss.units, (unit, key_u) ->
+                    node.cluster_p.push(getClusterP(unit))
+                    if node.port? and unit["open-ports"]? and unit["open-ports"].indexOf(node.port+'/tcp') != -1
+                      node.href = "http://"+unit["public-address"]+":"+node.port
+                      console.log(node.href)
+                    num_units++
+                  )
+                  angular.forEach(ss.relations, (relation, key_r) ->
+                    relationships.push
+                      source : key_s
+                      target : relation[0]
+                      label  : key_r
+                  )
+                
+                #already push relationship between logical node and its service  
+                $scope.links.push
+                  source  : node
+                  target  : service
+                  logical : false
+                  
+                service.logical = false
+                service.name = key_s
+                service.r = Math.min(5, num_units)*4 + 10
+                $scope.nodes.push service
+
+            #handle remaining services
+            angular.forEach(services, (service, key_s) ->
+              node = {
+                "name"      : key_s
+                "cluster_p" : []
+              }
+              
+              num_units = 0
+
+              angular.forEach(service.units, (unit, key_u) ->
+                node.cluster_p.push(getClusterP(unit))
+                num_units++
+              )
+              
+              angular.forEach(service.relations, (relation, key_r) ->
+                relationships.push
+                  source : key_s
+                  target : relation[0]
+                  label  : key_r
+              )
+
+              node.logical = false
+              node.r = Math.min(5, num_units)*4 + 10
+              $scope.nodes.push node
+            )
+
+            #handle logical relationships
+            for rel in graph.relationships
+              source = $scope.nodes.findIndex((n) -> n.name == rel.source)
+              target = $scope.nodes.findIndex((n) -> n.name == rel.target)
+              $scope.links.push
+                source  : source
+                target  : target
+                logical : true
+
+            #handle relationships between regular services
+            for rel in relationships
+              if rel.source != rel.target
+                source = $scope.nodes.findIndex((n) -> n.name == rel.source)
+                target = $scope.nodes.findIndex((n) -> n.name == rel.target)
+                $scope.links.push
+                  source  : source
+                  target  : target
+                  label   : rel.label
+                  logical : false
+
+            #$scope.force.drag().on("dragstart", () -> $scope.$apply(()->console.log("dragstart")))
+            
+            $scope.status = "show"
+
+            $scope.force.nodes($scope.nodes).links($scope.links).on("tick", tick).on("end", end).start()
+        )
       
-      createNodesAndLinks = (services) ->
+      _createNodesAndLinks = (services) ->
         relationships = []
         angular.forEach(services, (service, key_s) ->
           node = {

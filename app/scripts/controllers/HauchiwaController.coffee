@@ -6,8 +6,8 @@
 
 angular.module('neo4jApp.controllers')
   .controller 'HauchiwaController', [
-    '$rootScope', '$scope', 'Settings', 'ConnectionStatusService', '$http', '$timeout', '$base64'
-  ($rootScope, $scope, Settings, ConnectionStatusService, $http, $timeout, $base64) ->
+    '$rootScope', '$scope', 'Settings', 'ConnectionStatusService', '$http', '$timeout', '$base64', 'TenguGraphModel'
+  ($rootScope, $scope, Settings, ConnectionStatusService, $http, $timeout, $base64, TenguGraphModel) ->
 
     $scope.hauchiwa = "unknown"
     $scope.status = "init"
@@ -166,11 +166,115 @@ angular.module('neo4jApp.controllers')
             if $scope.hauchiwa == "unknown"
               console.log("Hauchiwa name not yet set")
               $scope.hauchiwa = response.data.environment
+              
             $scope.bundle = response.data
+            
+            if $scope.bundle.services.modelinfo?
+              req = {
+                "method"  : "GET"
+                "url"     : $scope.hauchiwa_url + "/modelinfo/config"
+              }
+              $http(req).then(
+                (response) ->
+                  if response.data.settings?
+                    if response.data.settings.type? and response.data.settings.type.value == "web-ui"
+                      console.log("This is a model created according to the web-ui's principles.")
+                      delete $scope.bundle.services.modelinfo
+                      $http.get(Settings.endpoint.bundles + '/' + response.data.settings.tag.value + '.map').
+                        success((mapping) ->
+                          $scope.bundleGraph = createBundleGraph($scope.bundle.services, mapping)
+                        )
+                , (r) ->
+                  console.log("Could not retrieve the config information of the model. So, only going to show the services.")
+                  delete $scope.bundle.services.modelinfo
+                  $scope.bundleGraph = createBundleGraph($scope.bundle.services, null)
+              )
+            else
+              console.log("No modelinfo service found. Only show the services.")
+              $scope.bundleGraph = createBundleGraph($scope.bundle.services, null)
+            
           , (r) ->
             $scope.status = "error"
             $scope.frame.setError "Could not retrieve the status information of the Hauchiwa."
         )
+        
+    createBundleGraph = (services, mapping) ->
+      graph = new neo.models.Graph()
+      nodes = []
+      relationships = []
+      
+      if mapping?
+        for node in mapping.nodes
+          node.id = nodes.length
+          node.logical = true
+          node.r = 40
+          node.cluster_p = []
+          nodes.push node
+          
+          for service in node.services
+            relationships.push
+              id      : relationships.length
+              source  : node.name
+              target  : service.name
+              logical : true
+        
+        for relation in mapping.relationships
+          relationships.push
+            id      : relationships.length
+            source  : relation.source
+            target  : relation.target
+            logical : true
+      
+      angular.forEach(services, (service, key_s) ->
+        node = 
+          id        : nodes.length
+          name      : key_s
+          cluster_p : []
+          logical   : false
+        
+        num_units = 0
+
+        angular.forEach(service.units, (unit, key_u) ->
+          switch unit["agent-status"].current
+            when "idle" then node.cluster_p.push(1)
+            else node.cluster_p.push(0)
+          
+          num_units++
+        )
+        node.r = Math.min(5, num_units)*4 + 10
+        
+        angular.forEach(service.relations, (relation, key_r) ->
+          relationships.push
+            id      : relationships.length
+            source  : key_s
+            target  : relation[0]
+            label   : key_r
+            logical : false
+        )
+
+        nodes.push node
+      )
+      
+      
+
+      nodes = nodes
+        .map(TenguGraphModel.convertNode())
+        .filter((node)-> return node)
+      graph.addNodes(nodes)
+      
+      for relation in relationships
+        if !graph.findNode(relation.source)?
+          graph.addNodes([new neo.models.Node(relation.source, ['Missing'], {0: relation.source})])
+        if !graph.findNode(relation.target)?
+          graph.addNodes([new neo.models.Node(relation.target, ['Missing'], {0: relation.target})])
+          
+      
+      relationships = relationships
+        .map(TenguGraphModel.convertRelationship(graph))
+        .filter((rel)-> return rel)
+      graph.addRelationships(relationships)
+      
+      graph
 
     $scope.refresh = () ->
       if $scope.status == "bundle-check"

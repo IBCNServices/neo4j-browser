@@ -5,17 +5,4 @@
     ul.list-unstyled.list-items
       li.inspector-footer-row(ng-repeat="row in Inspector.items", ng-include="row.tmpl", onload ="item = row.data")
 
-.inspector-footer(ng-if="Inspector.length == 0")
-  .inspector-footer-row
-    span {{ graphStatistics(frame) }}
-    .actions
-      .toggle(ng-click='toggleDisplayInternalRelationships()')
-        a.toggle-text Auto-complete
-        .switch
-          label
-            .switch-inner(ng-class="{right: displayInternalRelationships}")
-              span.right-text
-                | ON
-              .handle
-              span.left-text
-                | OFF
+
