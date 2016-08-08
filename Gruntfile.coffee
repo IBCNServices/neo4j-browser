@@ -288,6 +288,13 @@ module.exports = (grunt) ->
             cwd: "<%= yeoman.app %>"
             dest: "<%= yeoman.dist %>/fonts"
             src: ["components/**/*.{otf,woff,woff2,ttf,svg}"]
+          },
+          {
+            expand: true
+            dot: true
+            cwd: "<%= yeoman.app %>/lib"
+            dest: "<%= yeoman.dist %>/lib"
+            src: ["*.js"]
         }]
     shell:
       dirListing:
@@ -311,7 +318,8 @@ module.exports = (grunt) ->
   grunt.registerTask "server", ["clean:server", "coffee", "configureProxies:livereload", "stylus", "jade", "connect:livereload", "watch"]
   grunt.registerTask "server:tls", ["clean:server", "coffee", "configureProxies:livereloadhttps", "stylus", "jade", "connect:livereloadhttps", "watch"]
   grunt.registerTask "test", ["clean:server", "coffee", "connect:test", "karma", "exec:csv_test_prep"]
-  grunt.registerTask "build", ["clean:dist", "coffee", "test", "jade", "stylus", "useminPrepare", "concat", "copy", "imagemin", "cssmin", "htmlmin", "uglify", "rev", "usemin", "replace"]
+  #grunt.registerTask "build", ["clean:dist", "coffee", "test", "jade", "stylus", "useminPrepare", "concat", "copy", "imagemin", "cssmin", "htmlmin", "uglify", "rev", "usemin", "replace"]
+  grunt.registerTask "build", ["clean:dist", "coffee", "jade", "stylus", "useminPrepare", "concat", "copy", "imagemin", "cssmin", "htmlmin", "uglify", "rev", "usemin", "replace"]
   grunt.registerTask "server:dist", ["build", "configureProxies:dist", "connect:dist:keepalive"]
   grunt.registerTask "default", ["build"]
 
