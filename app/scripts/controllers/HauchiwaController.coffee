@@ -185,8 +185,7 @@ angular.module('neo4jApp.controllers')
                   if response.data.settings?
                     if response.data.settings['modelinfo-version']? and response.data.settings['modelinfo-version'].value == '2.0.0'
                       if response.data.settings['mapping']? and response.data.settings['mapping'].value != ""
-                        console.log(response.data.settings['mapping'].value)
-                        $scope.bundleGraph = createBundleGraph($scope.bundle.services, response.data.settings['mapping'].value)
+                        $scope.bundleGraph = createBundleGraph($scope.bundle.services, angular.fromJson(response.data.settings['mapping'].value))
                       else
                         console.log("There was no mapping present in the modelinfo (v. 2.0.0)")
                         $scope.bundleGraph = createBundleGraph($scope.bundle.services, null)
@@ -215,11 +214,12 @@ angular.module('neo4jApp.controllers')
         )
         
     createBundleGraph = (services, mapping) ->
+      console.log mapping
       graph = new neo.models.Graph()
       nodes = []
       relationships = []
       
-      if mapping?
+      if mapping? and mapping.nodes?
         for node in mapping.nodes
           node.id = nodes.length
           node.logical = true
@@ -227,19 +227,21 @@ angular.module('neo4jApp.controllers')
           node.cluster_p = []
           nodes.push node
           
-          for service in node.services
+          if node.services?
+            for service in node.services
+              relationships.push
+                id      : relationships.length
+                source  : node.name
+                target  : service.name
+                logical : true
+        
+        if mapping.relationships?
+          for relation in mapping.relationships
             relationships.push
               id      : relationships.length
-              source  : node.name
-              target  : service.name
+              source  : relation.source
+              target  : relation.target
               logical : true
-        
-        for relation in mapping.relationships
-          relationships.push
-            id      : relationships.length
-            source  : relation.source
-            target  : relation.target
-            logical : true
       
       angular.forEach(services, (service, key_s) ->
         node = 
