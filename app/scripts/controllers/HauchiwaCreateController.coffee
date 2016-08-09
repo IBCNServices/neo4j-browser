@@ -51,15 +51,15 @@ angular.module('neo4jApp.controllers')
           if j >= 0
             relation.splice(j, 1, "h-"+$scope.newHauchiwa)
       )
-      
+
       if $scope.ssh_key
-        $scope.bundle.services[$scope.newHauchiwa].options['ssh-keys'] = $scope.bundle.services[$scope.newHauchiwa].options['ssh-keys'].replace(/{{sshkeys}}/g, "," + $scope.ssh_key)
+        $scope.bundle.services["h-"+$scope.newHauchiwa].options['ssh-keys'] = $scope.bundle.services["h-"+$scope.newHauchiwa].options['ssh-keys'].replace(/{{sshkeys}}/g, "," + $scope.ssh_key)
       else
-        $scope.bundle.services[$scope.newHauchiwa].options['ssh-keys'] = $scope.bundle.services[$scope.newHauchiwa].options['ssh-keys'].replace(/{{sshkeys}}/g, "")
+        $scope.bundle.services["h-"+$scope.newHauchiwa].options['ssh-keys'] = $scope.bundle.services["h-"+$scope.newHauchiwa].options['ssh-keys'].replace(/{{sshkeys}}/g, "")
         
-      $scope.bundle.services[$scope.newHauchiwa].options['emulab-s4-cert'] = $scope.certificate
+      $scope.bundle.services["h-"+$scope.newHauchiwa].options['emulab-s4-cert'] = $scope.certificate
       
-      $scope.bundle.services[$scope.newHauchiwa].options['feature-flags'] = Settings.featureflags
+      $scope.bundle.services["h-"+$scope.newHauchiwa].options['feature-flags'] = Settings.featureflags
       
       if $scope.modelName
         console.log(CurrentUser.getToken('token'))
@@ -74,7 +74,7 @@ angular.module('neo4jApp.controllers')
 
         $http(req).then(
           (response) ->
-            $scope.bundle.services[$scope.newHauchiwa].options['bundle'] = $base64.encode(response.data)
+            $scope.bundle.services["h-"+$scope.newHauchiwa].options['bundle'] = $base64.encode(response.data)
             $scope.frame.resetError()
             $scope.focusEditor()
             deployHauchiwa()
