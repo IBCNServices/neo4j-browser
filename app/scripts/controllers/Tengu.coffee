@@ -12,10 +12,10 @@ angular.module('neo4jApp.controllers')
     'Settings'
     ($scope, GeniAuthService, Frame, Settings) ->
       $scope.static_is_authenticated = GeniAuthService.hasValidAuthorization()
-
-      $scope.authenticate = () ->
-        $scope.frame.resetError()
+      
+      if (!$scope.static_is_authenticated)
         Frame.createOne({input:"#{Settings.cmdchar}server connect"})
+        
 
       $scope.bundle = (bundle) ->
         $scope.frame.resetError()

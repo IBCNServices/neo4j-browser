@@ -1,0 +1,28 @@
+div(ng-controller="GoogleConnectionController")
+  .outer
+    include partials/frame-common-actions
+    .inner
+      .view-result
+        article.help
+          .container-fluid
+            .section.row-fluid.summary(ng-hide="user != null")
+              .summary.col-sm-3
+                h3 Please Sign in with your Google Account
+                p.lead
+                  | Almost all calls to Tengu's Sojobo require an authenticated connection.
+              .details.col-sm-9
+                //div.g-signin2(data-onsuccess="onSignIn", data-theme="dark")
+                #signin
+            .section.row-fluid.summary(ng-show="user != null")
+              pre(output-raw = "user", ng-hide="frame.hasErrors")
+      .status-bar(ng-class='{error: frame.detailedErrorText, loading: frame.isLoading}')
+        .status(ng-show="frame.detailedErrorText")
+          .fa.fa-exclamation-triangle.icon-warning-sign &nbsp;
+          {{frame.detailedErrorText}}
+          div(ng-hide='frame.hasErrors')
+            div(ng-show='frame.response')
+              .fa.fa-ok
+              | Logged in as {{frame.response.name}} ({{frame.response.identities[0].provider}})
+        span(ng-show='frame.isLoading')
+          .fa.fa-spinner.fa-spin
+          | Initated login...

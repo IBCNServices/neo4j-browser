@@ -28,10 +28,10 @@ angular.module('neo4jApp.controllers')
     'Frame'
     'Folder'
     'GraphStyle'
-    'SyncService'
+    #'SyncService'
     'CurrentUser'
     'DefaultContentService'
-    ($scope, Document, Editor, Frame, Folder, GraphStyle, SyncService, CurrentUser, DefaultContentService) ->
+    ($scope, Document, Editor, Frame, Folder, GraphStyle, CurrentUser, DefaultContentService) ->
       ###*
        * Local methods
       ###
@@ -151,5 +151,5 @@ angular.module('neo4jApp.controllers')
         query.replace(/<token>/g, escapedToken)
 
       $scope.folderService = Folder
-      $scope.syncService = SyncService
+      #$scope.syncService = SyncService
   ]

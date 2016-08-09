@@ -172,9 +172,11 @@ angular.module('neo4jApp.controllers')
           Settings[key] = value
           SettingsStore.save()
 
+        ###
         onboardingSequence = ->
           Frame.createOne({input:"#{Settings.cmdchar}play neo4j-sync"})
           setAndSaveSetting('onboarding', false)
+        ###
 
         pickFirstFrame = ->
           CurrentUser.init()

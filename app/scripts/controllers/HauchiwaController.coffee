@@ -6,8 +6,8 @@
 
 angular.module('neo4jApp.controllers')
   .controller 'HauchiwaController', [
-    '$rootScope', '$scope', 'Settings', 'ConnectionStatusService', '$http', '$timeout', '$base64', 'TenguGraphModel'
-  ($rootScope, $scope, Settings, ConnectionStatusService, $http, $timeout, $base64, TenguGraphModel) ->
+    '$rootScope', '$scope', 'Settings', 'ConnectionStatusService', '$http', '$timeout', '$base64', 'TenguGraphModel', 'CurrentUser'
+  ($rootScope, $scope, Settings, ConnectionStatusService, $http, $timeout, $base64, TenguGraphModel, CurrentUser) ->
 
     $scope.hauchiwa = "unknown"
     $scope.status = "init"
@@ -82,6 +82,7 @@ angular.module('neo4jApp.controllers')
             req = {
               "method"  : "GET"
               "url"     : hauchiwa_rooturl
+              "headers"  : {"id-token" : CurrentUser.getToken('data_token')}
             }
 
             $http(req).then(
@@ -101,8 +102,10 @@ angular.module('neo4jApp.controllers')
                     $scope.hauchiwa_url = hauchiwa_rooturl
                     console.log("Multiple models available.")
                 else if response.data? and response.data == "Welcome to Hauchiwa API v0.1"
-                  $scope.status = "error"
-                  $scope.frame.setError "The Hauchiwa still has the old version."
+                  $scope.status = "bundle-check"
+                  $scope.hauchiwa_url = hauchiwa_rooturl + "/status"
+                  console.log("The Hauchiwa still has the old version, using: "+$scope.hauchiwa_url)
+                  refreshLater()
                 else
                   $scope.status = "error"
                   $scope.frame.setError "Could not retrieve models from the Hauchiwa."
@@ -141,6 +144,7 @@ angular.module('neo4jApp.controllers')
         req = {
           "method"  : "GET"
           "url"     : $scope.sojobo_url
+          "headers"  : {"id-token" : CurrentUser.getToken('data_token')}
         }
 
         $http(req).then(
@@ -160,6 +164,7 @@ angular.module('neo4jApp.controllers')
         req = {
           "method"  : "GET"
           "url"     : $scope.hauchiwa_url
+          "headers"  : {"id-token" : CurrentUser.getToken('data_token')}
         }
         $http(req).then(
           (response) ->

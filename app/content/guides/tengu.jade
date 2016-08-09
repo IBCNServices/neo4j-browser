@@ -10,9 +10,8 @@ article.guide(ng-controller="TenguCtrl")
       .details.col-sm-9(ng-hide="static_is_authenticated")
         p.lead
           | Access to Tengu's Sojobo requires your authentication credentials to be present.
-          | Please connect to one of the Fed4FIRE Authority Services.
+          | Please connect to one of the Fed4FIRE Authority Services. Then the journey can begin.
         br
-        button.btn.btn-default(id="connect_button", ng-click="authenticate()", style="margin: 0") Connect
 
       .details.col-sm-9(ng-show="static_is_authenticated")
         .teaser.teaser-3
@@ -25,7 +24,7 @@ article.guide(ng-controller="TenguCtrl")
               li predefined Storm topology
               li data will flow into Cassandra
             .clearfix
-          button.btn.btn-cta(tengu-model="storm") Go with the flow
+          button.btn.btn-cta(tengu-model="streaming") Go with the flow
 
         .teaser.teaser-3
           h3 Batch Processing
@@ -33,11 +32,11 @@ article.guide(ng-controller="TenguCtrl")
           .icon-holder
             img.icon(src="images/spark-icon.png")
             ul.topic-bullets
-              li get 4 Spark slaves
+              li get several Spark slaves
               li all spark libraries are ready to GO
               li data will be dumped on HDFS
             .clearfix
-          button.btn.btn-cta(tengu-model="spark") Flashing
+          button.btn.btn-cta(tengu-model="microbatch") Flashing
 
         .teaser.teaser-3
           h3 City of Things
