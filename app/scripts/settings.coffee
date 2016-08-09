@@ -33,9 +33,10 @@ angular.module('neo4jApp.settings', ['neo4jApp.utils'])
       cypher: "#{restAPI}/cypher"
       transaction: "#{restAPI}/transaction"
       authUser: "#{baseURL}/user"
-      tengu: "http://193.190.127.184:29035"
+      tengu: "http://193.190.127.184:29094"
       hauchiwaBundle: "https://api.jujucharms.com/charmstore/v5/~tengu-bot/sojobo/archive/hauchiwa.yaml.template"
       bundles: "https://api.jujucharms.com/charmstore/v5/~tengu-bot/{{bundlename}}/archive/bundle.yaml"
+      mappings: "https://api.jujucharms.com/charmstore/v5/~tengu-bot/{{bundlename}}/archive/mapping.json"
     needAuthZ: true
     useSojobo: true
     featureflags: 'FEATURE_FLAG_AUTH'

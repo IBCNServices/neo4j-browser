@@ -178,17 +178,28 @@ angular.module('neo4jApp.controllers')
               req = {
                 "method"  : "GET"
                 "url"     : $scope.hauchiwa_url + "/modelinfo/config"
+                "headers"  : {"id-token" : CurrentUser.getToken('data_token')}
               }
               $http(req).then(
                 (response) ->
                   if response.data.settings?
-                    if response.data.settings.type? and response.data.settings.type.value == "web-ui"
-                      console.log("This is a model created according to the web-ui's principles.")
-                      delete $scope.bundle.services.modelinfo
-                      $http.get(Settings.endpoint.bundles + '/' + response.data.settings.tag.value + '.map').
-                        success((mapping) ->
-                          $scope.bundleGraph = createBundleGraph($scope.bundle.services, mapping)
-                        )
+                    if response.data.settings['modelinfo-version']? and response.data.settings['modelinfo-version'].value == '2.0.0'
+                      if response.data.settings['mapping']? and response.data.settings['mapping'].value != ""
+                        console.log(response.data.settings['mapping'].value)
+                        $scope.bundleGraph = createBundleGraph($scope.bundle.services, response.data.settings['mapping'].value)
+                      else
+                        console.log("There was no mapping present in the modelinfo (v. 2.0.0)")
+                        $scope.bundleGraph = createBundleGraph($scope.bundle.services, null)
+                    else 
+                      if response.data.settings.type? and response.data.settings.type.value == "web-ui"
+                        console.log("This is a model created according to the web-ui's principles, version < 2.0.0.")
+                        delete $scope.bundle.services.modelinfo
+                        mapping_url = Settings.endpoint.mappings.replace(/{{bundlename}}/g, response.data.settings.tag.value)
+                        #mapping_url = Settings.endpoint.bundles + '/' + response.data.settings.tag.value + '.map' 
+                        $http.get(mapping_url).
+                          success((mapping) ->
+                            $scope.bundleGraph = createBundleGraph($scope.bundle.services, mapping)
+                          )
                 , (r) ->
                   console.log("Could not retrieve the config information of the model. So, only going to show the services.")
                   delete $scope.bundle.services.modelinfo
