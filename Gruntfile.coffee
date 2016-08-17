@@ -164,11 +164,25 @@ module.exports = (grunt) ->
         bare: true
       dist:
         files: [
-          expand: true
-          cwd: "<%= yeoman.app %>/scripts"
-          src: "{,*/}*.coffee"
-          dest: ".tmp/scripts"
-          ext: ".js"
+          {
+            expand: true
+            cwd: "<%= yeoman.app %>/scripts"
+            src: "{,*/}*.coffee"
+            dest: ".tmp/scripts"
+            ext: ".js"
+          }, {
+            expand: true
+            cwd: "<%= yeoman.app %>/scripts"
+            src: "settings.template.coffee"
+            dest: ".tmp/scripts"
+            ext: ".template"
+          }, {
+            expand: true
+            cwd: "<%= yeoman.app %>/scripts"
+            src: "settings.coffee"
+            dest: ".tmp/scripts"
+            ext: ".js"
+          }
         ]
       test:
         files: [
@@ -295,7 +309,15 @@ module.exports = (grunt) ->
             cwd: "<%= yeoman.app %>/lib"
             dest: "<%= yeoman.dist %>/lib"
             src: ["*.js"]
-        }]
+          },
+          {
+            expand: true
+            dot: true
+            cwd: ".tmp/scripts"
+            dest: "<%= yeoman.dist %>/scripts"
+            src: ["settings.*"]
+          }
+        ]
     shell:
       dirListing:
         command: 'ls',

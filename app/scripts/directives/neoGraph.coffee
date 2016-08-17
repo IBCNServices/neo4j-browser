@@ -44,6 +44,16 @@ angular.module('neo4jApp.directives')
             svg.remove()
           )
           listenerResetFrame = scope.$on('reset.frame.views', ->
+            console.log 'reset.frame.views'
+            for unbind in unbinds
+              unbind()
+            unbinds = []
+            $(elm[0]).empty()
+            dir.link(scope, elm, attr, ngCtrl)
+          )
+          listenerResetGraph = scope.$root.$on('reset.graph', ->
+            # Noop
+            console.log 'reset.graph'
             for unbind in unbinds
               unbind()
             unbinds = []
@@ -53,6 +63,7 @@ angular.module('neo4jApp.directives')
           unbinds.push listenerExportSVG
           unbinds.push listenerExportPNG
           unbinds.push listenerResetFrame
+          unbinds.push listenerResetGraph
           watchGraphData()
 
       dir.getDimensions = (view) ->

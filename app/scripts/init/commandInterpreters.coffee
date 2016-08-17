@@ -412,56 +412,56 @@ angular.module('neo4jApp')
       graph
 
     # Cypher handler
-    FrameProvider.interpreters.push
-      type: 'cypher'
-      matches: (input) ->
-        pattern = new RegExp("^[^#{cmdchar}]")
-        input.match(pattern)
-      templateUrl: 'views/frame-cypher.html'
-      exec: ['Cypher', 'CypherGraphModel', 'CypherParser', (Cypher, CypherGraphModel, CypherParser) ->
-        # Return the function that handles the input
-        (input, q) ->
-          current_transaction = Cypher.transaction()
-          commit_fn = () ->
-            current_transaction.commit(input).then(
-              (response) ->
-                if response.size > Settings.maxRows
-                  response.displayedSize = Settings.maxRows
-                q.resolve(
-                  raw: response.raw
-                  responseTime: response.raw.responseTime
-                  table: response
-                  graph: extractGraphModel(response, CypherGraphModel)
-                  notifications: response.notifications || [],
-                  protocol: response.protocol
-                )
-              ,
-              (r) ->
-                obj = mapError r
-                obj.notifications ||= []
-                q.reject obj
-            )
-
-          #Periodic commits cannot be sent to an open transaction.
-          if CypherParser.isPeriodicCommit input
-            commit_fn()
-          #All other queries should be sent through an open transaction
-          #so they can be canceled.
-          else
-            current_transaction.begin().then(
-              () ->
-                commit_fn()
-              ,
-              (r) ->
-                obj = mapError r
-                obj.notifications ||= []
-                q.reject obj
-            )
-
-          q.promise.transaction = current_transaction
-          q.promise.reject = q.reject
-          q.promise
-      ]
+    #FrameProvider.interpreters.push
+    #  type: 'cypher'
+    #  matches: (input) ->
+    #    pattern = new RegExp("^[^#{cmdchar}]")
+    #    input.match(pattern)
+    #  templateUrl: 'views/frame-cypher.html'
+    #  exec: ['Cypher', 'CypherGraphModel', 'CypherParser', (Cypher, CypherGraphModel, CypherParser) ->
+    #    # Return the function that handles the input
+    #    (input, q) ->
+    #      current_transaction = Cypher.transaction()
+    #      commit_fn = () ->
+    #        current_transaction.commit(input).then(
+    #          (response) ->
+    #            if response.size > Settings.maxRows
+    #              response.displayedSize = Settings.maxRows
+    #            q.resolve(
+    #              raw: response.raw
+    #              responseTime: response.raw.responseTime
+    #              table: response
+    #              graph: extractGraphModel(response, CypherGraphModel)
+    #              notifications: response.notifications || [],
+    #              protocol: response.protocol
+    #            )
+    #          ,
+    #          (r) ->
+    #            obj = mapError r
+    #            obj.notifications ||= []
+    #            q.reject obj
+    #        )
+    #
+    #      #Periodic commits cannot be sent to an open transaction.
+    #      if CypherParser.isPeriodicCommit input
+    #        commit_fn()
+    #      #All other queries should be sent through an open transaction
+    #      #so they can be canceled.
+    #      else
+    #        current_transaction.begin().then(
+    #          () ->
+    #            commit_fn()
+    #          ,
+    #          (r) ->
+    #            obj = mapError r
+    #            obj.notifications ||= []
+    #            q.reject obj
+    #        )
+    #
+    #      q.promise.transaction = current_transaction
+    #      q.promise.reject = q.reject
+    #      q.promise
+    #  ]
 
     # Fallback interpretor
     # offer some advice

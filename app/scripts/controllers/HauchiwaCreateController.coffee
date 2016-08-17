@@ -68,8 +68,10 @@ angular.module('neo4jApp.controllers')
         console.log(CurrentUser.getToken('token'))
         if $scope.modelName.startsWith('http://')
           model_url = $scope.modelName
+          mapping_url = null
         else
           model_url = Settings.endpoint.bundles.replace(/{{bundlename}}/g, $scope.modelName)
+          mapping_url = Settings.endpoint.mappings.replace(/{{bundlename}}/g, $scope.modelName)
         console.log(model_url)
         req = {
           "method"  : "GET"
@@ -77,13 +79,41 @@ angular.module('neo4jApp.controllers')
           "headers" :
             "Accept" : "plain/text"
         }
-
+        # TODO: make these requests parallel $q.all(...)
         $http(req).then(
           (response) ->
-            $scope.bundle.services["h-"+$scope.newHauchiwa].options['bundle'] = $base64.encode(response.data)
-            $scope.frame.resetError()
-            $scope.focusEditor()
-            deployHauchiwa()
+            bundle = response.data
+            $scope.bundle.services["h-"+$scope.newHauchiwa].options['bundle'] = $base64.encode(bundle)  
+            if mapping_url?
+              req = {
+                "method"  : "GET"
+                "url"     : mapping_url
+                "headers" :
+                  "Accept" : "plain/text"
+              }
+
+              $http(req).then(
+                (response) ->
+                  # add mapping to modelinfo service
+                  $scope.frame.resetError()
+                  $scope.focusEditor()
+                  deployHauchiwa()
+                , (r) ->
+                  console.log(r)
+                  $scope.status = "start"
+                  $scope.frame.setError "There was an error in creating the Hauchiwa."
+              , (r) ->
+                # no mapping found
+                console.log("No mapping information found on url [" + mapping_url + "]")
+                $scope.frame.resetError()
+                $scope.focusEditor()
+                deployHauchiwa()
+              )
+            else
+              console.log("No need to retrieve mapping info, bundle was provided by user.")
+              $scope.frame.resetError()
+              $scope.focusEditor()
+              deployHauchiwa()
           , (r) ->
             console.log(r)
             $scope.status = "start"
@@ -91,7 +121,7 @@ angular.module('neo4jApp.controllers')
         )
       else
         # only create the hauchiwa
-        $scope.bundle = $scope.bundle.replace(/{{bundle}}/g, "")
+        $scope.bundle.services["h-"+$scope.newHauchiwa].options['bundle'] = ""
         deployHauchiwa()
       
     deployHauchiwa = ->

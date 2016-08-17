@@ -72,7 +72,7 @@ angular.module('neo4jApp.controllers')
           hauchiwa_ipPort = message.replace(pfPattern, '$1')
           if hauchiwa_ipPort.length != message.length
             $scope.status = "models-check"
-            hauchiwa_rooturl = "http://" + hauchiwa_ipPort
+            $scope.hauchiwa_rooturl = "http://" + hauchiwa_ipPort
             
             sshPattern = /^Ready pf:"(?:.*->[0-9]* )*(.*)->22.*"/
             hauchiwa_sshPort = message.replace(sshPattern, '$1')
@@ -81,7 +81,7 @@ angular.module('neo4jApp.controllers')
 
             req = {
               "method"  : "GET"
-              "url"     : hauchiwa_rooturl
+              "url"     : $scope.hauchiwa_rooturl
               "headers"  : {"id-token" : CurrentUser.getToken('data_token')}
             }
 
@@ -94,16 +94,15 @@ angular.module('neo4jApp.controllers')
                     $scope.availableModes.push('graph')
                     $scope.availableModes.push('table')
                     $scope.model =  $scope.hauchiwa_models[0]  
-                    $scope.hauchiwa_url = hauchiwa_rooturl + "/" + $scope.model
+                    $scope.hauchiwa_url = $scope.hauchiwa_rooturl + "/" + $scope.model
                     console.log("Only one model present: " + $scope.hauchiwa_url)
                     refreshLater()
                   else if $scope.hauchiwa_models.length > 1
                     $scope.status = "model-choice"
-                    $scope.hauchiwa_url = hauchiwa_rooturl
                     console.log("Multiple models available.")
                 else if response.data? and response.data == "Welcome to Hauchiwa API v0.1"
                   $scope.status = "bundle-check"
-                  $scope.hauchiwa_url = hauchiwa_rooturl + "/status"
+                  $scope.hauchiwa_url = $scope.hauchiwa_rooturl + "/status"
                   console.log("The Hauchiwa still has the old version, using: "+$scope.hauchiwa_url)
                   refreshLater()
                 else
@@ -123,9 +122,10 @@ angular.module('neo4jApp.controllers')
           
     $scope.selectModel = () ->
       $scope.status = "bundle-check"
+      $scope.$root.$emit('reset.graph')
       $scope.availableModes.push('graph')
       $scope.availableModes.push('table')
-      $scope.hauchiwa_url = $scope.hauchiwa_url + "/" + $scope.model
+      $scope.hauchiwa_url = $scope.hauchiwa_rooturl + "/" + $scope.model
       console.log("User selected model["+$scope.model+"]: " + $scope.hauchiwa_url)
       refreshLater()
       
@@ -173,6 +173,7 @@ angular.module('neo4jApp.controllers')
               $scope.hauchiwa = response.data.environment
               
             $scope.bundle = response.data
+            console.log $scope.bundle.environment
             
             if $scope.bundle.services.modelinfo?
               req = {
@@ -215,6 +216,9 @@ angular.module('neo4jApp.controllers')
         
     createBundleGraph = (services, mapping) ->
       console.log mapping
+
+      $scope.$emit('reset.frame.views')
+
       graph = new neo.models.Graph()
       nodes = []
       relationships = []

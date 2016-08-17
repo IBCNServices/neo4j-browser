@@ -31,16 +31,22 @@ div(ng-controller="HauchiwaController", fullscreen)
                 br
                 br
               article.help.no-data.has-status-bar(ng-show="status == 'model-choice'")
-                h3 There are multiple models available on your Hauchiwa <code>{{hauchiwa}}</code>.
-                p.lead Please select which model you would like to show?
+                h3 There are multiple models available for your Hauchiwa <code>{{hauchiwa}}</code>.
+                p.lead 
+                  | Please select which model you would like to show?
+                  | When the model information is loaded, a graph representation of your model will be available.
                 br
                 select.form-control(ng-model="model", style="margin: 0", ng-options="m for m in hauchiwa_models", ng-change="selectModel()")
                 br
                 br
               article.help.no-data.has-status-bar(ng-show="status == 'bundle-check'")
-                h3 Your Hauchiwa <code>{{hauchiwa}}</code> is ready
+                h3 Your Hauchiwa <code>{{hauchiwa}}</code> is available.
+                p.lead(ng-show="hauchiwa_models.length > 1")
+                  | You can shift between your available models. Select the model for which you 
+                  | would like to show the status information.
+                  select.form-control(ng-model="model", style="margin: 0", ng-options="m for m in hauchiwa_models", ng-change="selectModel()")
                 p.lead
-                  | We are retrieveing the information about your bundle.
+                  | From the moment the model information is loaded, a graph representation of your model will be available.
                 p.lead(ng-show="ssh")
                   | You can also ssh to your Hauchiwa. Use the SSH keys you provided during creation 
                   | and connect to the following address: <code>{{ssh}}</code>

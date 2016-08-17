@@ -30,7 +30,7 @@ angular.module('neo4jApp.directives')
         unbind = scope.$watch attr.tableData, (result) ->
           return unless result
           elm.html(render(result))
-          unbind()
+          #unbind()
 
         json2html = (obj) ->
           return emptyMarker() unless Object.keys(obj).length
