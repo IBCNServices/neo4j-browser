@@ -14,6 +14,7 @@ angular.module('neo4jApp.controllers')
     $scope.modelName = ''
     
     $scope.status = "start"
+    $scope.ssh_key_pattern = /^ssh-rsa [A-Za-z0-9+]+ \w+@\w+/
 
     $scope.frame.resetError()
     $scope.static_user = ConnectionStatusService.connectedAsUser()
@@ -40,6 +41,9 @@ angular.module('neo4jApp.controllers')
         $scope.status = "start"
       if not $scope.bundle
         $scope.frame.addErrorText 'The bundle description is still not loaded. '
+        $scope.status = "start"
+      if $scope.ssh_key && not $scope.ssh_key_pattern.test($scope.ssh_key)
+        $scope.frame.addErrorText 'The SSH key field does not have the correct format. '
         $scope.status = "start"
       return if $scope.frame.getDetailedErrorText().length
 
