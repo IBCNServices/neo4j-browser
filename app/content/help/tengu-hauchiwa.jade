@@ -9,7 +9,14 @@ article.help
           | The &nbsp;
           code :tengu hauchiwa
           |  command lets you manage Tengu Hauchiwas. An Hauchiwa is used to control one or more Tengu models.
-          | Via an Hauchiwa a user can easily connect to the services of its deployed models.
+          | Via an Hauchiwa a user can easily connect to the services of its deployed models. 
+        p
+          | The 
+          code :tengu hauchiwa create &lt;name&gt;
+          |  command lets you create an empty Hauchiwa. You can use this empty Hauchiwa to manually deploy 
+          | Tengu models. The 
+          code :tengu hauchiwa status &lt;name|url&gt;
+          |  command shows the status of the Hauchiwa and the Tengu model(s) associated with this Hauchiwa. 
         table.table-condensed.table-help
           tr
             th Usage:
@@ -18,6 +25,6 @@ article.help
           tr
             th Actions:
             td
-              a(hauchiwa-topic="create") :tengu hauchiwa create
+              a(click-to-command=":tengu hauchiwa create &lt;name&gt;") :tengu hauchiwa create &lt;name&gt;
               | &nbsp;
               a(click-to-command=":tengu hauchiwa status &lt;name|url&gt;") :tengu hauchiwa status &lt;name|url&gt;

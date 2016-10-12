@@ -26,7 +26,7 @@ angular.module('neo4jApp.controllers')
       $scope.modelName = resp.modelName
       if resp.hauchiwaName != "blank"
         $scope.newHauchiwa = resp.hauchiwaName
-        $scope.createHauchiwa()
+      $scope.createHauchiwa()
 
     $scope.checkStatus = () ->
       Frame.create {input: "#{Settings.cmdchar}tengu hauchiwa status #{$scope.newHauchiwa}"}
@@ -35,7 +35,7 @@ angular.module('neo4jApp.controllers')
       $scope.status = "initializing"
       $scope.frame.resetError()
 
-      if not $scope.newHauchiwa.length
+      if not $scope.newHauchiwa? || not $scope.newHauchiwa.length
         $scope.frame.addErrorText 'You have to enter a name for the Hauchiwa. '
         $scope.status = "start"
       if not $scope.bundle
@@ -62,8 +62,10 @@ angular.module('neo4jApp.controllers')
       $scope.bundle.services["h-"+$scope.newHauchiwa].options['emulab-s4-cert'] = $scope.certificate
       
       $scope.bundle.services["h-"+$scope.newHauchiwa].options['feature-flags'] = Settings.featureflags
-      
-      if $scope.modelName
+
+      console.log($scope.modelName?)
+
+      if $scope.modelName?
         # create hauchiwa with model
         console.log(CurrentUser.getToken('token'))
         if $scope.modelName.startsWith('http://')
@@ -82,8 +84,7 @@ angular.module('neo4jApp.controllers')
         # TODO: make these requests parallel $q.all(...)
         $http(req).then(
           (response) ->
-            bundle = response.data
-            $scope.bundle.services["h-"+$scope.newHauchiwa].options['bundle'] = $base64.encode(bundle)  
+            bundle = response.data  
             if mapping_url?
               req = {
                 "method"  : "GET"
@@ -94,37 +95,38 @@ angular.module('neo4jApp.controllers')
 
               $http(req).then(
                 (response) ->
-                  # add mapping to modelinfo service
+                  # add mapping to modelinfo servicename
+                  bundle.services.modelinfo.options =
+                    mapping : JSON.stringify(response.data)
+                  console.log(bundle)
                   $scope.frame.resetError()
                   $scope.focusEditor()
-                  deployHauchiwa()
+                  deployHauchiwa(bundle)
                 , (r) ->
-                  console.log(r)
-                  $scope.status = "start"
-                  $scope.frame.setError "There was an error in creating the Hauchiwa."
-              , (r) ->
-                # no mapping found
-                console.log("No mapping information found on url [" + mapping_url + "]")
-                $scope.frame.resetError()
-                $scope.focusEditor()
-                deployHauchiwa()
+                  # no mapping found
+                  console.log("No mapping information found on url [" + mapping_url + "]. Continue without mapping info.")
+                  $scope.frame.resetError()
+                  $scope.focusEditor()
+                  deployHauchiwa(bundle)
               )
             else
               console.log("No need to retrieve mapping info, bundle was provided by user.")
               $scope.frame.resetError()
               $scope.focusEditor()
-              deployHauchiwa()
+              deployHauchiwa(bundle)
           , (r) ->
             console.log(r)
             $scope.status = "start"
-            $scope.frame.setError "There was an error in creating the Hauchiwa."
+            $scope.frame.setError "There was an error in creating the Hauchiwa. Could not get the model info [" + model_url + "]."
         )
       else
         # only create the hauchiwa
         $scope.bundle.services["h-"+$scope.newHauchiwa].options['bundle'] = ""
         deployHauchiwa()
       
-    deployHauchiwa = ->
+    deployHauchiwa = (bundle) ->
+      if bundle?
+        $scope.bundle.services["h-"+$scope.newHauchiwa].options['bundle'] = $base64.encode(JSON.stringify(bundle))
       console.log($scope.bundle)
       
       req = {

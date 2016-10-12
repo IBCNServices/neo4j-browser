@@ -593,7 +593,7 @@ angular.module('neo4jApp')
         (input, q) ->
           topic = topicalize(input[('tengu hauchiwa status'.length+1)..]) or 'blank'
           if topic != 'blank'
-            if topic.startsWith("http://")
+            if topic.startsWith("http://") || topic.startsWith("https://")
               url = topic
               topic = "unknown"
               hauchiwaLocation = url
