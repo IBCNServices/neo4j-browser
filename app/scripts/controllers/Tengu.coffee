@@ -14,8 +14,7 @@ angular.module('neo4jApp.controllers')
       $scope.static_is_authenticated = GeniAuthService.hasValidAuthorization()
       
       if (!$scope.static_is_authenticated)
-        Frame.createOne({input:"#{Settings.cmdchar}server connect"})
-        
+        Frame.createOne({input:"#{Settings.cmdchar}signin"})
 
       $scope.bundle = (bundle) ->
         $scope.frame.resetError()

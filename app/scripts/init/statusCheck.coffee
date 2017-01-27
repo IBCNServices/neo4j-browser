@@ -19,7 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ###
 
 angular.module('neo4jApp').run([
-  'GeniAuthService'
+  'MaasAuthService'
   '$rootScope'
   '$timeout'
   'Server'
@@ -30,10 +30,14 @@ angular.module('neo4jApp').run([
 
     error = (multiplier) ->
       $scope.offline = yes
-      $scope.unauthorized = no
+      #$scope.unauthorized = no
       timer = $timeout($scope.check, multiplier * 1000)
 
     $scope.check = ->
+      # Almost every request to the Sojobo needs an authenticated user, so we also
+      # test whether a user is authenticated
+      $scope.unauthorized = !AuthService.hasValidAuthorization
+
       $timeout.cancel(timer)
       # There is something wrong with the XHR implementation in IE10:
       # It will return 304 (not modified) even if the server goes down as long as
@@ -43,40 +47,15 @@ angular.module('neo4jApp').run([
       Server.status('?t='+ts).success(
         (r) ->
           $scope.offline = no
-          if r.models? and r.name?
-            Settings.sojobo_models = r.models
-            if r.name.toLowerCase().indexOf("sojobo")
-              Settings.useSojobo = yes
-            else if r.name.toLowerCase().indexOf("hauchiwa")
-              Settings.useSojobo = no
-            else
-              error(Settings.offline_heartbeat)
-              return r
-            timer = $timeout($scope.check, Settings.heartbeat * 1000)
-            SettingsStore.save()
-          else
-            error(Settings.offline_heartbeat)
-            return r
+          Settings.sojobo_controller = "awsTesting"
+          Settings.useSojobo = yes
+          timer = $timeout($scope.check, Settings.heartbeat * 1000)
+          SettingsStore.save()
           r
       ).error(
         (r) ->
-          error(2)
+          error(Settings.offline_heartbeat)
           r
-      )
-      # Although Tengu does not require a user to be auhorized, we still add this 
-      # code here to set the correct parameters
-      .then(
-        (r) ->
-          if AuthService.hasValidAuthorization
-            $scope.unauthorized = no
-          else
-            if AuthService.isConnected
-              $scope.offline = no
-              $scope.unauthorized = yes
-            else
-              error(Settings.offline_heartbeat)
-          r
-
       )
 
     $timeout($scope.check, 20000)

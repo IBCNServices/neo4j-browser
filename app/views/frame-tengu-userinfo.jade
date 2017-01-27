@@ -1,0 +1,55 @@
+div(ng-controller="SojoboAuthCtrl")
+  .outer
+    include partials/frame-common-actions
+    .inner
+      .view-result
+        article.help
+          .container-fluid
+            .section.row-fluid.summary(ng-show="!static_is_authenticated")
+              .details
+                h3 User is not signed in
+                p.lead
+                  | There is currently no user signed in. Please use your 
+                  | credentials to 
+                  code(exec-topic="signin") signin
+                  | .
+            .section.row-fluid.summary(ng-show="static_is_authenticated && static_user")
+              .summary.col-sm-3
+                h3 Welcome 
+                  b {{static_user}}
+                p.lead
+                  | Lovely to see you.
+              .details.col-sm-9(ng-show="user_info")
+                table.table.table-condensed(ng-show="models != null && models.length > 0")
+                  thead
+                    td Model
+                    td Controller
+                    td Access level
+                    td &nbsp;
+                  tr(ng-repeat="model in models")
+                    th {{model.name}}
+                    td 
+                      img(src="images/{{model.type}}.svg") 
+                      &nbsp;{{model.controller}}
+                    td {{model.access}}
+                    td
+                      ul.actions.list-inline
+                        li 
+                          a.sl-show(view-model="{{model.name}}@{{model.controller}}", tooltip="Show model status")
+                        li
+                          a.sl-delete(delete-model="{{model.name}}@{{model.controller}}", tooltip="Delete the model")
+                p.lead(ng-show="models.length == 0")
+                  | You don't have any models yet.
+                  br
+                  | Do you want to create a new model?
+      .status-bar(ng-class='{error: frame.detailedErrorText, loading: frame.isLoading}')
+        .status(ng-show="frame.detailedErrorText")
+          .fa.fa-exclamation-triangle.icon-warning-sign &nbsp;
+          {{frame.detailedErrorText}}
+          div(ng-hide='frame.hasErrors')
+            div(ng-show='frame.response')
+              .fa.fa-ok
+              | Logged in as {{frame.response.name}} ({{frame.response.identities[0].provider}})
+        span(ng-show='frame.isLoading')
+          .fa.fa-spinner.fa-spin
+          | Loading user info...

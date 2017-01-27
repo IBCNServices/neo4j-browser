@@ -53,47 +53,72 @@ angular.module('neo4jApp.directives')
         # Manual rendering function due to performance reasons
         # (repeat watchers are expensive)
         render = (result) ->
-          html  = "<h3>Environment: "+result.environment+"</h3>"
-          
-          #Services
-          html += "<h4>Services</h4>"
-          html += "<table class='table data'>"
-          html += "<thead><tr><th>Name</th><th>Status</th><th>Exposed</th><th>Charm</th><th>Units</th></tr></thead>"
-          html += "<tbody>"
-          angular.forEach(result.services, (service, key_s) ->
-            html += "<tr>"
-            html += "<td>" + key_s + "</td>"
-            html += "<td>" + service["service-status"].current + "</td>"
-            html += "<td>" + service.exposed + "</td>"
-            html += "<td>" + service.charm + "</td>"
-            #html += "<td>" + cell2html(service.units) + "</td>"
-            html += "<td><ul>"
-            angular.forEach(service.units, (unit, key_u) ->
-              html += "<li>" + key_u + " <code><small>" + unit["workload-status"].message + "</small></code></li>"
-            )
-            html += "</ul></td>"
-            html += "</tr>"
-          )
-          html += "</tbody>"
-          html += "</table>"
-          
+          html  = "<h3>Model: "+result.name+"</h3>"
+
+          unknown = "<code>Unknown</code>"
+
+          #Applications
+          html += "<h4>Applications</h4>"
+          if result.applications? and result.applications.length > 0
+            html += "<table class='table data'>"
+            html += "<thead><tr><th>Name</th><th>Status</th><th>Exposed</th><th>Charm</th><th>Units</th></tr></thead>"
+            html += "<tbody>"
+            for app in result.applications
+              html += "<tr>"
+              html += "<td>" + app.name + "</td>"
+              html += "<td>" + unknown + "</td>"
+              html += "<td>" + unknown + "</td>"
+              html += "<td>" + unknown + "</td>"
+              if app.units? and app.units.length > 0
+                html += "<td><ul>"
+                for unit in app.units
+                  html += "<li>" + unit.name
+                  if unit.machine? and unit.machine != ""
+                    html += " [" + unit.machine + "]"
+                  if unit.ip? and unit.ip != ""
+                    html += " <code><small>" + unit.ip
+                    if unit.ports? and unit.ports != null and unit.ports.length > 0
+                      html += "["
+                      for port in unit.ports
+                        html += port + " "
+                      html += "]"
+                    html += "</small></code>"
+                  html += "</li>"
+                html += "</ul></td>"
+              else
+                html += "<td><i>No Units</i></td>"
+              html += "</tr>"
+            html += "</tbody>"
+            html += "</table>"
+          else
+            html += "<p>No Applications deployed.</p>"
+
           #Machines
           html += "<h4>Machines</h4>"
-          html += "<table class='table data'>"
-          html += "<thead><tr><th>ID</th><th>State</th><th>Version</th><th>Series</th><th>Hardware</th></tr></thead>"
-          html += "<tbody>"
-          angular.forEach(result.machines, (machines, key_m) ->
-            html += "<tr>"
-            html += "<td>" + key_m + "</td>"
-            html += "<td>" + machines["agent-state"] + "</td>"
-            html += "<td>" + machines["agent-version"] + "</td>"
-            html += "<td>" + machines.series + "</td>"
-            html += "<td>" + machines.hardware + "</td>"
-            html += "</tr>"
-          )
-          html += "</tbody>"
-          html += "</table>"
-          
+          if result.machines? and result.machines.length > 0
+            html += "<table class='table data'>"
+            html += "<thead><tr><th>ID</th><th>IP</th><th>State</th><th>Series</th><th>Instance-ID</th><th>Containers</th></tr></thead>"
+            html += "<tbody>"
+            for machine in result.machines
+              html += "<tr>"
+              html += "<td>" + machine.name + "</td>"
+              html += "<td>" + machine.ip + "</td>"
+              html += "<td>" + unknown + "</td>"
+              html += "<td><div class='token token-label' style='background-color: rgb(104, 189, 246); color: rgb(255, 255, 255);''>" + machine.series + "</div></td>"
+              html += "<td>" + machine["instance-id"] + "</td>"
+              if machine.containers? and machine.containers != null and machine.containers.length > 0
+                html += "<td><ul>"
+                for container in machine.containers
+                  html += "<li>" + container.name + "&nbsp;" + container.series + "&nbsp;" + container.ip + "</td>"
+                html += "</ul></td>"
+              else
+                html += "<td><i>None</i></td>"
+              html += "</tr>"
+            html += "</tbody>"
+            html += "</table>"
+          else
+            html += "<p>No Machines instantiated yet."
+
           html
 
   ])

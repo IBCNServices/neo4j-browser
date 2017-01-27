@@ -1,0 +1,62 @@
+div(ng-controller="MaasAuthCtrl")
+  .outer
+    include partials/frame-common-actions
+    .inner
+      .view-result
+        article.help
+          .container-fluid
+            .section.row-fluid.summary(ng-show="!static_is_authenticated")
+              .summary.col-sm-3
+                h3 Please Sign in with your Tengu Account
+                p.lead
+                  | Almost all calls to Tengu's Sojobo require authentication.
+                  | If you do not have credentials for Tengu, simply fill in your
+                  | username and password and we will register your user.
+              .details.col-sm-9
+                .form
+                  .row
+                    .col-sm-5
+                      | Username
+                      br
+                      input.form-control(type='text', on-enter="focus", on-enter-target-id="connect_password", focus-on="1", ng-model="username", style="margin: 0")
+                      br
+                  .row
+                    .col-sm-5
+                      | Password
+                      br
+                      input.form-control(id="connect_password", on-enter="click", on-enter-target-id="connect_button", type='password', ng-model="password", style="margin: 0")
+                      br
+                  .row.form-info
+                    .col-sm-5
+                      | Do not search for a default password. There is none ;)
+                  .row
+                    .col-sm-5
+                      br
+                      button.btn.btn-default(id="connect_button", ng-click="signin()", style="margin: 0") Signin
+            .section.row-fluid.summary(ng-show="static_is_authenticated && static_user")
+              .summary.col-sm-3
+                h3 Connected to the Tengu Sojobo
+                p.lead
+                  | Nice to meet you.
+              .details.col-sm-9
+                p
+                ul.big.undecorated
+                  li
+                    span.center-tbl-left-col.inline
+                      | You are connected as user&nbsp;
+                    code
+                      | {{static_user}}   
+                  li
+                    p.lead
+                      | What is next? TODO
+      .status-bar(ng-class='{error: frame.detailedErrorText, loading: frame.isLoading}')
+        .status(ng-show="frame.detailedErrorText")
+          .fa.fa-exclamation-triangle.icon-warning-sign &nbsp;
+          {{frame.detailedErrorText}}
+          div(ng-hide='frame.hasErrors')
+            div(ng-show='frame.response')
+              .fa.fa-ok
+              | Logged in as {{frame.response.name}} ({{frame.response.identities[0].provider}})
+        span(ng-show='frame.isLoading')
+          .fa.fa-spinner.fa-spin
+          | Initated login...

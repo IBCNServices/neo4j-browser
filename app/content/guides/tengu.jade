@@ -9,8 +9,11 @@ article.guide(ng-controller="TenguCtrl")
 
       .details.col-sm-9(ng-hide="static_is_authenticated")
         p.lead
-          | Access to Tengu's Sojobo requires your authentication credentials to be present.
-          | Please connect to one of the Fed4FIRE Authority Services. Then the journey can begin.
+          | Access to Tengu's Sojobo requires you to sign in. If you do not 
+          | have any credentials voor the Sojobo, you can register via 
+          code(exec-topic="signin") signin
+          | . After this the journey can begin.
+        br
         br
 
       .details.col-sm-9(ng-show="static_is_authenticated")
@@ -24,7 +27,7 @@ article.guide(ng-controller="TenguCtrl")
               li predefined Storm topology
               li data will flow into Cassandra
             .clearfix
-          button.btn.btn-cta(tengu-model="streaming") Go with the flow
+          button.btn.btn-cta(tengu-bundle="streaming") Go with the flow
 
         .teaser.teaser-3
           h3 Batch Processing
@@ -36,19 +39,19 @@ article.guide(ng-controller="TenguCtrl")
               li all spark libraries are ready to GO
               li data will be dumped on HDFS
             .clearfix
-          button.btn.btn-cta(tengu-model="microbatch") Flashing
-
+          button.btn.btn-cta(tengu-bundle="microbatch") Flashing
+      //
         .teaser.teaser-3
           h3 City of Things
           p.lead City of Things brings the Internet of Things to the city.
           .icon-holder
             img.icon(src="images/cityot.png")
             ul.topic-bullets
-              li curently in Proof-of-Concept phase
+              li currently in Proof-of-Concept phase
               li capturing sensor data from all over the place
               li sensor data is stored in Kafka and MongoDB
             .clearfix
-          button.btn.btn-cta(tengu-model="cityot") Visit us
+          button.btn.btn-cta(tengu-bundle="cityot") Visit us
 
       //
         .teaser.teaser-3

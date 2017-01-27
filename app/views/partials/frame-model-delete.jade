@@ -1,0 +1,28 @@
+article.help(ng-controller="ModelDeleteController")
+  .container-fluid
+    .section.row-fluid.summary(ng-show="status == 'init'")
+      p.lead Preparing deleting a model.
+      p
+    .section.row-fluid.summary(ng-show="status == 'confirm' || status == 'deleting'")
+      h3 
+        | Delete model 
+        code {{model}}
+      p.lead Are you sure you want to delete the model?
+      .form
+        .row
+          .col-sm-5
+            button.btn.btn-default(id="delete", ng-hide="status == 'deleting'", ng-click="deleteModel()", style="margin: 0", ) Yes
+            .fa.fa-spinner.fa-spin.fa-2x(ng-show="status == 'deleting'")
+    .section.row-fluid.summary(ng-show="status == 'deleted'")
+      h3 Success!
+      p.lead 
+        | Model
+        code {{model}}
+        | was successfuly deleted.
+    .section.row-fluid.summary(ng-show="status == 'error'")
+      h3 Something went wrong :(
+      p.lead
+        | While deleting model
+        code {{model}}
+        | there was an error.
+      p {{errorMessage}}

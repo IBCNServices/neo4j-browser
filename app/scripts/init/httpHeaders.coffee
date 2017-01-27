@@ -20,11 +20,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 angular.module('neo4jApp').config([
   '$httpProvider'
-  ($httpProvider) ->
+  'Settings'
+  ($httpProvider, Settings) ->
     #$httpProvider.defaults.headers.common['X-stream'] = true
     $httpProvider.defaults.headers.common['Content-Type'] = 'application/json'
     $httpProvider.defaults.headers.common['Accept'] = 'application/json'
-    
+    #$httpProvider.defaults.headers.common['api-key'] = Settings.apiKey
+
     $httpProvider.defaults.headers.get ||= {}
     #$httpProvider.defaults.headers.get['Cache-Control'] = 'no-cache'
     #$httpProvider.defaults.headers.get['Pragma'] = 'no-cache'

@@ -372,21 +372,6 @@ angular.module('neo4jApp')
           q.promise
       ]
 
-    # Profile a cypher command
-    # FrameProvider.interpreters.push
-    #   type: 'cypher'
-    #   matches: "#{cmdchar}profile"
-    #   templateUrl: 'views/frame-rest.html'
-    #   exec: ['Cypher', (Cypher) ->
-    #     (input, q) ->
-    #       input = input.substr(8)
-    #       if input.length is 0
-    #         q.reject(error("missing query"))
-    #       else
-    #         Cypher.profile(input).then(q.resolve, q.reject)
-    #       q.promise
-    #   ]
-
     extractGraphModel = (response, CypherGraphModel) ->
       graph = new neo.models.Graph()
 
@@ -411,226 +396,238 @@ angular.module('neo4jApp')
         .filter((rel)-> return rel))
       graph
 
-    # Cypher handler
-    #FrameProvider.interpreters.push
-    #  type: 'cypher'
-    #  matches: (input) ->
-    #    pattern = new RegExp("^[^#{cmdchar}]")
-    #    input.match(pattern)
-    #  templateUrl: 'views/frame-cypher.html'
-    #  exec: ['Cypher', 'CypherGraphModel', 'CypherParser', (Cypher, CypherGraphModel, CypherParser) ->
-    #    # Return the function that handles the input
-    #    (input, q) ->
-    #      current_transaction = Cypher.transaction()
-    #      commit_fn = () ->
-    #        current_transaction.commit(input).then(
-    #          (response) ->
-    #            if response.size > Settings.maxRows
-    #              response.displayedSize = Settings.maxRows
-    #            q.resolve(
-    #              raw: response.raw
-    #              responseTime: response.raw.responseTime
-    #              table: response
-    #              graph: extractGraphModel(response, CypherGraphModel)
-    #              notifications: response.notifications || [],
-    #              protocol: response.protocol
-    #            )
-    #          ,
-    #          (r) ->
-    #            obj = mapError r
-    #            obj.notifications ||= []
-    #            q.reject obj
-    #        )
-    #
-    #      #Periodic commits cannot be sent to an open transaction.
-    #      if CypherParser.isPeriodicCommit input
-    #        commit_fn()
-    #      #All other queries should be sent through an open transaction
-    #      #so they can be canceled.
-    #      else
-    #        current_transaction.begin().then(
-    #          () ->
-    #            commit_fn()
-    #          ,
-    #          (r) ->
-    #            obj = mapError r
-    #            obj.notifications ||= []
-    #            q.reject obj
-    #        )
-    #
-    #      q.promise.transaction = current_transaction
-    #      q.promise.reject = q.reject
-    #      q.promise
-    #  ]
-
-    # Fallback interpretor
-    # offer some advice
-    #  FrameProvider.interpreters.push
-    #    type: 'help'
-    #    matches: -> true
-    #    templateUrl: 'views/frame-help.html'
-    #    exec: ['$http', ($http) ->
-    #      (input, q) ->
-    #        url = "content/help/unknown.html"
-    #        $http.get(url)
-    #        .success(->q.resolve(page: url))
-    #        .error(->q.reject(error("No such help section")))
-    #        q.promise
-    #    ]
-    
-    # Sign in with Google
     FrameProvider.interpreters.push
       type: 'account'
-      templateUrl: 'views/frame-google-sign-in.html'
+      templateUrl: 'views/frame-tengu-sign-in.html'
       matches: ["#{cmdchar}signin"]
-      exec: ['GAuth2', '$rootScope', (GAuth2, $rootScope) ->
+      exec: ['SojoboAuthService', (AuthService) ->
         (input, q) ->
-          GAuth2.isSignedIn().then(
-            (success) ->
-              q.resolve(success)
-          )
+          q.resolve(AuthService.hasValidAuthorization)
           q.promise
       ]
-      
-    # Sign out from Google
+
     FrameProvider.interpreters.push
       type: 'account'
-      templateUrl: 'views/frame-google-sign-out.html'
+      templateUrl: 'views/frame-tengu-sign-out.html'
       matches: ["#{cmdchar}signout"]
-      exec: ['CurrentUser', (CurrentUser) ->
+      exec: ['SojoboAuthService', (AuthService) ->
         (input, q) ->
-          CurrentUser.logout().then(
-            () ->
-              q.resolve("Successfully signed out.")
-            , () ->
-              q.reject("There was a problem with signing out.")
-          )
-          q.promise
-      ]
-    
-    # Tengu model create handler
-    FrameProvider.interpreters.push
-      type: 'tengu'
-      templateUrl: 'views/frame-hauchiwa-create.html'
-      matches:  (input) ->
-        pattern = new RegExp("^#{cmdchar}tengu model create")
-        input.match(pattern)
-      exec: ['GeniAuthService', 'Frame', 'Settings', '$http', (GeniAuthService, Frame, Settings, $http) ->
-        (input, q) ->
-          modelName = topicalize(input[('tengu model create'.length+1)..]) or 'blank'
-          if modelName == 'blank'
-            q.reject("User cannot create an empty model. If you would like to create an empty Hauchiwa, please use <code>:tengu hauchiwa create</code>.")
-          else if GeniAuthService.hasValidAuthorization()
-            req = {
-              "method"  : "GET"
-              "url"     : "#{Settings.endpoint.hauchiwaBundle}"
-              "headers" :
-                "Accept" : "text/plain"
-            }
-
-            $http(req).then(
-              (response) ->
-                q.resolve(
-                  modelName: modelName
-                  hauchiwaName: 'blank'
-                  bundle: response.data
-                )
-              , (r) ->
-                q.reject("Could not retrieve the Hauchiwa bundle information.")
-            )
-          else
-            Frame.createOne({input:"#{cmdchar}server connect"})
-            q.reject("User is not authorized to create Hauchiwas.")
-
-          q.promise
-      ]
-      
-    # Tengu hauchiwa create handler
-    FrameProvider.interpreters.push
-      type: 'tengu'
-      templateUrl: 'views/frame-hauchiwa-create.html'
-      matches:  (input) ->
-        pattern = new RegExp("^#{cmdchar}tengu hauchiwa create")
-        input.match(pattern)
-      exec: ['GeniAuthService', 'Frame', 'Settings', '$http', (GeniAuthService, Frame, Settings, $http) ->
-        (input, q) ->
-          if !Settings.useSojobo
-            q.reject("User is not connected to a Sojobo. No need to create a Hauchiwa.")
-          else if GeniAuthService.hasValidAuthorization()
-            hauchiwaName = topicalize(input[('tengu hauchiwa create'.length+1)..]) or 'blank'
-            req = {
-              "method"  : "GET"
-              "url"     : "#{Settings.endpoint.hauchiwaBundle}"
-              "headers" :
-                "Accept" : "text/plain"
-            }
-
-            $http(req).then(
-              (response) ->
-                console.log(response.data)
-                q.resolve(
-                  hauchiwaName: hauchiwaName
-                  bundle: response.data
-                )
-              , (r) ->
-                q.reject("Could not retrieve the Hauchiwa bundle information.")
-            )
-          else
-            Frame.createOne({input:"#{cmdchar}server connect"})
-            q.reject("User is not authorized to create Hauchiwas.")
-
+          q.resolve(not AuthService.hasValidAuthorization)
           q.promise
       ]
 
-    # Tengu hauchiwa status handler
     FrameProvider.interpreters.push
-      type: 'tengu'
-      templateUrl: 'views/frame-hauchiwa.html'
-      matches:  (input) ->
-        pattern = new RegExp("^#{cmdchar}tengu hauchiwa status")
+      type: 'account'
+      templateUrl: 'views/frame-tengu-userinfo.html'
+      matches: (input) ->
+        pattern = new RegExp("^#{cmdchar}tengu user-info")
         input.match(pattern)
-      exec: ['GeniAuthService', 'CurrentUser', 'Settings', '$http', (GeniAuthService, CurrentUser, Settings, $http) ->
+      exec: ['SojoboAuthService', 'ConnectionStatusService', 'Settings', '$http', (AuthService, ConnectionStatusService, Settings, $http) ->
         (input, q) ->
-          topic = topicalize(input[('tengu hauchiwa status'.length+1)..]) or 'blank'
-          if topic != 'blank'
-            if topic.startsWith("http://") || topic.startsWith("https://")
-              url = topic
-              topic = "unknown"
-              hauchiwaLocation = url
-            else if Settings.useSojobo
-              url = Settings.endpoint.tengu + "/" + Settings.sojobo_models[0] + "/h-" + topic
-              hauchiwaLocation = "sojobo"
-            else
-              url = Settings.endpoint.tengu + "/" + Settings.sojobo_models[0] + "/"
-              hauchiwaLocation = "local"
+          if AuthService.hasValidAuthorization
+            static_user = ConnectionStatusService.plainConnectionAuthData()[0]
+            url = Settings.endpoint.tengu + "/users/" + static_user
+            basicAuth = ConnectionStatusService.plainConnectionAuthData()[1]
 
             req = {
               "method"  : "GET"
               "url"     : url
-              "headers"  : {"id-token" : CurrentUser.getToken('data_token')}
+              "headers"  : {
+                "Content-Type"  : "application/json"
+                "api-key"       : Settings.apiKey
+                "Authorization" : "Basic " + basicAuth
+              }
             }
-            
-            console.log req
-            
 
             $http(req).then(
               (response) ->
                 q.resolve(
-                  hauchiwa: topic
-                  data: response.data
-                  location: hauchiwaLocation
+                  userinfo : response.data
                 )
+              , (r) ->
+                console.log(r)
+                q.reject("Unknown error: [" + r.status + ", " + statusText + "] ")
+            )
+          else
+            Frame.createOne({input:"#{cmdchar}signin"})
+            q.reject("User is not authorized.")
+
+          q.promise
+      ]
+
+    FrameProvider.interpreters.push
+      type: 'account'
+      templateUrl: 'views/frame-tengu-changepassword.html'
+      matches: (input) ->
+        pattern = new RegExp("^#{cmdchar}tengu change-user-password")
+        input.match(pattern)
+      exec: ['SojoboAuthService', 'ConnectionStatusService', 'Settings', '$http', (AuthService, ConnectionStatusService, Settings, $http) ->
+        (input, q) ->
+          if AuthService.hasValidAuthorization
+            q.resolve("User authorized.")
+          else
+            Frame.createOne({input:"#{cmdchar}signin"})
+            q.reject("User is not authorized.")
+
+          q.promise
+      ]
+
+    # Tengu model create handler
+    FrameProvider.interpreters.push
+      type: 'tengu'
+      templateUrl: 'views/frame-model-create.html'
+      matches:  (input) ->
+        pattern = new RegExp("^#{cmdchar}tengu model create")
+        input.match(pattern)
+      exec: ['SojoboAuthService', 'Frame', 'Settings', '$http', (AuthService, Frame, Settings, $http) ->
+        (input, q) ->
+          bundleI = input.indexOf('--bundle')
+          if bundleI > 0
+            bundle = input[(bundleI+'--bundle'.length+1)..].trim()
+            modelName = input[('tengu model create'.length+1)..(bundleI-1)].trim() or ''
+          else
+            bundle = null
+            modelName = input[('tengu model create'.length+1)..].trim() or ''
+
+          if AuthService.hasValidAuthorization()
+            if modelName? and modelName.length > 0
+              modAndCtrl = modelName.split('@')
+              if modAndCtrl.length > 1
+                modelName = modAndCtrl[0]
+                controller = modAndCtrl[1]
+              else
+                q.reject("If you provide the name of the model, you should also provide the Controller's name: <model>@<controller>")
+                return q.promise
+            else
+              modelName = null
+              controller = null
+
+            if bundle?
+              if bundle.startsWith('http')
+                url = bundle
+              else
+                url = Settings.endpoint.bundles.replace('{{bundlename}}', bundle)
+              console.log url
+              req = {
+                "method"  : "GET"
+                "url"     : url
+              }
+              $http(req).then(
+                (response) ->
+                  console.log response
+                  q.resolve(
+                    modelName  : modelName
+                    controller : controller
+                    bundle     : response.data
+                  )
+                , (r) ->
+                  if r.status = 404
+                    q.reject("Could not find the Bundle '" + bundle + "'")
+                  else
+                    console.log(r)
+                    q.reject("Unknown error: [" + r.status + ", " + r.statusText + "] ")
+              )
+            else
+              q.resolve(
+                modelName  : modelName
+                controller : controller
+              )
+          else
+            Frame.createOne({input:"#{cmdchar}signin"})
+            q.reject("User is not authorized to create Models.")
+
+          q.promise
+      ]
+
+    # Tengu model delete handler
+    FrameProvider.interpreters.push
+      type: 'tengu'
+      templateUrl: 'views/frame-model-delete.html'
+      matches:  (input) ->
+        pattern = new RegExp("^#{cmdchar}tengu model delete")
+        input.match(pattern)
+      exec: ['SojoboAuthService', 'ConnectionStatusService', 'Settings', '$http', (AuthService, ConnectionStatusService, Settings, $http) ->
+        (input, q) ->
+          modelName = topicalize(input[('tengu model delete'.length+1)..]) or 'blank'
+          if !AuthService.hasValidAuthorization()
+            Frame.createOne({input:"#{cmdchar}signin"})
+            q.reject("User is not authorized to talk to the Sojobo.")
+          else if modelName == 'blank'
+            q.reject("User must provide the name of the Model.")
+          else
+            modAndCtrl = modelName.split('@')
+            if modAndCtrl.length > 1
+              q.resolve(
+                modelName  : modAndCtrl[0]
+                controller : modAndCtrl[1]
+              )
+            else
+              q.resolve(
+                modelName  : modelName
+              )
+
+          q.promise
+      ]
+
+    # Tengu model status handler
+    FrameProvider.interpreters.push
+      type: 'tengu'
+      templateUrl: 'views/frame-model-status.html'
+      matches:  (input) ->
+        pattern = new RegExp("^#{cmdchar}tengu model status")
+        input.match(pattern)
+      exec: ['SojoboAuthService', 'ConnectionStatusService', 'Settings', '$http', (AuthService, ConnectionStatusService, Settings, $http) ->
+        (input, q) ->
+          modelName = topicalize(input[('tengu model status'.length+1)..]) or 'blank'
+          if !AuthService.hasValidAuthorization()
+            Frame.createOne({input:"#{cmdchar}signin"})
+            q.reject("User is not authorized to check the status of a Model.")
+          else if modelName == 'blank'
+            q.reject("User must provide the name of the Model.")
+          else
+            modAndCtrl = modelName.split('@')
+            if modAndCtrl.length > 1
+              url = Settings.endpoint.tengu + "/tengu/controllers/" + modAndCtrl[1] + "/models/" + modAndCtrl[0]
+            else
+              url = Settings.endpoint.tengu + "/tengu/controllers/" + Settings.sojobo_controller + "/models/" + modelName
+
+            basicAuth = ConnectionStatusService.plainConnectionAuthData()[1]
+
+            console.log url
+
+            req = {
+              "method"  : "GET"
+              "url"     : url
+              "headers"  : {
+                "Content-Type"  : "application/json"
+                "api-key"       : Settings.apiKey
+                "Authorization" : "Basic " + basicAuth
+              }
+            }
+
+            $http(req).then(
+              (response) ->
+                if modAndCtrl.length > 1
+                  q.resolve(
+                    modelName  : modAndCtrl[0]
+                    controller : modAndCtrl[1]
+                    data       : response.data
+                    req        : req
+                  )
+                else
+                  q.resolve(
+                    modelName: modelName
+                    data     : response.data
+                    req      : req
+                  )
               , (r) ->
                 if r.status = 404
                   console.log(r.data.msg)
-                  q.reject("Could not find the Hauchiwa '" + topic + "'")
+                  q.reject("Could not find the Model '" + modelName + "'")
                 else
                   console.log(r)
                   q.reject("Unknown error: [" + r.status + ", " + statusText + "] ")
-                  
             )
-          else
-            q.reject("User must provide the name of the Hauchiwa.")
 
           q.promise
       ]
@@ -665,15 +662,6 @@ angular.module('neo4jApp')
             q.reject('no hauchiwa provided')
 
           q.promise
-      ]
-
-    FrameProvider.interpreters.push
-      type: 'tengu'
-      matches: "#{cmdchar}tengu hauchiwa"
-      exec: ['Frame', (Frame) ->
-        (input, q) ->
-          Frame.create {input: "#{Settings.cmdchar}tengu hauchiwa create"}
-          return true
       ]
 
 ])

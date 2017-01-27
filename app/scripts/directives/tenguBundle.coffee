@@ -6,20 +6,18 @@
 
 # Requires jQuery
 angular.module('neo4jApp.directives')
-  .directive('tenguModel', ['$rootScope', 'Frame','Settings', ($rootScope, Frame, Settings) ->
+  .directive('tenguBundle', ['$rootScope', 'Frame','Settings', ($rootScope, Frame, Settings) ->
     restrict: 'A'
     link: (scope, element, attrs) ->
 
-      model = attrs.tenguModel
+      bundle = attrs.tenguBundle
       command = "tengu model create"
 
-      if model
+      if bundle
         element.on 'click', (e) ->
           e.preventDefault()
-
-          model = model.toLowerCase().trim()
-          Frame.create(input: "#{Settings.cmdchar}#{command} #{model}")
-
+          bundle = bundle.toLowerCase().trim()
+          Frame.create(input: "#{Settings.cmdchar}#{command} --bundle #{bundle}")
           $rootScope.$apply() unless $rootScope.$$phase
 
   ])

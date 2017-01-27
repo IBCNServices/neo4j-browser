@@ -24,15 +24,15 @@ angular.module('neo4jApp.services')
 .service 'CurrentUser', [
   'Settings'
   'Editor'
-  'GeniAuthService'
-  'GAuth2'
+  'MaasAuthService'
+  'ConnectionStatusService'
   'localStorageService'
   'AuthDataService'
   '$q'
   '$window'
   '$rootScope'
   'DefaultContentService'
-  (Settings, Editor, AuthService, GAuth2, localStorageService, AuthDataService, $q, $window, $rootScope, DefaultContentService) ->
+  (Settings, Editor, AuthService, ConnectionStatusService, localStorageService, AuthDataService, $q, $window, $rootScope, DefaultContentService) ->
     class CurrentUser
       _user: {}
       store: null
@@ -65,9 +65,6 @@ angular.module('neo4jApp.services')
           if cred.store_id is id
             return cred
         return {}
-
-      ##fetch: ->
-      ##  NTN.fetch @store
 
       getToken: (id) ->
         return no unless id
@@ -125,78 +122,52 @@ angular.module('neo4jApp.services')
 
       login: ->
         q = $q.defer()
-        that = @
-        GAuth2.login().then((res) ->
-          console.log(res)
-          that.persist res
-          data = localStorageService.get 'ntn_profile' || {}
-          $rootScope.$emit 'ntn:login', data
-          q.resolve(res)
-        ,
-          (err) -> q.reject()
-        )
+        res =
+          token      : ConnectionStatusService.plainConnectionAuthData()[1]
+          data_token : ConnectionStatusService.plainConnectionAuthData()[1]
+          profile    :
+            name       : ConnectionStatusService.connectedAsUser()
+            picture    : "/images/default_user.png"
+            email      : "dummy@tengu.io"
+
+        cu.persist(res)
+        data = localStorageService.get 'ntn_profile' || {}
+        $rootScope.$emit 'ntn:login', data
+        q.resolve(res)
         q.promise
 
       logout: ->
         q = $q.defer()
-        that = @
-        GAuth2.logout().then((res) ->
-          $rootScope.currentUser = null
-          #@store.unauth()
-          localStorageService.remove 'ntn_token'
-          localStorageService.remove 'ntn_data_token'
-          localStorageService.remove 'ntn_refresh_token'
-          localStorageService.remove 'ntn_profile'
-          localStorageService.remove 'stores'
-          AuthService.forget()
-          that.clear()
-          $rootScope.$emit 'ntn:logout'
-          Editor.execScript "#{Settings.cmdchar}server disconnect"
-          q.resolve(res)
-        ,
-          (err) -> q.reject()
-        )
+        $rootScope.currentUser = null
+        localStorageService.remove 'ntn_token'
+        localStorageService.remove 'ntn_data_token'
+        localStorageService.remove 'ntn_refresh_token'
+        localStorageService.remove 'ntn_profile'
+        localStorageService.remove 'stores'
+
+        AuthService.forget()
+        cu.clear()
+        $rootScope.$emit 'ntn:logout'
+        Editor.execScript "#{Settings.cmdchar}server disconnect"
+        q.resolve("CurrentUser cleaned up.")
         q.promise
-        
+
       instance: -> angular.copy(@_user)
 
       isAuthenticated: -> localStorageService.get 'ntn_data_token'
 
-      ###
-      updateSignIn: () ->
-        console.log('update sign in state changed')
-        that = @
-        console.log(that)
-        GAuth2.isSignedIn().then( (res) ->
-          if (res)
-            that.login()
-          else
-            that.logout()
-        )
-      ###
-
       init: ->
         ##NTN.connection()
         q = $q.defer()
-        that = @
-        console.log("init called")
-        console.log(that)
-        GAuth2.get().then( () ->
-          auth2 = $window.gapi.auth2.getAuthInstance()
-          auth2.isSignedIn.listen(updateSignIn)
-          auth2.then(updateSignIn)
-          q.resolve("All listeners set.")
-        )
-        q.promise
-        
-    updateSignIn = () ->
-      console.log('update sign in state changed')
-      GAuth2.isSignedIn().then( (res) ->
-        if (res)
-          cu.login()
+        if AuthService.hasValidAuthorization
+          cu.login().then( () ->
+            q.resolve("CurrentUser logged in.")
+          )
         else
-          cu.logout()
-      )
+          cu.logout().then( () ->
+            q.reject("CurrentUser not logged in.")
+          )
+        q.promise
 
 
     cu = new CurrentUser

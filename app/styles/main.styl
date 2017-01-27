@@ -45,7 +45,7 @@ svg
   width: 100%
   overflow: hidden
 
-[play-topic], [help-topic], [server-topic], [exec-topic], [hauchiwa-topic], [tengu-model], a[click-to-code], a[click-to-command], a[target], .warn
+[play-topic], [help-topic], [server-topic], [exec-topic], [hauchiwa-topic], [tengu-bundle], [view-model], a[click-to-code], a[click-to-command], a[target], .warn
   vertical-align: baseline
   &:before
     font-family: "streamline"
@@ -56,9 +56,13 @@ svg
       padding-right: 0
       content: '' !important
 
-[play-topic], [server-topic], [exec-topic], [hauchiwa-topic], [tengu-model], a[click-to-code], a[click-to-command]
+[play-topic], [server-topic], [exec-topic], [hauchiwa-topic], [tengu-bundle], a[click-to-code], a[click-to-command]
   &:before
     content: "w"
+
+[view-model]
+  &:before
+    content: "\2d"
 
 [help-topic], .warn
   &:before

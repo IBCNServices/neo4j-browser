@@ -28,7 +28,7 @@ angular.module('neo4jApp.controllers')
       '$q'
       'Server'
       'Frame'
-      'GeniAuthService'
+      'MaasAuthService'
       'AuthDataService'
       'ConnectionStatusService'
       'Settings'
@@ -142,7 +142,7 @@ angular.module('neo4jApp.controllers')
         $scope.tengu =
           license =
             type: "AGPLv3"
-            version: "0.2"
+            version: "0.3"
             url: "http://www.fsf.org/licensing/licenses/agpl-3.0.html"
             edition: 'Open Source'
             enterpriseEdition: no
@@ -156,12 +156,15 @@ angular.module('neo4jApp.controllers')
         $scope.goodBrowser = !/msie/.test(navigator.userAgent.toLowerCase())
 
         $scope.$watch 'offline', (serverIsOffline) ->
+          console.log("watch offline: " + serverIsOffline)
+          ###
           if (serverIsOffline?)
             if not serverIsOffline
               UDC.trackConnectEvent()
               $scope.bolt_connection_failure = no
             else
               $scope.bolt_connection_failure = yes
+          ###
 
         $scope.$on 'auth:status_updated', (e, is_connected) ->
           $scope.check()
@@ -179,27 +182,13 @@ angular.module('neo4jApp.controllers')
         ###
 
         pickFirstFrame = ->
-          CurrentUser.init()
-          ###
-          AuthService.hasValidAuthorization(retainConnection = yes).then(
-            ->
-              Frame.closeWhere "#{Settings.cmdchar}server connect"
+          CurrentUser.init().then( 
+            (success) ->
+              Frame.closeWhere "#{Settings.cmdchar}signin"
               Frame.create({input:"#{Settings.initCmd}"})
-              onboardingSequence() if Settings.onboarding
-            ,
-            (r) ->
-              if Settings.onboarding then onboardingSequence()
-              else Frame.create({input:"#{Settings.cmdchar}server connect"})
+            , (error) ->
+              Frame.createOne({input:"#{Settings.cmdchar}signin"})
           )
-          ###
-          if AuthService.hasValidAuthorization
-            Frame.closeWhere "#{Settings.cmdchar}server connect"
-            Frame.create({input:"#{Settings.initCmd}"})
-            #onboardingSequence() if Settings.onboarding
-          else
-            #if Settings.onboarding then onboardingSequence()
-            #else 
-            Frame.create({input:"#{Settings.cmdchar}server connect"})
 
         pickFirstFrame()
 
