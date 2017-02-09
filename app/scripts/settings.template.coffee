@@ -34,11 +34,11 @@ angular.module('neo4jApp.settings', ['neo4jApp.utils'])
       transaction: "#{restAPI}/transaction"
       authUser: "#{baseURL}/user"
       tengu: "{{sojobo_url}}"
-      hauchiwaBundle: "{{hauchiwa_bundle}}"
       bundles: "{{bundles_url}}"
       mappings: "{{mappings_url}}"
     needAuthZ: true
     useSojobo: true
+    apiKey: "{{api_key}}"
     featureflags: 'FEATURE_FLAG_AUTH'
     host: baseURL
     maxExecutionTime: 3600 # in seconds

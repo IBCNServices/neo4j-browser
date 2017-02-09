@@ -34,8 +34,6 @@ angular.module('neo4jApp.settings', ['neo4jApp.utils'])
       transaction: "#{restAPI}/transaction"
       authUser: "#{baseURL}/user"
       tengu: "http://104.199.79.46:5000"
-      hauchiwaBundle: "https://api.jujucharms.com/charmstore/v5/~tengu-bot/sojobo/archive/hauchiwa.yaml.template"
-      #hauchiwaBundle: "https://raw.githubusercontent.com/IBCNServices/tengu-charms/master/bundles/sojobo/hauchiwa.yaml.template"
       #bundles: "https://api.jujucharms.com/charmstore/v5/~tengu-bot/{{bundlename}}/archive/bundle.yaml"
       #bundles: "https://raw.githubusercontent.com/IBCNServices/tengu-charms/master/bundles/{{bundlename}}/bundle.json"
       bundles: "https://raw.githubusercontent.com/IBCNServices/bundle-{{bundlename}}/master/bundle.json"
