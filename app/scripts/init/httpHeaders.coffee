@@ -25,7 +25,7 @@ angular.module('neo4jApp').config([
     #$httpProvider.defaults.headers.common['X-stream'] = true
     $httpProvider.defaults.headers.common['Content-Type'] = 'application/json'
     $httpProvider.defaults.headers.common['Accept'] = 'application/json'
-    #$httpProvider.defaults.headers.common['api-key'] = Settings.apiKey
+    $httpProvider.defaults.headers.common['api-key'] = Settings.apiKey
 
     $httpProvider.defaults.headers.get ||= {}
     #$httpProvider.defaults.headers.get['Cache-Control'] = 'no-cache'
