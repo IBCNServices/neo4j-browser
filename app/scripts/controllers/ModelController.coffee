@@ -16,6 +16,7 @@ angular.module('neo4jApp.controllers')
     $scope.modelUI = false
     $scope.status = "init"
     $scope.autoRefresh = true
+    $scope.busyRefreshing = false
 
     $scope.availableModes = ['model']
     $scope.tab = $rootScope.stickyTab
@@ -49,15 +50,18 @@ angular.module('neo4jApp.controllers')
       tab in $scope.availableModes
 
     refreshModel = () ->
+      $scope.busyRefreshing = true
       $scope.frame.resetError()
       if $scope.status == "model-check"
         $http($scope.req).then(
           (response) ->
             $scope.model = response.data
             $scope.modelGraph = createModelGraph($scope.model.applications, null)
+            $scope.busyRefreshing = false
           , (r) ->
             $scope.status = "error"
             $scope.frame.setError "Could not retrieve Model [" + $scope.modelName + "] information."
+            $scope.busyRefreshing = false
         )
 
     createModelGraph = (applications, mapping) ->
@@ -149,8 +153,11 @@ angular.module('neo4jApp.controllers')
       graph
 
     $scope.refresh = () ->
-      if $scope.status == "model-check"
+      if $scope.status == "model-check" and !$scope.busyRefreshing
+        console.log "Refreshing the model"
         refreshModel()
+      else
+        console.log "Not refreshing the model, still busy."
 
     # FIX: timer should take the current request into account
     timer = null
