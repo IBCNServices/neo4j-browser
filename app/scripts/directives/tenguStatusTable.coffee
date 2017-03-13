@@ -66,9 +66,9 @@ angular.module('neo4jApp.directives')
             for app in result.applications
               html += "<tr>"
               html += "<td>" + app.name + "</td>"
-              html += "<td>" + unknown + "</td>"
-              html += "<td>" + unknown + "</td>"
-              html += "<td>" + unknown + "</td>"
+              html += "<td>" + app.status.message + "</td>"
+              html += "<td>" + app.exposed + "</td>"
+              html += "<td>" + app.charm + "</td>"
               if app.units? and app.units.length > 0
                 html += "<td><ul>"
                 for unit in app.units
