@@ -122,18 +122,39 @@ angular.module('neo4jApp.services')
 
       login: ->
         q = $q.defer()
-        res =
-          token      : ConnectionStatusService.plainConnectionAuthData()[1]
-          data_token : ConnectionStatusService.plainConnectionAuthData()[1]
-          profile    :
-            name       : ConnectionStatusService.connectedAsUser()
-            picture    : "/images/default_user.png"
-            email      : "dummy@tengu.io"
 
-        cu.persist(res)
-        data = localStorageService.get 'ntn_profile' || {}
-        $rootScope.$emit 'ntn:login', data
-        q.resolve(res)
+        basicAuth = ConnectionStatusService.plainConnectionAuthData()[1]
+
+        req = {
+          "method"  : "POST"
+          "url"     : Settings.endpoint.tengu + "/login"
+          "headers"  : {
+            "Content-Type"  : "application/json"
+            "api-key"       : Settings.apiKey
+            "Authorization" : "Basic " + basicAuth
+          }
+        }
+
+        $http(req).then(
+          (response) ->
+            if response.status == 200
+              res =
+                token      : basicAuth
+                data_token : basicAuth
+                profile    :
+                  name       : ConnectionStatusService.connectedAsUser()
+                  picture    : "/images/default_user.png"
+                  email      : "dummy@tengu.io"
+
+              cu.persist(res)
+              data = localStorageService.get 'ntn_profile' || {}
+              $rootScope.$emit 'ntn:login', data
+              q.resolve(res)
+          , (r) ->
+            console.log(r)
+            q.reject(r.status)
+        )
+
         q.promise
 
       logout: ->
