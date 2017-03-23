@@ -173,7 +173,6 @@ angular.module('neo4jApp.services')
         AuthDataService.clearAuthData()
         cu.clear()
         $rootScope.$emit 'ntn:logout'
-        Editor.execScript "#{Settings.cmdchar}server disconnect"
         q.resolve("CurrentUser cleaned up.")
         q.promise
 

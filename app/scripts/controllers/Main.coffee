@@ -129,18 +129,15 @@ angular.module('neo4jApp.controllers')
 
         $scope.$watch 'offline', (serverIsOffline) ->
           console.log("watch offline: " + serverIsOffline)
-          ###
           if (serverIsOffline?)
             if not serverIsOffline
-              UDC.trackConnectEvent()
-              $scope.bolt_connection_failure = no
-            else
-              $scope.bolt_connection_failure = yes
-          ###
+              Frame.createOne({input:"#{Settings.cmdchar}signin"})
 
+        ###
         setAndSaveSetting = (key, value) ->
           Settings[key] = value
           SettingsStore.save()
+        ###
 
         ###
         onboardingSequence = ->

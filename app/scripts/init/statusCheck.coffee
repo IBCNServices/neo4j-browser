@@ -53,5 +53,5 @@ angular.module('neo4jApp').run([
           r
       )
 
-    $timeout($scope.check, 20000)
+    $timeout($scope.check)
 ])
