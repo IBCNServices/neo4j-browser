@@ -6,8 +6,8 @@
 
 angular.module('neo4jApp.controllers')
   .controller 'ModelCreateController', [
-    '$scope', 'Settings', 'ConnectionStatusService', '$http', '$timeout', '$base64', 'Frame', 'CurrentUser'
-  ($scope, Settings, ConnectionStatusService, $http, $timeout, $base64, Frame, CurrentUser) ->
+    '$scope', 'Settings', '$http', '$timeout', '$base64', 'Frame', 'CurrentUser'
+  ($scope, Settings, $http, $timeout, $base64, Frame, CurrentUser) ->
     $scope.frame.resetError()
     $scope.newModel = null
     $scope.controller = null
@@ -16,7 +16,7 @@ angular.module('neo4jApp.controllers')
 
     $scope.status = "start"
     ssh_key_pattern = /^ssh-rsa [A-Za-z0-9+]+ \w+@\w+/
-    $scope.is_authenticated = ConnectionStatusService.isConnected()
+    $scope.is_authenticated = CurrentUser.isAuthenticated()
 
     $scope.$watch 'frame.response', (resp) ->
       return unless resp
@@ -50,8 +50,8 @@ angular.module('neo4jApp.controllers')
         deployModel()
 
     deployModel = ->
-      static_user = ConnectionStatusService.connectedAsUser()
-      basicAuth = ConnectionStatusService.plainConnectionAuthData()[1]
+      static_user = CurrentUser.getToken('profile').name
+      basicAuth = CurrentUser.getToken('token')
 
       req = {
         "method"  : "POST"

@@ -28,9 +28,6 @@ angular.module('neo4jApp.controllers')
       '$q'
       'Server'
       'Frame'
-      'SojoboAuthService'
-      'AuthDataService'
-      'ConnectionStatusService'
       'Settings'
       'SettingsStore'
       'motdService'
@@ -38,9 +35,8 @@ angular.module('neo4jApp.controllers')
       'Utils'
       'CurrentUser'
       'ProtocolFactory'
-      ($scope, $window, $q, Server, Frame, AuthService, AuthDataService, ConnectionStatusService, Settings, SettingsStore, motdService, UDC, Utils, CurrentUser, ProtocolFactory) ->
+      ($scope, $window, $q, Server, Frame, Settings, SettingsStore, motdService, UDC, Utils, CurrentUser, ProtocolFactory) ->
         $scope.CurrentUser = CurrentUser
-        $scope.ConnectionStatusService = ConnectionStatusService
         initailConnect = yes
 
         $scope.sojoboMetrics =
@@ -86,26 +82,8 @@ angular.module('neo4jApp.controllers')
               $scope.version = res
             )
           ).then( ->
-            #fetchJMX()
             setSojoboMetrics()
           )
-
-        fetchJMX = ->
-          ProtocolFactory.getJmxService().getJmx([
-            "org.neo4j:instance=kernel#0,name=Configuration"
-            "org.neo4j:instance=kernel#0,name=Kernel"
-            "org.neo4j:instance=kernel#0,name=Store file sizes"
-          ]).then((response) ->
-            for r in response.data
-              for a in r.attributes
-                $scope.kernel[a.name] = a.value
-            $scope.neo4j.store_id = $scope.kernel['StoreId']
-            UDC.updateStoreAndServerVersion($scope.server.neo4j_version, $scope.kernel['StoreId'])
-            refreshPolicies $scope.kernel['browser.retain_connection_credentials'], $scope.kernel['browser.credential_timeout']
-            allow_connections = [no, 'false', 'no'].indexOf($scope.kernel['browser.allow_outgoing_browser_connections']) < 0 ? yes : no
-            refreshAllowOutgoingConnections allow_connections
-            executePostConnectCmd $scope.kernel['browser.post_connect_cmd']
-          ).catch((r)-> $scope.kernel = {})
 
         refreshAllowOutgoingConnections = (allow_connections) ->
           return unless $scope.neo4j.config.allow_outgoing_browser_connections != allow_connections
@@ -117,11 +95,6 @@ angular.module('neo4jApp.controllers')
           else if not allow_connections
             UDC.unloadUDC()
 
-        refreshPolicies = (retainConnectionCredentials = yes, credentialTimeout = 0) ->
-          retainConnectionCredentials = [no, 'false', 'no'].indexOf(retainConnectionCredentials) < 0 ? yes : no
-          credentialTimeout = Utils.parseTimeMillis(credentialTimeout) / 1000
-          ConnectionStatusService.setAuthPolicies {retainConnectionCredentials, credentialTimeout}
-
         mapServerConfig = (key, val) ->
           return unless $scope.neo4j.config[key] != val
           $scope.neo4j.config[key] = val
@@ -129,7 +102,6 @@ angular.module('neo4jApp.controllers')
         $scope.identity = angular.identity
 
         $scope.motd = motdService
-        #$scope.auth_service = AuthService
 
         $scope.neo4j =
           license =
@@ -166,11 +138,6 @@ angular.module('neo4jApp.controllers')
               $scope.bolt_connection_failure = yes
           ###
 
-        $scope.$on 'auth:status_updated', (e, is_connected) ->
-          $scope.check()
-          if is_connected
-            ConnectionStatusService.setSessionStartTimer new Date()
-
         setAndSaveSetting = (key, value) ->
           Settings[key] = value
           SettingsStore.save()
@@ -199,10 +166,11 @@ angular.module('neo4jApp.controllers')
           Frame.create({input:"#{Settings.cmdchar}#{cmd}"})
 
         $scope.$on 'ntn:data_loaded', (evt, authenticated, newUser) ->
-          return Frame.createOne({input:"#{Settings.initCmd}"}) if ConnectionStatusService.isConnected()
+          return Frame.createOne({input:"#{Settings.initCmd}"}) if !$scope.offline
           return Frame.create({input:"#{Settings.cmdchar}play welcome"}) if newUser
           return Frame.create({input:"#{Settings.cmdchar}server connect"}) if !newUser
 
+        ###
         $scope.$watch 'version', (val) ->
           return '' if not val
           $scope.neo4j.version = val.version
@@ -216,6 +184,7 @@ angular.module('neo4jApp.controllers')
           $scope.$emit 'db:updated:edition', val.edition
           if val.version then $scope.motd.setCallToActionVersion(val.version)
         , true
+        ###
     ]
 
   .run([
