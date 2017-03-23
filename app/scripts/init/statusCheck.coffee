@@ -19,24 +19,22 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ###
 
 angular.module('neo4jApp').run([
-  'MaasAuthService'
+  'CurrentUser'
   '$rootScope'
   '$timeout'
   'Server'
   'Settings'
-  'SettingsStore'
-  (AuthService, $scope, $timeout, Server, Settings, SettingsStore) ->
+  (CurrentUser, $scope, $timeout, Server, Settings) ->
     timer = null
 
     error = (multiplier) ->
       $scope.offline = yes
-      #$scope.unauthorized = no
       timer = $timeout($scope.check, multiplier * 1000)
 
     $scope.check = ->
       # Almost every request to the Sojobo needs an authenticated user, so we also
       # test whether a user is authenticated
-      $scope.unauthorized = !AuthService.hasValidAuthorization
+      $scope.unauthorized = !CurrentUser.isAuthenticated()
 
       $timeout.cancel(timer)
       # There is something wrong with the XHR implementation in IE10:
@@ -47,10 +45,7 @@ angular.module('neo4jApp').run([
       Server.status('?t='+ts).success(
         (r) ->
           $scope.offline = no
-          Settings.sojobo_controller = "awsTesting"
-          Settings.useSojobo = yes
           timer = $timeout($scope.check, Settings.heartbeat * 1000)
-          SettingsStore.save()
           r
       ).error(
         (r) ->

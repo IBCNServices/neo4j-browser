@@ -162,6 +162,7 @@ angular.module('neo4jApp')
       ]
 
     # Shorthand for ":play sysinfo"
+    ###
     FrameProvider.interpreters.push
       type: 'play'
       matches: "#{cmdchar}sysinfo"
@@ -170,6 +171,7 @@ angular.module('neo4jApp')
           Frame.create {input: "#{Settings.cmdchar}play sysinfo"}
           return true
       ]
+    ###
 
     # Help/man handler
     FrameProvider.interpreters.push
@@ -289,89 +291,7 @@ angular.module('neo4jApp')
           q.promise
       ]
 
-    FrameProvider.interpreters.push
-      type: 'auth'
-      fullscreenable: false
-      templateUrl: 'views/frame-geni-connect.html'
-      matches: (input) ->
-        pattern = new RegExp("^#{cmdchar}server connect")
-        input.match(pattern)
-      exec: ['GeniAuthService', (AuthService) ->
-        (input, q) -> q.resolve()
-      ]
-
-    FrameProvider.interpreters.push
-      type: 'auth'
-      fullscreenable: false
-      templateUrl: 'views/frame-geni-disconnect.html'
-      matches:  (input) ->
-        pattern = new RegExp("^#{cmdchar}server disconnect")
-        input.match(pattern)
-      exec: ['Settings', 'GeniAuthService', (Settings, AuthService) ->
-        (input, q) ->
-          q.resolve()
-      ]
-
-    FrameProvider.interpreters.push
-      type: 'auth'
-      fullscreenable: false
-      templateUrl: 'views/frame-server-status.html'
-      matches:  (input) ->
-        pattern = new RegExp("^#{cmdchar}server status")
-        input.match(pattern)
-      exec: ['AuthService', 'ConnectionStatusService', (AuthService, ConnectionStatusService) ->
-        (input, q) ->
-          AuthService.hasValidAuthorization()
-          .then(
-            (r) ->
-              q.resolve r
-            ,
-            (r) ->
-              q.reject r
-            )
-          q.promise
-      ]
-
-    FrameProvider.interpreters.push
-      type: 'auth'
-      fullscreenable: false
-      templateUrl: 'views/frame-change-password.html'
-      matches:  (input) ->
-        pattern = new RegExp("^#{cmdchar}server change-password")
-        input.match(pattern)
-      exec: ['AuthService', (AuthService) ->
-        (input, q) ->
-          q.resolve()
-          q.promise
-      ]
-
-
-    FrameProvider.interpreters.push
-      type: 'account'
-      templateUrl: 'views/frame-login.html'
-      matches: ["#{cmdchar}login"]
-      exec: ['CurrentUser', '$rootScope', (CurrentUser, $rootScope) ->
-        (input, q) ->
-          CurrentUser.login()
-          .then(->
-            q.resolve(CurrentUser.instance())
-          , ->
-            q.reject("Unable to log in")
-          )
-          q.promise
-      ]
-
-    FrameProvider.interpreters.push
-      type: 'account'
-      templateUrl: 'views/frame-logout.html'
-      matches: ["#{cmdchar}logout"]
-      exec: ['CurrentUser', (CurrentUser) ->
-        (input, q) ->
-          CurrentUser.logout()
-          q.resolve()
-          q.promise
-      ]
-
+    ###
     extractGraphModel = (response, CypherGraphModel) ->
       graph = new neo.models.Graph()
 
@@ -395,14 +315,17 @@ angular.module('neo4jApp')
         .map(CypherGraphModel.convertRelationship(graph))
         .filter((rel)-> return rel))
       graph
+    ###
 
     FrameProvider.interpreters.push
       type: 'account'
       templateUrl: 'views/frame-tengu-sign-in.html'
       matches: ["#{cmdchar}signin"]
-      exec: ['SojoboAuthService', (AuthService) ->
+      exec: ['CurrentUser', (CurrentUser) ->
         (input, q) ->
-          q.resolve(AuthService.hasValidAuthorization)
+          q.resolve(
+            authenticated: CurrentUser.isAuthenticated()
+          )
           q.promise
       ]
 
@@ -410,9 +333,16 @@ angular.module('neo4jApp')
       type: 'account'
       templateUrl: 'views/frame-tengu-sign-out.html'
       matches: ["#{cmdchar}signout"]
-      exec: ['SojoboAuthService', (AuthService) ->
+      exec: ['CurrentUser', (CurrentUser) ->
         (input, q) ->
-          q.resolve(not AuthService.hasValidAuthorization)
+          console.log "test1"
+          CurrentUser.logout().then( ()->
+            console.log "test2"
+            q.resolve(
+              authenticated: CurrentUser.isAuthenticated()
+            )
+          )
+          console.log "test3"
           q.promise
       ]
 
@@ -422,12 +352,11 @@ angular.module('neo4jApp')
       matches: (input) ->
         pattern = new RegExp("^#{cmdchar}tengu user-info")
         input.match(pattern)
-      exec: ['SojoboAuthService', 'ConnectionStatusService', 'Settings', '$http', (AuthService, ConnectionStatusService, Settings, $http) ->
+      exec: ['CurrentUser', 'Frame', 'Settings', '$http', (CurrentUser, Frame, Settings, $http) ->
         (input, q) ->
-          if AuthService.hasValidAuthorization
-            static_user = ConnectionStatusService.plainConnectionAuthData()[0]
-            url = Settings.endpoint.tengu + "/users/" + static_user
-            basicAuth = ConnectionStatusService.plainConnectionAuthData()[1]
+          if CurrentUser.isAuthenticated()
+            url = Settings.endpoint.tengu + "/users/" + CurrentUser.getToken('profile').name
+            basicAuth = CurrentUser.getToken('token')
 
             req = {
               "method"  : "GET"
@@ -446,7 +375,7 @@ angular.module('neo4jApp')
                 )
               , (r) ->
                 console.log(r)
-                q.reject("Unknown error: [" + r.status + ", " + statusText + "] ")
+                q.reject("Unknown error: [" + r.status + ", " + r.statusText + "] ")
             )
           else
             Frame.createOne({input:"#{cmdchar}signin"})
@@ -461,9 +390,9 @@ angular.module('neo4jApp')
       matches: (input) ->
         pattern = new RegExp("^#{cmdchar}tengu change-user-password")
         input.match(pattern)
-      exec: ['SojoboAuthService', 'ConnectionStatusService', 'Settings', '$http', (AuthService, ConnectionStatusService, Settings, $http) ->
+      exec: ['CurrentUser', '$http', (CurrentUser, $http) ->
         (input, q) ->
-          if AuthService.hasValidAuthorization
+          if CurrentUser.isAuthenticated()
             q.resolve("User authorized.")
           else
             Frame.createOne({input:"#{cmdchar}signin"})
@@ -479,7 +408,7 @@ angular.module('neo4jApp')
       matches:  (input) ->
         pattern = new RegExp("^#{cmdchar}tengu model create")
         input.match(pattern)
-      exec: ['SojoboAuthService', 'Frame', 'Settings', '$http', (AuthService, Frame, Settings, $http) ->
+      exec: ['CurrentUser', 'Settings', '$http', (CurrentUser, Settings, $http) ->
         (input, q) ->
           bundleI = input.indexOf('--bundle')
           if bundleI > 0
@@ -489,7 +418,7 @@ angular.module('neo4jApp')
             bundle = null
             modelName = input[('tengu model create'.length+1)..].trim() or ''
 
-          if AuthService.hasValidAuthorization()
+          if CurrentUser.isAuthenticated()
             if modelName? and modelName.length > 0
               modAndCtrl = modelName.split('@')
               if modAndCtrl.length > 1
@@ -546,10 +475,10 @@ angular.module('neo4jApp')
       matches:  (input) ->
         pattern = new RegExp("^#{cmdchar}tengu model delete")
         input.match(pattern)
-      exec: ['SojoboAuthService', 'ConnectionStatusService', 'Settings', '$http', (AuthService, ConnectionStatusService, Settings, $http) ->
+      exec: ['CurrentUser', 'Settings', '$http', (CurrentUser, Settings, $http) ->
         (input, q) ->
           modelName = topicalize(input[('tengu model delete'.length+1)..]) or 'blank'
-          if !AuthService.hasValidAuthorization()
+          if !CurrentUser.isAuthenticated()
             Frame.createOne({input:"#{cmdchar}signin"})
             q.reject("User is not authorized to talk to the Sojobo.")
           else if modelName == 'blank'
@@ -576,10 +505,10 @@ angular.module('neo4jApp')
       matches:  (input) ->
         pattern = new RegExp("^#{cmdchar}tengu model status")
         input.match(pattern)
-      exec: ['SojoboAuthService', 'ConnectionStatusService', 'Settings', '$http', (AuthService, ConnectionStatusService, Settings, $http) ->
+      exec: ['CurrentUser', 'Settings', '$http', (CurrentUser, Settings, $http) ->
         (input, q) ->
           modelName = topicalize(input[('tengu model status'.length+1)..]) or 'blank'
-          if !AuthService.hasValidAuthorization()
+          if !CurrentUser.isAuthenticated()
             Frame.createOne({input:"#{cmdchar}signin"})
             q.reject("User is not authorized to check the status of a Model.")
           else if modelName == 'blank'
@@ -591,7 +520,7 @@ angular.module('neo4jApp')
             else
               url = Settings.endpoint.tengu + "/tengu/controllers/" + Settings.sojobo_controller + "/models/" + modelName
 
-            basicAuth = ConnectionStatusService.plainConnectionAuthData()[1]
+            basicAuth = CurrentUser.getToken('token')
 
             console.log url
 
@@ -626,42 +555,11 @@ angular.module('neo4jApp')
                   q.reject("Could not find the Model '" + modelName + "'")
                 else
                   console.log(r)
-                  q.reject("Unknown error: [" + r.status + ", " + statusText + "] ")
+                  q.reject("Unknown error: [" + r.status + ", " + r.statusText + "] ")
             )
 
           q.promise
       ]
 
-    # Tengu console handler
-    FrameProvider.interpreters.push
-      type: 'tengu'
-      templateUrl: 'views/frame-console.html'
-      matches:  (input) ->
-        pattern = new RegExp("^#{cmdchar}tengu console")
-        input.match(pattern)
-      exec: ['GeniAuthService', 'ConnectionStatusService', 'Settings', '$http', (GeniAuthService, ConnectionStatusService, Settings, $http) ->
-        (input, q) ->
-          hauchiwa = topicalize(input[('tengu console'.length+1)..]) or 'blank'
-          if hauchiwa != 'blank'
-            req = {
-              "method"  : "GET"
-              "url"     : Settings.endpoint.tengu + "/" + Settings.sojobo_models[0] + "/" + hauchiwa
-              "headers" : { "emulab-s4-cert" : ConnectionStatusService.plainConnectionAuthData()[1] }
-            }
-
-            $http(req).then(
-              (response) ->
-                q.resolve(
-                  hauchiwa: hauchiwa
-                  console_url: "https://n097-18b.wall2.ilabt.iminds.be:3000/"
-                )
-              , (r) ->
-                q.reject(r)
-            )
-          else
-            q.reject('no hauchiwa provided')
-
-          q.promise
-      ]
 
 ])

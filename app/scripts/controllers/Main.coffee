@@ -28,7 +28,7 @@ angular.module('neo4jApp.controllers')
       '$q'
       'Server'
       'Frame'
-      'MaasAuthService'
+      'SojoboAuthService'
       'AuthDataService'
       'ConnectionStatusService'
       'Settings'
@@ -43,7 +43,7 @@ angular.module('neo4jApp.controllers')
         $scope.ConnectionStatusService = ConnectionStatusService
         initailConnect = yes
 
-        $scope.sojoboMetrics = 
+        $scope.sojoboMetrics =
           is_connected   : false
           hauchiwas      : 0
           max_containers : 0
@@ -60,7 +60,7 @@ angular.module('neo4jApp.controllers')
             (response) ->
               containers = 0
               machines = 0
-              angular.forEach(response.data.services, (unit, key) -> 
+              angular.forEach(response.data.services, (unit, key) ->
                 if key.startsWith "h-"
                   $scope.sojoboMetrics.hauchiwas++
                   ## todo metrics from individual hauchiwas
@@ -129,7 +129,7 @@ angular.module('neo4jApp.controllers')
         $scope.identity = angular.identity
 
         $scope.motd = motdService
-        $scope.auth_service = AuthService
+        #$scope.auth_service = AuthService
 
         $scope.neo4j =
           license =
@@ -182,7 +182,7 @@ angular.module('neo4jApp.controllers')
         ###
 
         pickFirstFrame = ->
-          CurrentUser.init().then( 
+          CurrentUser.init().then(
             (success) ->
               Frame.closeWhere "#{Settings.cmdchar}signin"
               Frame.create({input:"#{Settings.initCmd}"})
@@ -208,7 +208,7 @@ angular.module('neo4jApp.controllers')
           $scope.neo4j.version = val.version
           $scope.neo4j.edition = val.edition
           $scope.neo4j.enterpriseEdition = val.edition is 'enterprise'
-          
+
           $scope.tengu.version = val.version
           $scope.tengu.edition = val.edition
           $scope.tengu.enterpriseEdition = val.edition is 'enterprise'

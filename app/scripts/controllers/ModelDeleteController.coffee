@@ -6,14 +6,14 @@
 
 angular.module('neo4jApp.controllers')
   .controller 'ModelDeleteController', [
-    '$scope', 'Settings', 'ConnectionStatusService', '$http', '$timeout', '$base64', 'Frame', 'CurrentUser'
-  ($scope, Settings, ConnectionStatusService, $http, $timeout, $base64, Frame, CurrentUser) ->
+    '$scope', 'Settings', '$http', '$timeout', '$base64', 'Frame', 'CurrentUser'
+  ($scope, Settings, $http, $timeout, $base64, Frame, CurrentUser) ->
     $scope.frame.resetError()
     $scope.model = ''
     $scope.controller = null
 
     $scope.status = "init"
-    $scope.is_authenticated = ConnectionStatusService.isConnected()
+    $scope.is_authenticated = CurrentUser.isAuthenticated()
 
     $scope.$watch 'frame.response', (resp) ->
       return unless resp
@@ -30,8 +30,8 @@ angular.module('neo4jApp.controllers')
 
       $scope.status = "deleting"
       $scope.frame.resetError()
-      static_user = ConnectionStatusService.connectedAsUser()
-      basicAuth = ConnectionStatusService.plainConnectionAuthData()[1]
+      static_user = CurrentUser.getToken('profile').name
+      basicAuth = CurrentUser.getToken('token')
 
       req = {
         "method"  : "DELETE"

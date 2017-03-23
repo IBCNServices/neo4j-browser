@@ -20,7 +20,7 @@ div(ng-controller="SojoboAuthCtrl")
                 p.lead
                   | Lovely to see you.
               .details.col-sm-9(ng-show="user_info")
-                table.table.table-condensed(ng-show="models != null && models.length > 0")
+                table.table.table-condensed(ng-if="models != null && models.length > 0")
                   thead
                     td Model
                     td Controller

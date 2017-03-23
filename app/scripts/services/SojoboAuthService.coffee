@@ -6,15 +6,12 @@
 
 angular.module('neo4jApp.services')
 .service 'SojoboAuthService', [
-  'ConnectionStatusService'
+  'CurrentUser'
   'Server'
   'Settings'
   '$base64'
   '$q'
-  (ConnectionStatusService, Server, Settings, $base64, $q) ->
-
-    clearConnectionAuthData = ->
-      ConnectionStatusService.clearConnectionAuthData()
+  (CurrentUser, Server, Settings, $base64, $q) ->
 
     class SojoboAuthService
       constructor: ->
@@ -52,13 +49,10 @@ angular.module('neo4jApp.services')
 
       forget: ->
         if ConnectionStatusService.connectedAsUser()
-          clearConnectionAuthData()
+          ConnectionStatusService.clearConnectionAuthData()
 
       getCurrentUser: ->
-        if Settings.needAuthZ
-          ConnectionStatusService.connectedAsUser()
-        else
-          "dummy"
+        CurrentUser.instance().getToken('profile').name
 
     new SojoboAuthService()
 ]

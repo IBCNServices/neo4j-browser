@@ -24,15 +24,17 @@ angular.module('neo4jApp.services')
 .service 'CurrentUser', [
   'Settings'
   'Editor'
-  'MaasAuthService'
-  'ConnectionStatusService'
   'localStorageService'
   'AuthDataService'
   '$q'
   '$window'
   '$rootScope'
+  '$base64'
+  '$http'
   'DefaultContentService'
-  (Settings, Editor, AuthService, ConnectionStatusService, localStorageService, AuthDataService, $q, $window, $rootScope, DefaultContentService) ->
+  (Settings, Editor, localStorageService, AuthDataService, $q, $window, $rootScope, $base64, $http, DefaultContentService) ->
+
+    #TODO: remove AuthDataService
     class CurrentUser
       _user: {}
       store: null
@@ -120,14 +122,16 @@ angular.module('neo4jApp.services')
         #GraphStyle.resetToDefault()
         @loadUserFromLocalStorage()
 
-      login: ->
+      login: (username, password) ->
         q = $q.defer()
 
-        basicAuth = ConnectionStatusService.plainConnectionAuthData()[1]
+        authdata = "#{username}:#{password}"
+        AuthDataService.setAuthData authdata
+        basicAuth = $base64.encode(authdata)
 
         req = {
           "method"  : "POST"
-          "url"     : Settings.endpoint.tengu + "/login"
+          "url"     : Settings.endpoint.tengu + "/tengu/login"
           "headers"  : {
             "Content-Type"  : "application/json"
             "api-key"       : Settings.apiKey
@@ -142,7 +146,7 @@ angular.module('neo4jApp.services')
                 token      : basicAuth
                 data_token : basicAuth
                 profile    :
-                  name       : ConnectionStatusService.connectedAsUser()
+                  name       : username
                   picture    : "/images/default_user.png"
                   email      : "dummy@tengu.io"
 
@@ -166,7 +170,7 @@ angular.module('neo4jApp.services')
         localStorageService.remove 'ntn_profile'
         localStorageService.remove 'stores'
 
-        AuthService.forget()
+        AuthDataService.clearAuthData()
         cu.clear()
         $rootScope.$emit 'ntn:logout'
         Editor.execScript "#{Settings.cmdchar}server disconnect"
@@ -178,10 +182,11 @@ angular.module('neo4jApp.services')
       isAuthenticated: -> localStorageService.get 'ntn_data_token'
 
       init: ->
-        ##NTN.connection()
         q = $q.defer()
-        if AuthService.hasValidAuthorization
-          cu.login().then( () ->
+        data = AuthDataService.getPlainAuthData()
+        if data
+          d = data.split(':')
+          cu.login(d[0], d[1]).then( () ->
             q.resolve("CurrentUser logged in.")
           )
         else

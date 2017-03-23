@@ -6,8 +6,8 @@
 
 angular.module('neo4jApp.controllers')
   .controller 'ModelController', [
-    '$rootScope', '$scope', 'Settings', 'ConnectionStatusService', '$http', '$timeout', '$base64', 'TenguGraphModel', 'CurrentUser'
-  ($rootScope, $scope, Settings, ConnectionStatusService, $http, $timeout, $base64, TenguGraphModel, CurrentUser) ->
+    '$rootScope', '$scope', 'Settings', '$http', '$timeout', '$base64', 'TenguGraphModel', 'CurrentUser'
+  ($rootScope, $scope, Settings, $http, $timeout, $base64, TenguGraphModel, CurrentUser) ->
 
     $scope.frame.resetError()
     $scope.modelName = false
