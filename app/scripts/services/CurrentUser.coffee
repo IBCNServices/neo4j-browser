@@ -156,7 +156,7 @@ angular.module('neo4jApp.services')
               q.resolve(res)
           , (r) ->
             console.log(r)
-            q.reject(r.status)
+            q.reject(r)
         )
 
         q.promise

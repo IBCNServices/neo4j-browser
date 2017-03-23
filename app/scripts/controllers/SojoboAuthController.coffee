@@ -24,22 +24,9 @@ angular.module('neo4jApp.controllers')
           if $scope.static_is_authenticated
             $scope.static_user = CurrentUser.getToken('profile').name
 
-        if resp.userinfo?
-          $scope.user_info = resp.userinfo
-          $scope.models = []
-          for ctrl in $scope.user_info.controllers
-            console.log ctrl
-            if ctrl.models?
-              for model in ctrl.models
-                console.log model
-                $scope.models.push {
-                  name       : model.name
-                  controller : ctrl.name
-                  access     : model.access
-                  type       : ctrl.type
-                }
-
       $scope.signin = () ->
+        $scope.frame.resetError()
+
         if not $scope.username? || not $scope.username.length
           $scope.frame.addErrorText 'You have to enter a username to sign in. '
         if not $scope.password? || not $scope.password.length
@@ -47,15 +34,16 @@ angular.module('neo4jApp.controllers')
         return if $scope.frame.getDetailedErrorText().length
 
         CurrentUser.login($scope.username, $scope.password)
-        .then( ->
+        .then( () ->
           $scope.static_user = $scope.username
-          $scope.static_is_authenticated = CurrentUser.isAuthenticated()
-          $scope.frame.resetError()
-
           Frame.createOne({input:"#{Settings.initCmd}"})
           $scope.focusEditor()
         , (r) ->
-          $scope.frame.addErrorText "Something went wrong while login in to the Sojobo: " + r
+          CurrentUser.logout()
+          $scope.static_user = ''
+          $scope.frame.addErrorText "Something went wrong while login in to the Sojobo: " + r.data
+        ).then ( () ->
+          $scope.static_is_authenticated = CurrentUser.isAuthenticated()
         )
 
       $scope.changePassword = () ->

@@ -22,8 +22,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 angular.module('neo4jApp.services')
   .factory('RequestInterceptor', [
-    'AuthDataService'
-    (AuthDataService) ->
+    'CurrentUser'
+    (CurrentUser) ->
       interceptor =
         request: (config) ->
           config.headers['X-Ajax-Browser-Auth'] = true
@@ -34,7 +34,7 @@ angular.module('neo4jApp.services')
               isLocalRequest = no
 
           return config if config.skipAuthHeader or not isLocalRequest
-          header = AuthDataService.getAuthData()
+          header = CurrentUser.getToken('token')
           if header then config.headers['Authorization'] = "Basic #{header}"
           config
       interceptor
