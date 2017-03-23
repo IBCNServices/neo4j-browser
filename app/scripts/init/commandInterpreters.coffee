@@ -358,7 +358,6 @@ angular.module('neo4jApp')
             url = Settings.endpoint.tengu + "/users/" + CurrentUser.getToken('profile').name
             basicAuth = CurrentUser.getToken('token')
 
-            ##TODO remove http resolve from exec
             req = {
               "method"  : "GET"
               "url"     : url
@@ -369,15 +368,9 @@ angular.module('neo4jApp')
               }
             }
 
-            $http(req).then(
-              (response) ->
-                q.resolve(
-                  authenticated: yes
-                  userinfo : response.data
-                )
-              , (r) ->
-                console.log(r)
-                q.reject("Unknown error: [" + r.status + ", " + r.statusText + "] ")
+            q.resolve(
+              authenticated: yes
+              userinforeq : req
             )
           else
             Frame.createOne({input:"#{cmdchar}signin"})

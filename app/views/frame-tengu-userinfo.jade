@@ -1,4 +1,4 @@
-div(ng-controller="SojoboAuthCtrl")
+div(ng-controller="UserInfoCtrl")
   .outer
     include partials/frame-common-actions
     .inner
@@ -9,8 +9,7 @@ div(ng-controller="SojoboAuthCtrl")
               .details
                 h3 User is not signed in
                 p.lead
-                  | There is currently no user signed in. Please use your 
-                  | credentials to 
+                  | You are not signed in. Please use your credentials to 
                   code(exec-topic="signin") signin
                   | .
             .section.row-fluid.summary(ng-show="static_is_authenticated && static_user")
@@ -42,6 +41,9 @@ div(ng-controller="SojoboAuthCtrl")
                   | You don't have any models yet.
                   br
                   | Do you want to create a new model?
+              .details.col-sm-9(ng-hide="user_info")
+                p.lead
+                  | We are loading your controllers and models.
       .status-bar(ng-class='{error: frame.detailedErrorText, loading: frame.isLoading}')
         .status(ng-show="frame.detailedErrorText")
           .fa.fa-exclamation-triangle.icon-warning-sign &nbsp;
