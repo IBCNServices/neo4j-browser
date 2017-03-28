@@ -78,6 +78,8 @@ angular.module('neo4jApp.controllers')
           node.logical = true
           node.r = 40
           node.cluster_p = []
+          node.controller = $scope.controller
+          node.model = $scope.modelName
           nodes.push node
 
           if node.services?
@@ -102,6 +104,8 @@ angular.module('neo4jApp.controllers')
           name      : app.name
           cluster_p : []
           logical   : false
+          controller: $scope.controller
+          model     : $scope.modelName
 
         num_units = 0
 

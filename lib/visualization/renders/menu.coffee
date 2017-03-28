@@ -23,7 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 do ->
   noop = ->
 
-  numberOfItemsInContextMenu = 3
+  numberOfItemsInContextMenu = 4
 
   arc = (radius, itemNumber, width = 30) ->
     itemNumber = itemNumber - 1
@@ -104,7 +104,8 @@ do ->
   )
 
   donutExpandNode = new neo.Renderer(
-    onGraphChange: (selection, viz) -> createMenuItem(selection, viz, 'nodeDblClicked', 2, 'expand_node', [0, 4], '\uf0b2', 'Expand child relationships')
+    #onGraphChange: (selection, viz) -> createMenuItem(selection, viz, 'nodeDblClicked', 2, 'expand_node', [0, 4], '\uf0b2', 'Expand child relationships')
+    onGraphChange: (selection, viz) -> createMenuItem(selection, viz, 'nodeDblClicked', 2, 'expand_node', [0, 4], '\uf108', 'Open the node\'s UI')
 
     onTick: noop
   )
@@ -115,6 +116,13 @@ do ->
     onTick: noop
   )
 
+  donutMonitorNode = new neo.Renderer(
+    onGraphChange: (selection, viz) -> createMenuItem(selection, viz, 'nodeMonitor', 4, 'monitor_node', [0, 4], '\uf080', 'Show Node\'s monitoring info')
+
+    onTick: noop
+  )
+
   neo.renderers.menu.push(donutExpandNode)
   neo.renderers.menu.push(donutRemoveNode)
   neo.renderers.menu.push(donutUnlockNode)
+  neo.renderers.menu.push(donutMonitorNode)

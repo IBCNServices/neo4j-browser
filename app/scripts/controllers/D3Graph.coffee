@@ -141,10 +141,19 @@ angular.module('neo4jApp.controllers')
           toggleSelection(null)
         )
         .on('nodeDblClicked', (d) ->
-          d.minified = no
-          return if d.expanded
-          getNodeNeigbours(d)
-          $rootScope.$apply() unless $rootScope.$$phase
+          console.log d
+          #d.minified = no
+          #return if d.expanded
+          #getNodeNeigbours(d)
+          #$rootScope.$apply() unless $rootScope.$$phase
+          d.contextMenuEvent = yes
+          console.log 'Open UI'
+        )
+        .on('nodeMonitor', (d) ->
+          console.log d
+          d.contextMenuEvent = yes
+          Editor.setContent ":tengu monitor "+d.propertyMap['model']+"@"+d.propertyMap['controller']+"/"+d.propertyMap['name']
+          $scope.focusEditor()
         )
         .on('deleteNode', (d) ->
           Editor.setContent "MATCH (n) WHERE id(n) = " + d.id + " DETACH DELETE n"

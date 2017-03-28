@@ -31,9 +31,9 @@ angular.module('neo4jApp.services')
       (node) ->
         return false if node.deleted
         if node.logical
-          new neo.models.Node(node.name, ['Logical'], {0: node.name, name: node.name})
+          new neo.models.Node(node.name, ['Logical'], {0: node.name, name: node.name, controller: node.controller, model: node.model})
         else
-          new neo.models.Node(node.name, ['Service'], {0: node.name, name: node.name})
+          new neo.models.Node(node.name, ['Service'], {0: node.name, name: node.name, controller: node.controller, model: node.model})
 
     @convertRelationship = (graph) ->
       (relationship) ->
