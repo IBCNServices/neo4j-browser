@@ -19,7 +19,7 @@ angular.module('neo4jApp.controllers')
     $scope.memData = null
     $scope.fsData = null
     $scope.status = "init"
-    $scope.autoRefresh = false
+    $scope.autoRefresh = true
     $scope.busyRefreshing = false
 
     $scope.availableModes = ['up', 'cpu', 'mem']

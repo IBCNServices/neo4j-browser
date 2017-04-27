@@ -34,7 +34,8 @@ angular.module('neo4jApp.controllers')
     'GraphExplorer'
     'GraphStyle'
     'Editor'
-    ($attrs, $element, $parse, $window, $rootScope, $scope, $interval, $timeout, CircularLayout, GraphExplorer, GraphStyle, Editor) ->
+    'Frame'
+    ($attrs, $element, $parse, $window, $rootScope, $scope, $interval, $timeout, CircularLayout, GraphExplorer, GraphStyle, Editor, Frame) ->
       graphView = null
       @getGraphView = -> return graphView
 
@@ -152,7 +153,8 @@ angular.module('neo4jApp.controllers')
         .on('nodeMonitor', (d) ->
           console.log d
           d.contextMenuEvent = yes
-          Editor.setContent ":tengu monitor "+d.propertyMap['model']+"/"+d.propertyMap['name']+"@"+d.propertyMap['controller']
+          #Editor.setContent "
+          Frame.create(input: ":tengu monitor "+d.propertyMap['model']+"/"+d.propertyMap['name']+"@"+d.propertyMap['controller'])
           $scope.focusEditor()
         )
         .on('deleteNode', (d) ->
