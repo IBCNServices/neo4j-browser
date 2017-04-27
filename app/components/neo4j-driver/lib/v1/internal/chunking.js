@@ -1,5 +1,44 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Dechunker = exports.Chunker = undefined;
+
+var _getPrototypeOf = require('babel-runtime/core-js/object/get-prototype-of');
+
+var _getPrototypeOf2 = _interopRequireDefault(_getPrototypeOf);
+
+var _classCallCheck2 = require('babel-runtime/helpers/classCallCheck');
+
+var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
+
+var _createClass2 = require('babel-runtime/helpers/createClass');
+
+var _createClass3 = _interopRequireDefault(_createClass2);
+
+var _possibleConstructorReturn2 = require('babel-runtime/helpers/possibleConstructorReturn');
+
+var _possibleConstructorReturn3 = _interopRequireDefault(_possibleConstructorReturn2);
+
+var _inherits2 = require('babel-runtime/helpers/inherits');
+
+var _inherits3 = _interopRequireDefault(_inherits2);
+
+var _buf = require('./buf');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var _CHUNK_HEADER_SIZE = 2,
+    _MESSAGE_BOUNDARY = 0x00,
+    _DEFAULT_BUFFER_SIZE = 1400; // http://stackoverflow.com/questions/2613734/maximum-packet-size-for-a-tcp-connection
+
 /**
- * Copyright (c) 2002-2016 "Neo Technology,"
+ * Looks like a writable buffer, chunks output transparently into a channel below.
+ * @access private
+ */
+/**
+ * Copyright (c) 2002-2017 "Neo Technology,","
  * Network Engine for Objects in Lund AB [http://neotechnology.com]
  *
  * This file is part of Neo4j.
@@ -17,56 +56,23 @@
  * limitations under the License.
  */
 
-'use strict';
-
-Object.defineProperty(exports, '__esModule', {
-  value: true
-});
-
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var _buf = require('./buf');
-
-var _buf2 = _interopRequireDefault(_buf);
-
-var _CHUNK_HEADER_SIZE = 2,
-    _MESSAGE_BOUNDARY = 0x00,
-    _DEFAULT_BUFFER_SIZE = 1400; // http://stackoverflow.com/questions/2613734/maximum-packet-size-for-a-tcp-connection
-
-/**
- * Looks like a writable buffer, chunks output transparently into a channel below.
- * @access private
- */
-
-var Chunker = (function (_buf$BaseBuffer) {
-  _inherits(Chunker, _buf$BaseBuffer);
+var Chunker = function (_BaseBuffer) {
+  (0, _inherits3.default)(Chunker, _BaseBuffer);
 
   function Chunker(channel, bufferSize) {
-    _classCallCheck(this, Chunker);
+    (0, _classCallCheck3.default)(this, Chunker);
 
-    _get(Object.getPrototypeOf(Chunker.prototype), 'constructor', this).call(this, 0);
-    this._bufferSize = bufferSize || _DEFAULT_BUFFER_SIZE;
-    this._ch = channel;
-    this._buffer = _buf2['default'].alloc(this._bufferSize);
-    this._currentChunkStart = 0;
-    this._chunkOpen = false;
+    var _this = (0, _possibleConstructorReturn3.default)(this, (Chunker.__proto__ || (0, _getPrototypeOf2.default)(Chunker)).call(this, 0));
+
+    _this._bufferSize = bufferSize || _DEFAULT_BUFFER_SIZE;
+    _this._ch = channel;
+    _this._buffer = (0, _buf.alloc)(_this._bufferSize);
+    _this._currentChunkStart = 0;
+    _this._chunkOpen = false;
+    return _this;
   }
 
-  /**
-   * Combines chunks until a complete message is gathered up, and then forwards that
-   * message to an 'onmessage' listener.
-   * @access private
-   */
-
-  _createClass(Chunker, [{
+  (0, _createClass3.default)(Chunker, [{
     key: 'putUInt8',
     value: function putUInt8(position, val) {
       this._ensure(1);
@@ -114,7 +120,7 @@ var Chunker = (function (_buf$BaseBuffer) {
         this._ch.write(out.getSlice(0, out.position));
 
         // Alloc a new output buffer. We assume we're using NodeJS's buffer pooling under the hood here!
-        this._buffer = _buf2['default'].alloc(this._bufferSize);
+        this._buffer = (0, _buf.alloc)(this._bufferSize);
         this._chunkOpen = false;
       }
       return this;
@@ -125,6 +131,7 @@ var Chunker = (function (_buf$BaseBuffer) {
      * is encoded as a 0-length chunk, `00 00`. This inserts such a message boundary, closing
      * any currently open chunk as needed
      */
+
   }, {
     key: 'messageBoundary',
     value: function messageBoundary() {
@@ -140,6 +147,7 @@ var Chunker = (function (_buf$BaseBuffer) {
     }
 
     /** Ensure at least the given size is available for writing */
+
   }, {
     key: '_ensure',
     value: function _ensure(size) {
@@ -164,20 +172,26 @@ var Chunker = (function (_buf$BaseBuffer) {
       }
     }
   }]);
-
   return Chunker;
-})(_buf2['default'].BaseBuffer);
+}(_buf.BaseBuffer);
 
-var Dechunker = (function () {
+/**
+ * Combines chunks until a complete message is gathered up, and then forwards that
+ * message to an 'onmessage' listener.
+ * @access private
+ */
+
+
+var Dechunker = function () {
   function Dechunker() {
-    _classCallCheck(this, Dechunker);
+    (0, _classCallCheck3.default)(this, Dechunker);
 
     this._currentMessage = [];
     this._partialChunkHeader = 0;
     this._state = this.AWAITING_CHUNK;
   }
 
-  _createClass(Dechunker, [{
+  (0, _createClass3.default)(Dechunker, [{
     key: 'AWAITING_CHUNK',
     value: function AWAITING_CHUNK(buf) {
       if (buf.remaining() >= 2) {
@@ -214,6 +228,7 @@ var Dechunker = (function () {
     value: function CLOSED(buf) {}
     // no-op
 
+
     /** Called when a complete chunk header has been recieved */
 
   }, {
@@ -221,11 +236,11 @@ var Dechunker = (function () {
     value: function _onHeader(header) {
       if (header == 0) {
         // Message boundary
-        var message = undefined;
+        var message = void 0;
         if (this._currentMessage.length == 1) {
           message = this._currentMessage[0];
         } else {
-          message = new _buf2['default'].CombinedBuffer(this._currentMessage);
+          message = new _buf.CombinedBuffer(this._currentMessage);
         }
         this._currentMessage = [];
         this.onmessage(message);
@@ -243,12 +258,8 @@ var Dechunker = (function () {
       }
     }
   }]);
-
   return Dechunker;
-})();
+}();
 
-exports['default'] = {
-  Chunker: Chunker,
-  Dechunker: Dechunker
-};
-module.exports = exports['default'];
+exports.Chunker = Chunker;
+exports.Dechunker = Dechunker;

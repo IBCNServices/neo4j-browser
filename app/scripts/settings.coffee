@@ -33,7 +33,7 @@ angular.module('neo4jApp.settings', ['neo4jApp.utils'])
       cypher: "#{restAPI}/cypher"
       transaction: "#{restAPI}/transaction"
       authUser: "#{baseURL}/user"
-      tengu: "https://demobackend.tengu.io"
+      tengu: "http://104.197.215.6"#"https://demobackend.tengu.io"
       #bundles: "https://api.jujucharms.com/charmstore/v5/~tengu-bot/{{bundlename}}/archive/bundle.yaml"
       #bundles: "https://raw.githubusercontent.com/IBCNServices/tengu-charms/master/bundles/{{bundlename}}/bundle.json"
       bundles: "https://raw.githubusercontent.com/IBCNServices/bundle-{{bundlename}}/master/bundle.json"
@@ -41,7 +41,7 @@ angular.module('neo4jApp.settings', ['neo4jApp.utils'])
       mappings: "https://raw.githubusercontent.com/IBCNServices/tengu-charms/master/bundles/{{bundlename}}/mapping.json"
     needAuthZ: true
     useSojobo: true
-    apiKey: "f3f5367b3c28aadbc7b0423885f05624c228e4d8fdf8fbe042b872c4ea0da984"
+    apiKey: "ba1caeb9f89a9008afe35c618a707cb4bda4a3cbe2c887d9b33e45f4f6ceeba0"#"f3f5367b3c28aadbc7b0423885f05624c228e4d8fdf8fbe042b872c4ea0da984"
     featureflags: 'FEATURE_FLAG_AUTH'
     host: baseURL
     maxExecutionTime: 3600 # in seconds

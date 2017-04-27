@@ -1,5 +1,30 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.PathSegment = exports.Path = exports.UnboundRelationship = exports.Relationship = exports.Node = undefined;
+
+var _stringify = require("babel-runtime/core-js/json/stringify");
+
+var _stringify2 = _interopRequireDefault(_stringify);
+
+var _keys = require("babel-runtime/core-js/object/keys");
+
+var _keys2 = _interopRequireDefault(_keys);
+
+var _classCallCheck2 = require("babel-runtime/helpers/classCallCheck");
+
+var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
+
+var _createClass2 = require("babel-runtime/helpers/createClass");
+
+var _createClass3 = _interopRequireDefault(_createClass2);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
- * Copyright (c) 2002-2016 "Neo Technology,"
+ * Copyright (c) 2002-2017 "Neo Technology,","
  * Network Engine for Objects in Lund AB [http://neotechnology.com]
  *
  * This file is part of Neo4j.
@@ -20,49 +45,34 @@
 /**
  * Class for Node Type.
  */
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-var Node = (function () {
+var Node = function () {
   /**
    * @constructor
-   * @param {string} identity - Unique identity
+   * @param {Integer} identity - Unique identity
    * @param {Array} labels - Array for all labels
    * @param {Object} properties - Map with node properties
    */
-
   function Node(identity, labels, properties) {
-    _classCallCheck(this, Node);
+    (0, _classCallCheck3.default)(this, Node);
 
     this.identity = identity;
     this.labels = labels;
     this.properties = properties;
   }
 
-  /**
-   * Class for Relationship Type.
-   */
-
-  _createClass(Node, [{
+  (0, _createClass3.default)(Node, [{
     key: "toString",
     value: function toString() {
       var s = "(" + this.identity;
       for (var i = 0; i < this.labels.length; i++) {
         s += ":" + this.labels[i];
       }
-      var keys = Object.keys(this.properties);
+      var keys = (0, _keys2.default)(this.properties);
       if (keys.length > 0) {
         s += " {";
-        for (var i = 0; i < keys.length; i++) {
-          if (i > 0) s += ",";
-          s += keys[i] + ":" + JSON.stringify(this.properties[keys[i]]);
+        for (var _i = 0; _i < keys.length; _i++) {
+          if (_i > 0) s += ",";
+          s += keys[_i] + ":" + (0, _stringify2.default)(this.properties[keys[_i]]);
         }
         s += "}";
       }
@@ -70,22 +80,25 @@ var Node = (function () {
       return s;
     }
   }]);
-
   return Node;
-})();
+}();
 
-var Relationship = (function () {
+/**
+ * Class for Relationship Type.
+ */
+
+
+var Relationship = function () {
   /**
    * @constructor
-   * @param {string} identity - Unique identity
-   * @param {string} start - Identity of start Node
-   * @param {string} end - Identity of end Node
+   * @param {Integer} identity - Unique identity
+   * @param {Integer} start - Identity of start Node
+   * @param {Integer} end - Identity of end Node
    * @param {string} type - Relationship type
    * @param {Object} properties - Map with relationship properties
    */
-
   function Relationship(identity, start, end, type, properties) {
-    _classCallCheck(this, Relationship);
+    (0, _classCallCheck3.default)(this, Relationship);
 
     this.identity = identity;
     this.start = start;
@@ -94,21 +107,16 @@ var Relationship = (function () {
     this.properties = properties;
   }
 
-  /**
-   * Class for UnboundRelationship Type.
-   * @access private
-   */
-
-  _createClass(Relationship, [{
+  (0, _createClass3.default)(Relationship, [{
     key: "toString",
     value: function toString() {
       var s = "(" + this.start + ")-[:" + this.type;
-      var keys = Object.keys(this.properties);
+      var keys = (0, _keys2.default)(this.properties);
       if (keys.length > 0) {
         s += " {";
         for (var i = 0; i < keys.length; i++) {
           if (i > 0) s += ",";
-          s += keys[i] + ":" + JSON.stringify(this.properties[keys[i]]);
+          s += keys[i] + ":" + (0, _stringify2.default)(this.properties[keys[i]]);
         }
         s += "}";
       }
@@ -116,20 +124,24 @@ var Relationship = (function () {
       return s;
     }
   }]);
-
   return Relationship;
-})();
+}();
 
-var UnboundRelationship = (function () {
+/**
+ * Class for UnboundRelationship Type.
+ * @access private
+ */
+
+
+var UnboundRelationship = function () {
   /**
    * @constructor
-   * @param {string} identity - Unique identity
+   * @param {Integer} identity - Unique identity
    * @param {string} type - Relationship type
    * @param {Object} properties - Map with relationship properties
    */
-
   function UnboundRelationship(identity, type, properties) {
-    _classCallCheck(this, UnboundRelationship);
+    (0, _classCallCheck3.default)(this, UnboundRelationship);
 
     this.identity = identity;
     this.type = type;
@@ -137,17 +149,14 @@ var UnboundRelationship = (function () {
   }
 
   /**
-   * Class for PathSegment Type.
-   */
-
-  /**
    * Bind relationship
-   * @param {string} start - Indentity of start node
-   * @param {string} end - Indentity of end node
+   * @param {Integer} start - Identity of start node
+   * @param {Integer} end - Identity of end node
    * @return {Relationship} - Created relationship
    */
 
-  _createClass(UnboundRelationship, [{
+
+  (0, _createClass3.default)(UnboundRelationship, [{
     key: "bind",
     value: function bind(start, end) {
       return new Relationship(this.identity, start, end, this.type, this.properties);
@@ -156,12 +165,12 @@ var UnboundRelationship = (function () {
     key: "toString",
     value: function toString() {
       var s = "-[:" + this.type;
-      var keys = Object.keys(this.properties);
+      var keys = (0, _keys2.default)(this.properties);
       if (keys.length > 0) {
         s += " {";
         for (var i = 0; i < keys.length; i++) {
           if (i > 0) s += ",";
-          s += keys[i] + ":" + JSON.stringify(this.properties[keys[i]]);
+          s += keys[i] + ":" + (0, _stringify2.default)(this.properties[keys[i]]);
         }
         s += "}";
       }
@@ -169,29 +178,33 @@ var UnboundRelationship = (function () {
       return s;
     }
   }]);
-
   return UnboundRelationship;
-})();
+}();
+
+/**
+ * Class for PathSegment Type.
+ */
+
 
 var PathSegment =
 /**
  * @constructor
- * @param {string} start - Identity of start Node
- * @param {Relationship} rel - Relationship segment
- * @param {string} end - Identity of end Node
+ * @param {Node} start - start node
+ * @param {Relationship} rel - relationship that connects start and end node
+ * @param {Node} end - end node
  */
 function PathSegment(start, rel, end) {
-  _classCallCheck(this, PathSegment);
+  (0, _classCallCheck3.default)(this, PathSegment);
 
   this.start = start;
   this.relationship = rel;
   this.end = end;
-}
+};
 
 /**
  * Class for Path Type.
  */
-;
+
 
 var Path =
 /**
@@ -201,7 +214,7 @@ var Path =
  * @param {Array} segments - Array of Segments
  */
 function Path(start, end, segments) {
-  _classCallCheck(this, Path);
+  (0, _classCallCheck3.default)(this, Path);
 
   this.start = start;
   this.end = end;
@@ -209,11 +222,8 @@ function Path(start, end, segments) {
   this.length = segments.length;
 };
 
-exports["default"] = {
-  Node: Node,
-  Relationship: Relationship,
-  UnboundRelationship: UnboundRelationship,
-  Path: Path,
-  PathSegment: PathSegment
-};
-module.exports = exports["default"];
+exports.Node = Node;
+exports.Relationship = Relationship;
+exports.UnboundRelationship = UnboundRelationship;
+exports.Path = Path;
+exports.PathSegment = PathSegment;

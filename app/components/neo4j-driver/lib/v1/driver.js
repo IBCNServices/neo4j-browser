@@ -1,5 +1,56 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.WRITE = exports.READ = exports.Driver = undefined;
+
+var _getPrototypeOf = require('babel-runtime/core-js/object/get-prototype-of');
+
+var _getPrototypeOf2 = _interopRequireDefault(_getPrototypeOf);
+
+var _possibleConstructorReturn2 = require('babel-runtime/helpers/possibleConstructorReturn');
+
+var _possibleConstructorReturn3 = _interopRequireDefault(_possibleConstructorReturn2);
+
+var _get2 = require('babel-runtime/helpers/get');
+
+var _get3 = _interopRequireDefault(_get2);
+
+var _inherits2 = require('babel-runtime/helpers/inherits');
+
+var _inherits3 = _interopRequireDefault(_inherits2);
+
+var _classCallCheck2 = require('babel-runtime/helpers/classCallCheck');
+
+var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
+
+var _createClass2 = require('babel-runtime/helpers/createClass');
+
+var _createClass3 = _interopRequireDefault(_createClass2);
+
+var _session = require('./session');
+
+var _session2 = _interopRequireDefault(_session);
+
+var _pool = require('./internal/pool');
+
+var _pool2 = _interopRequireDefault(_pool);
+
+var _connector = require('./internal/connector');
+
+var _streamObserver = require('./internal/stream-observer');
+
+var _streamObserver2 = _interopRequireDefault(_streamObserver);
+
+var _error = require('./error');
+
+var _connectionProviders = require('./internal/connection-providers');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
- * Copyright (c) 2002-2016 "Neo Technology,"
+ * Copyright (c) 2002-2017 "Neo Technology,","
  * Network Engine for Objects in Lund AB [http://neotechnology.com]
  *
  * This file is part of Neo4j.
@@ -17,36 +68,8 @@
  * limitations under the License.
  */
 
-'use strict';
-
-Object.defineProperty(exports, '__esModule', {
-  value: true
-});
-
-var _get = function get(_x5, _x6, _x7) { var _again = true; _function: while (_again) { var object = _x5, property = _x6, receiver = _x7; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x5 = parent; _x6 = property; _x7 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
-
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
-
-var _session = require('./session');
-
-var _session2 = _interopRequireDefault(_session);
-
-var _internalPool = require('./internal/pool');
-
-var _internalConnector = require("./internal/connector");
-
-var _internalStreamObserver = require('./internal/stream-observer');
-
-var _internalStreamObserver2 = _interopRequireDefault(_internalStreamObserver);
-
-var _version = require('../version');
-
+var READ = 'READ',
+    WRITE = 'WRITE';
 /**
  * A driver maintains one or more {@link Session sessions} with a remote
  * Neo4j instance. Through the {@link Session sessions} you can send statements
@@ -58,7 +81,7 @@ var _version = require('../version');
  * @access public
  */
 
-var Driver = (function () {
+var Driver = function () {
   /**
    * You should not be calling this directly, instead use {@link driver}.
    * @constructor
@@ -68,13 +91,10 @@ var Driver = (function () {
    * @param {Object} config
    * @access private
    */
-
-  function Driver(url) {
-    var userAgent = arguments.length <= 1 || arguments[1] === undefined ? 'neo4j-javascript/0.0' : arguments[1];
-    var token = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
-    var config = arguments.length <= 3 || arguments[3] === undefined ? {} : arguments[3];
-
-    _classCallCheck(this, Driver);
+  function Driver(url, userAgent) {
+    var token = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+    var config = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
+    (0, _classCallCheck3.default)(this, Driver);
 
     this._url = url;
     this._userAgent = userAgent;
@@ -82,10 +102,9 @@ var Driver = (function () {
     this._sessionIdGenerator = 0;
     this._token = token;
     this._config = config;
-    this._pool = new _internalPool.Pool(this._createConnection.bind(this), this._destroyConnection.bind(this), this._validateConnection.bind(this), config.connectionPoolSize);
+    this._pool = new _pool2.default(this._createConnection.bind(this), this._destroyConnection.bind(this), Driver._validateConnection.bind(this), config.connectionPoolSize);
+    this._connectionProvider = this._createConnectionProvider(url, this._pool, this._driverOnErrorCallback.bind(this));
   }
-
-  /** Internal stream observer used for connection state */
 
   /**
    * Create a new connection instance.
@@ -93,16 +112,17 @@ var Driver = (function () {
    * @access private
    */
 
-  _createClass(Driver, [{
+
+  (0, _createClass3.default)(Driver, [{
     key: '_createConnection',
-    value: function _createConnection(release) {
+    value: function _createConnection(url, release) {
       var sessionId = this._sessionIdGenerator++;
-      var streamObserver = new _ConnectionStreamObserver(this);
-      var conn = (0, _internalConnector.connect)(this._url, this._config);
+      var conn = (0, _connector.connect)(url, this._config);
+      var streamObserver = new _ConnectionStreamObserver(this, conn);
       conn.initialize(this._userAgent, this._token, streamObserver);
       conn._id = sessionId;
       conn._release = function () {
-        return release(conn);
+        return release(url, conn);
       };
 
       this._openSessions[sessionId] = conn;
@@ -114,19 +134,16 @@ var Driver = (function () {
      * @return {boolean} true if the connection is open
      * @access private
      **/
+
   }, {
-    key: '_validateConnection',
-    value: function _validateConnection(conn) {
-      return conn.isOpen();
-    }
+    key: '_destroyConnection',
+
 
     /**
      * Dispose of a live session, closing any associated resources.
      * @return {Session} new session.
      * @access private
      */
-  }, {
-    key: '_destroyConnection',
     value: function _destroyConnection(conn) {
       delete this._openSessions[conn._id];
       conn.close();
@@ -143,33 +160,43 @@ var Driver = (function () {
      * it is returned to the pool, the session will be reset to a clean state and
      * made available for others to use.
      *
+     * @param {string} [mode=WRITE] the access mode of this session, allowed values are {@link READ} and {@link WRITE}.
+     * @param {string} [bookmark=null] the initial reference to some previous transaction. Value is optional and
+     * absence indicates that that the bookmark does not exist or is unknown.
      * @return {Session} new session.
      */
+
   }, {
     key: 'session',
-    value: function session() {
-      var conn = this._pool.acquire();
-      return new _session2['default'](conn, function (cb) {
-        // This gets called on Session#close(), and is where we return
-        // the pooled 'connection' instance.
+    value: function session(mode, bookmark) {
+      var sessionMode = Driver._validateSessionMode(mode);
+      return this._createSession(sessionMode, this._connectionProvider, bookmark, this._config);
+    }
+  }, {
+    key: '_createConnectionProvider',
 
-        // We don't pool Session instances, to avoid users using the Session
-        // after they've called close. The `Session` object is just a thin
-        // wrapper around Connection anyway, so it makes little difference.
 
-        // Queue up a 'reset', to ensure the next user gets a clean
-        // session to work with.
-        conn.reset();
-        conn.sync();
+    //Extension point
+    value: function _createConnectionProvider(address, connectionPool, driverOnErrorCallback) {
+      return new _connectionProviders.DirectConnectionProvider(address, connectionPool, driverOnErrorCallback);
+    }
 
-        // Return connection to the pool
-        conn._release();
+    //Extension point
 
-        // Call user callback
-        if (cb) {
-          cb();
-        }
-      });
+  }, {
+    key: '_createSession',
+    value: function _createSession(mode, connectionProvider, bookmark, config) {
+      return new _session2.default(mode, connectionProvider, bookmark, config);
+    }
+  }, {
+    key: '_driverOnErrorCallback',
+    value: function _driverOnErrorCallback(error) {
+      var userDefinedOnErrorCallback = this.onError;
+      if (userDefinedOnErrorCallback && error.code === _error.SERVICE_UNAVAILABLE) {
+        userDefinedOnErrorCallback(error);
+      } else {
+        // we don't need to tell the driver about this error
+      }
     }
 
     /**
@@ -177,6 +204,7 @@ var Driver = (function () {
      * make sure to use this when you are done with this driver instance.
      * @return undefined
      */
+
   }, {
     key: 'close',
     value: function close() {
@@ -184,100 +212,70 @@ var Driver = (function () {
         if (this._openSessions.hasOwnProperty(sessionId)) {
           this._openSessions[sessionId].close();
         }
+        this._pool.purgeAll();
       }
     }
+  }], [{
+    key: '_validateConnection',
+    value: function _validateConnection(conn) {
+      return conn.isOpen();
+    }
+  }, {
+    key: '_validateSessionMode',
+    value: function _validateSessionMode(rawMode) {
+      var mode = rawMode || WRITE;
+      if (mode !== READ && mode !== WRITE) {
+        throw (0, _error.newError)('Illegal session mode ' + mode);
+      }
+      return mode;
+    }
   }]);
-
   return Driver;
-})();
+}();
 
-var _ConnectionStreamObserver = (function (_StreamObserver) {
-  _inherits(_ConnectionStreamObserver, _StreamObserver);
+/** Internal stream observer used for connection state */
 
-  function _ConnectionStreamObserver(driver) {
-    _classCallCheck(this, _ConnectionStreamObserver);
 
-    _get(Object.getPrototypeOf(_ConnectionStreamObserver.prototype), 'constructor', this).call(this);
-    this._driver = driver;
-    this._hasFailed = false;
+var _ConnectionStreamObserver = function (_StreamObserver) {
+  (0, _inherits3.default)(_ConnectionStreamObserver, _StreamObserver);
+
+  function _ConnectionStreamObserver(driver, conn) {
+    (0, _classCallCheck3.default)(this, _ConnectionStreamObserver);
+
+    var _this = (0, _possibleConstructorReturn3.default)(this, (_ConnectionStreamObserver.__proto__ || (0, _getPrototypeOf2.default)(_ConnectionStreamObserver)).call(this));
+
+    _this._driver = driver;
+    _this._conn = conn;
+    _this._hasFailed = false;
+    return _this;
   }
 
-  _createClass(_ConnectionStreamObserver, [{
+  (0, _createClass3.default)(_ConnectionStreamObserver, [{
     key: 'onError',
     value: function onError(error) {
       if (!this._hasFailed) {
-        _get(Object.getPrototypeOf(_ConnectionStreamObserver.prototype), 'onError', this).call(this, error);
+        (0, _get3.default)(_ConnectionStreamObserver.prototype.__proto__ || (0, _getPrototypeOf2.default)(_ConnectionStreamObserver.prototype), 'onError', this).call(this, error);
         if (this._driver.onError) {
           this._driver.onError(error);
         }
         this._hasFailed = true;
       }
     }
+  }, {
+    key: 'onCompleted',
+    value: function onCompleted(message) {
+      if (this._driver.onCompleted) {
+        this._driver.onCompleted(message);
+      }
+      if (this._conn && message && message.server) {
+        this._conn.setServerVersion(message.server);
+      }
+    }
   }]);
-
   return _ConnectionStreamObserver;
-})(_internalStreamObserver2['default']);
-
-var USER_AGENT = "neo4j-javascript/" + _version.VERSION;
-
-/**
- * Construct a new Neo4j Driver. This is your main entry point for this
- * library.
- *
- * ## Configuration
- *
- * This function optionally takes a configuration argument. Available configuration
- * options are as follows:
- *
- *     {
- *       // Enable TLS encryption. This is on by default in modern NodeJS installs,
- *       // but off by default in the Web Bundle and old (<=1.0.0) NodeJS installs
- *       // due to technical limitations on those platforms.
- *       encrypted: true|false,
- *
- *       // Trust strategy to use if encryption is enabled. There is no mode to disable
- *       // trust other than disabling encryption altogether. The reason for
- *       // this is that if you don't know who you are talking to, it is easy for an
- *       // attacker to hijack your encrypted connection, rendering encryption pointless.
- *       //
- *       // TRUST_ON_FIRST_USE is the default for modern NodeJS deployments, and works
- *       // similarly to how `ssl` works - the first time we connect to a new host,
- *       // we remember the certificate they use. If the certificate ever changes, we
- *       // assume it is an attempt to hijack the connection and require manual intervention.
- *       // This means that by default, connections "just work" while still giving you
- *       // good encrypted protection.
- *       //
- *       // TRUST_SIGNED_CERTIFICATES is the classic approach to trust verification -
- *       // whenever we establish an encrypted connection, we ensure the host is using
- *       // an encryption certificate that is in, or is signed by, a certificate listed
- *       // as trusted. In the web bundle, this list of trusted certificates is maintained
- *       // by the web browser. In NodeJS, you configure the list with the next config option.
- *       trust: "TRUST_ON_FIRST_USE" | "TRUST_SIGNED_CERTIFICATES",
- *
- *       // List of one or more paths to trusted encryption certificates. This only
- *       // works in the NodeJS bundle, and only matters if you use "TRUST_SIGNED_CERTIFICATES".
- *       // The certificate files should be in regular X.509 PEM format.
- *       // For instance, ['./trusted.pem']
- *       trustedCertificates: [],
- *
- *       // Path to a file where the driver saves hosts it has seen in the past, this is
- *       // very similar to the ssl tool's known_hosts file. Each time we connect to a
- *       // new host, a hash of their certificate is stored along with the domain name and
- *       // port, and this is then used to verify the host certificate does not change.
- *       // This setting has no effect unless TRUST_ON_FIRST_USE is enabled.
- *       knownHosts:"~/.neo4j/known_hosts",
- *     }
- *
- * @param {string} url The URL for the Neo4j database, for instance "bolt://localhost"
- * @param {Map<String,String>} authToken Authentication credentials. See {@link auth} for helpers.
- * @param {Object} config Configuration object. See the configuration section above for details.
- * @returns {Driver}
- */
-function driver(url, authToken) {
-  var config = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
-
-  return new Driver(url, USER_AGENT, authToken, config);
-}
+}(_streamObserver2.default);
 
 exports.Driver = Driver;
-exports.driver = driver;
+exports.READ = READ;
+exports.WRITE = WRITE;
+exports.default = Driver;

@@ -1,33 +1,20 @@
-/**
- * Copyright (c) 2002-2016 "Neo Technology,"
- * Network Engine for Objects in Lund AB [http://neotechnology.com]
- *
- * This file is part of Neo4j.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+var _classCallCheck2 = require("babel-runtime/helpers/classCallCheck");
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
+
+var _createClass2 = require("babel-runtime/helpers/createClass");
+
+var _createClass3 = _interopRequireDefault(_createClass2);
 
 var _error = require("./error");
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function generateFieldLookup(keys) {
   var lookup = {};
@@ -48,7 +35,7 @@ function generateFieldLookup(keys) {
  * each record represents one user found by the statement above. You can access
  * the values of each field either by name:
  *
- *     record.get("n.name")
+ *     record.get("u.name")
  *
  * Or by it's position:
  *
@@ -56,8 +43,26 @@ function generateFieldLookup(keys) {
  *
  * @access public
  */
+/**
+ * Copyright (c) 2002-2017 "Neo Technology,","
+ * Network Engine for Objects in Lund AB [http://neotechnology.com]
+ *
+ * This file is part of Neo4j.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
-var Record = (function () {
+var Record = function () {
   /**
    * Create a new record object.
    * @constructor
@@ -69,11 +74,9 @@ var Record = (function () {
    *                            field names to values. If this is null, one will be
    *                            generated.
    */
-
   function Record(keys, fields) {
-    var fieldLookup = arguments.length <= 2 || arguments[2] === undefined ? null : arguments[2];
-
-    _classCallCheck(this, Record);
+    var fieldLookup = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
+    (0, _classCallCheck3.default)(this, Record);
 
     this.keys = keys;
     this.length = keys.length;
@@ -89,7 +92,8 @@ var Record = (function () {
    * @param visitor
    */
 
-  _createClass(Record, [{
+
+  (0, _createClass3.default)(Record, [{
     key: "forEach",
     value: function forEach(visitor) {
       for (var i = 0; i < this.keys.length; i++) {
@@ -98,15 +102,33 @@ var Record = (function () {
     }
 
     /**
+     * Generates an object out of the current Record
+     *
+     * @returns {Object}
+     */
+
+  }, {
+    key: "toObject",
+    value: function toObject() {
+      var object = {};
+      this.forEach(function (value, key) {
+        object[key] = value;
+      });
+
+      return object;
+    }
+
+    /**
      * Get a value from this record, either by index or by field key.
      *
      * @param {string|Number} key Field key, or the index of the field.
      * @returns {*}
      */
+
   }, {
     key: "get",
     value: function get(key) {
-      var index = undefined;
+      var index = void 0;
       if (!(typeof key === "number")) {
         index = this._fieldLookup[key];
         if (index === undefined) {
@@ -122,9 +144,27 @@ var Record = (function () {
 
       return this._fields[index];
     }
+
+    /**
+     * Check if a value from this record, either by index or by field key, exists.
+     *
+     * @param {string|Number} key Field key, or the index of the field.
+     * @returns {boolean}
+     */
+
+  }, {
+    key: "has",
+    value: function has(key) {
+      // if key is a number, we check if it is in the _fields array
+      if (typeof key === "number") {
+        return key >= 0 && key < this._fields.length;
+      }
+
+      // if it's not a number, we check _fieldLookup dictionary directly
+      return this._fieldLookup[key] !== undefined;
+    }
   }]);
-
   return Record;
-})();
+}();
 
-exports.Record = Record;
+exports.default = Record;

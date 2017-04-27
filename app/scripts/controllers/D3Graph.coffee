@@ -152,7 +152,7 @@ angular.module('neo4jApp.controllers')
         .on('nodeMonitor', (d) ->
           console.log d
           d.contextMenuEvent = yes
-          Editor.setContent ":tengu monitor "+d.propertyMap['model']+"@"+d.propertyMap['controller']+"/"+d.propertyMap['name']
+          Editor.setContent ":tengu monitor "+d.propertyMap['model']+"/"+d.propertyMap['name']+"@"+d.propertyMap['controller']
           $scope.focusEditor()
         )
         .on('deleteNode', (d) ->

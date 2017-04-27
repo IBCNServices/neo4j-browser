@@ -1,5 +1,10 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 /**
- * Copyright (c) 2002-2016 "Neo Technology,"
+ * Copyright (c) 2002-2017 "Neo Technology,","
  * Network Engine for Objects in Lund AB [http://neotechnology.com]
  *
  * This file is part of Neo4j.
@@ -20,19 +25,34 @@
 // Central place to detect feature support for the current platform,
 // expand as needed.
 
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
 var FEATURES = {
   trust_on_first_use: function trust_on_first_use() {
     try {
       // This is insane. We are verifying that we have a version of getPeerCertificate
       // that supports reading the whole certificate, eg this commit:
       // https://github.com/nodejs/node/commit/345c40b6
-      var desc = require('tls').TLSSocket.prototype.getPeerCertificate.toString();
-      return desc.startsWith("function getPeerCertificate(detailed)");
+      var getPeerCertificateFunction = require('tls').TLSSocket.prototype.getPeerCertificate;
+      var numberOfParameters = getPeerCertificateFunction.length;
+      return numberOfParameters >= 1;
+    } catch (e) {
+      return false;
+    }
+  },
+  trust_all_certificates: function trust_all_certificates() {
+    try {
+      var getPeerCertificateFunction = require('tls').TLSSocket.prototype.getPeerCertificate;
+      return true;
+    } catch (e) {
+      return false;
+    }
+  },
+  dns_lookup: function dns_lookup() {
+    try {
+      var lookupFunction = require('dns').lookup;
+      if (lookupFunction && typeof lookupFunction === 'function') {
+        return true;
+      }
+      return false;
     } catch (e) {
       return false;
     }
@@ -43,5 +63,4 @@ function hasFeature(name) {
   return FEATURES[name] && FEATURES[name]();
 }
 
-exports["default"] = hasFeature;
-module.exports = exports["default"];
+exports.default = hasFeature;

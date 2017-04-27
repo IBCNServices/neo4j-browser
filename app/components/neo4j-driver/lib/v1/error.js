@@ -1,5 +1,30 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.PROTOCOL_ERROR = exports.SESSION_EXPIRED = exports.SERVICE_UNAVAILABLE = exports.Neo4jError = exports.newError = undefined;
+
+var _getPrototypeOf = require('babel-runtime/core-js/object/get-prototype-of');
+
+var _getPrototypeOf2 = _interopRequireDefault(_getPrototypeOf);
+
+var _classCallCheck2 = require('babel-runtime/helpers/classCallCheck');
+
+var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
+
+var _possibleConstructorReturn2 = require('babel-runtime/helpers/possibleConstructorReturn');
+
+var _possibleConstructorReturn3 = _interopRequireDefault(_possibleConstructorReturn2);
+
+var _inherits2 = require('babel-runtime/helpers/inherits');
+
+var _inherits3 = _interopRequireDefault(_inherits2);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
- * Copyright (c) 2002-2016 "Neo Technology,"
+ * Copyright (c) 2002-2017 "Neo Technology,","
  * Network Engine for Objects in Lund AB [http://neotechnology.com]
  *
  * This file is part of Neo4j.
@@ -20,41 +45,37 @@
 // A common place for constructing error objects, to keep them
 // uniform across the driver surface.
 
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _get = function get(_x3, _x4, _x5) { var _again = true; _function: while (_again) { var object = _x3, property = _x4, receiver = _x5; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x3 = parent; _x4 = property; _x5 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+var SERVICE_UNAVAILABLE = 'ServiceUnavailable';
+var SESSION_EXPIRED = 'SessionExpired';
+var PROTOCOL_ERROR = 'ProtocolError';
 
 function newError(message) {
-  var code = arguments.length <= 1 || arguments[1] === undefined ? "N/A" : arguments[1];
+  var code = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "N/A";
 
-  // TODO: Idea is that we can check the cod here and throw sub-classes
+  // TODO: Idea is that we can check the code here and throw sub-classes
   // of Neo4jError as appropriate
   return new Neo4jError(message, code);
 }
 
-var Neo4jError = (function (_Error) {
-  _inherits(Neo4jError, _Error);
+var Neo4jError = function (_Error) {
+  (0, _inherits3.default)(Neo4jError, _Error);
 
   function Neo4jError(message) {
-    var code = arguments.length <= 1 || arguments[1] === undefined ? "N/A" : arguments[1];
+    var code = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "N/A";
+    (0, _classCallCheck3.default)(this, Neo4jError);
 
-    _classCallCheck(this, Neo4jError);
+    var _this = (0, _possibleConstructorReturn3.default)(this, (Neo4jError.__proto__ || (0, _getPrototypeOf2.default)(Neo4jError)).call(this, message));
 
-    _get(Object.getPrototypeOf(Neo4jError.prototype), "constructor", this).call(this, message);
-    this.message = message;
-    this.code = code;
+    _this.message = message;
+    _this.code = code;
+    return _this;
   }
 
   return Neo4jError;
-})(Error);
+}(Error);
 
 exports.newError = newError;
 exports.Neo4jError = Neo4jError;
+exports.SERVICE_UNAVAILABLE = SERVICE_UNAVAILABLE;
+exports.SESSION_EXPIRED = SESSION_EXPIRED;
+exports.PROTOCOL_ERROR = PROTOCOL_ERROR;

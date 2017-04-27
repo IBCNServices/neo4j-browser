@@ -445,7 +445,7 @@ angular.module('neo4jApp')
                     bundle     : response.data
                   )
                 , (r) ->
-                  if r.status = 404
+                  if r.status == 404
                     q.reject("Could not find the Bundle '" + bundle + "'")
                   else
                     console.log(r)
@@ -545,7 +545,7 @@ angular.module('neo4jApp')
                     req      : req
                   )
               , (r) ->
-                if r.status = 404
+                if r.status == 404
                   console.log(r.data.msg)
                   q.reject("Could not find the Model '" + modelName + "'")
                 else
@@ -556,5 +556,68 @@ angular.module('neo4jApp')
           q.promise
       ]
 
+      # Tengu model monitoring handler
+      FrameProvider.interpreters.push
+        type: 'tengu'
+        templateUrl: 'views/frame-monitoring.html'
+        matches:  (input) ->
+          pattern = new RegExp("^#{cmdchar}tengu monitor")
+          input.match(pattern)
+        exec: ['CurrentUser', 'Settings', '$http', (CurrentUser, Settings, $http) ->
+          (input, q) ->
+            modelName = topicalize(input[('tengu monitor'.length+1)..]) or 'blank'
+            if !CurrentUser.isAuthenticated()
+              Frame.createOne({input:"#{cmdchar}signin"})
+              q.reject("User is not authorized to check the status of a Model.")
+            else if modelName == 'blank'
+              q.reject("User must provide the name of the Model.")
+            else
+              modAndCtrl = modelName.split('@')
+              console.log(modAndCtrl)
+              if modAndCtrl.length > 1
+                modAndApp = modAndCtrl[0].split('/')
+                if modAndApp.length > 1
+                  url = Settings.endpoint.tengu + "/monitoring/controllers/" + modAndCtrl[1] + "/models/" + modAndApp[0] + "/applications/" + modAndApp[1]
+                else
+                  url = Settings.endpoint.tengu + "/monitoring/controllers/" + modAndCtrl[1] + "/models/" + modAndCtrl[0]
+
+                basicAuth = CurrentUser.getToken('token')
+
+                console.log url
+
+                req = {
+                  "method"  : "GET"
+                  "url"     : url
+                  "headers"  : {
+                    "Content-Type"  : "application/json"
+                    "api-key"       : Settings.apiKey
+                    "Authorization" : "Basic " + basicAuth
+                  }
+                }
+
+                $http(req).then(
+                  (response) ->
+                    data =
+                      model           : modAndApp[0]
+                      controller      : modAndCtrl[1]
+                      data            : response.data
+                      req             : req
+                    if modAndApp.length > 1
+                      data["application"] = modAndApp[1]
+
+                    q.resolve(data)
+                  , (r) ->
+                    if r.status == 404
+                      console.log(r.data.msg)
+                      q.reject("Could not find the Model or Application'" + modAndCtrl[0] + "'")
+                    else
+                      console.log(r)
+                      q.reject("Unknown error: [" + r.status + ", " + r.statusText + "] ")
+                )
+              else
+                q.reject("User must provide the name of both the controller and the model")
+
+            q.promise
+        ]
 
 ])

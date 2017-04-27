@@ -1,0 +1,173 @@
+div(ng-controller="ModelMonitoringController", fullscreen)
+  .outer
+    include partials/frame-common-actions
+    .left-frame-toggle
+      .left-toggle-menu.toggle(ng-if='availableModes.length > 0')
+        .btn-group.toggle-buttons
+          .button-holder(ng-show="isAvailable('up')")
+            button.btn(ng-class='{active: isActive("up")}', ng-click='setActive("up")')
+              i.fa.fa-info
+              span.mini-menu-item-text state
+            br
+          .button-holder(ng-show="isAvailable('cpu')")
+            button.btn(ng-class='{active: isActive("cpu")}', ng-click='setActive("cpu")')
+              i.fa.fa-dashboard
+              span.mini-menu-item-text CPU
+            br
+          .button-holder(ng-show="isAvailable('mem')")
+            button.btn(ng-class='{active: isActive("mem")}', ng-click='setActive("mem")')
+              i.fa.fa-ticket
+              span.mini-menu-item-text Memory
+            br
+          .button-holder(ng-show="isAvailable('fs')")
+            button.btn(ng-class='{active: isActive("fs")}', ng-click='setActive("fs")')
+              i.fa.fa-tasks
+              span.mini-menu-item-text 
+                | File
+                br
+                | System
+    .right-inner-frame.no-indicator(ng-class='{"no-left-menu": availableModes.length < 1}')
+      .inner
+        .view-result(ng-class='{error: frame.hasErrors}')
+          .view-result-raw.result(ng-show='isActive("up") && !frame.isTerminating')
+            .raw-holder
+              article.help.no-data.has-status-bar(ng-hide="upData")
+                h3 The monitoring information is being retrieved.
+                p.lead
+                  | Please wait a little longer.
+                br
+                br
+              article.help.no-data.has-status-bar(ng-show="upData")
+                h3 The state of your application's units
+                p.lead
+                  | Check whether your units are up or down.
+                br
+                br
+                .row(ng-repeat="(name, value) in upData")
+                  .col-md-3
+                    .panel.panel-success(ng-if="value")
+                      .panel-heading
+                        .row
+                          .col-xs-3
+                            i.fa.fa-arrow-up.fa-5x
+                          .col-xs-9.text-right
+                            .h2 up
+                            div {{name}}
+                    .panel.panel-danger(ng-if="!value")
+                      .panel-heading
+                        .row
+                          .col-xs-3
+                            i.fa.fa-arrow-down.fa-5x
+                          .col-xs-9.text-right
+                            .h2 down
+                            div {{name}}
+                br
+                br
+            include partials/error-status-bar
+            .status-bar(ng-show="!frame.hasErrors")
+              .status
+                include partials/raw-status
+          
+          .view-result-raw.result(ng-show='isActive("cpu") && !frame.isTerminating')
+            .raw-holder
+              article.help.no-data.has-status-bar(ng-hide="cpuData")
+                h3 The monitoring information is being retrieved.
+                p.lead
+                  | Please wait a little longer.
+                br
+                br
+              article.help.no-data.has-status-bar(ng-show="cpuData")
+                h3 The CPU usage of your application's units
+                p.lead
+                  | Currently the number is the usage of all CPU cores combined.
+                br
+                .row(ng-repeat="(name, value) in cpuData")
+                  .col-md-4
+                    .panel.panel-info
+                      .panel-heading
+                        .row
+                          .col-xs-3
+                            i.fa.fa-dashboard.fa-5x
+                          .col-xs-9.text-right
+                            b.h3 {{value}} %
+                            div {{name}}
+                br
+                br
+            include partials/error-status-bar
+            .status-bar(ng-show="!frame.hasErrors")
+              .status
+                include partials/raw-status
+                
+          .view-result-raw.result(ng-show='isActive("mem") && !frame.isTerminating')
+            .raw-holder
+              article.help.no-data.has-status-bar(ng-hide="memData")
+                h3 The monitoring information is being retrieved.
+                p.lead
+                  | Please wait a little longer.
+                br
+                br
+              article.help.no-data.has-status-bar(ng-show="memData")
+                h3 The Memory usage of your application's units
+                p.lead
+                  | Currently you see the used memory and total memory in MB.
+                br
+                .row(ng-repeat="(name, value) in memData")
+                  .col-md-6
+                    .panel(ng-class="memState(value)")
+                      .panel-heading
+                        .row
+                          .col-xs-3
+                            i.fa.fa-ticket.fa-5x
+                          .col-xs-9.text-right
+                            b.h3 {{value.total - value.available}} / {{value.total}} MB
+                            div {{name}}
+                br
+                br
+            include partials/error-status-bar
+            .status-bar(ng-show="!frame.hasErrors")
+              .status
+                include partials/raw-status
+                
+          .view-result-raw.result(ng-show='isActive("fs") && !frame.isTerminating')
+            .raw-holder
+              article.help.no-data.has-status-bar(ng-hide="data")
+                h3 The monitoring information is being retrieved.
+                p.lead
+                  | Please wait a little longer.
+                br
+                br
+              article.help.no-data.has-status-bar(ng-show="data")
+                h3 The free diskspace of your application's units
+                p.lead
+                  | Check whether your units still have free diskspace.
+                br
+                .row(ng-repeat="(name, value) in fsData")
+                  .col-md-6
+                    .panel(ng-class="memState(value)")
+                      .panel-heading
+                        .row
+                          .col-xs-3
+                            i.fa.fa-tasks.fa-5x
+                          .col-xs-9.text-right
+                            b.h3 {{value.free/1024.0/1024.0}} MB
+                            div {{name}}
+                br
+                br
+            include partials/error-status-bar
+            .status-bar(ng-show="!frame.hasErrors")
+              .status
+                include partials/raw-status
+            
+          footer.tight(ng-hide="status == 'error'")
+            .actions
+              .toggle.toggle-footer-margin(ng-click='toggleAutoRefresh()')
+                a.toggle-text Auto-refresh
+                .switch
+                  label
+                    .switch-inner(ng-class="{right: autoRefresh}")
+                      span.right-text
+                        | ON
+                      .handle
+                      span.left-text
+                        | OFF
+              a.button.fa.fa-refresh(ng-click="refresh()")

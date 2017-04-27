@@ -1,5 +1,96 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.statementType = undefined;
+
+var _keys = require('babel-runtime/core-js/object/keys');
+
+var _keys2 = _interopRequireDefault(_keys);
+
+var _classCallCheck2 = require('babel-runtime/helpers/classCallCheck');
+
+var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
+
+var _createClass2 = require('babel-runtime/helpers/createClass');
+
+var _createClass3 = _interopRequireDefault(_createClass2);
+
+var _integer = require('./integer');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
- * Copyright (c) 2002-2016 "Neo Technology,"
+  * A ResultSummary instance contains structured metadata for a {Result}.
+  * @access public
+  */
+var ResultSummary = function () {
+  /**
+   * @constructor
+   * @param {string} statement - The statement this summary is for
+   * @param {Object} parameters - Parameters for the statement
+   * @param {Object} metadata - Statement metadata
+   */
+  function ResultSummary(statement, parameters, metadata) {
+    (0, _classCallCheck3.default)(this, ResultSummary);
+
+    this.statement = { text: statement, parameters: parameters };
+    this.statementType = metadata.type;
+    var counters = new StatementStatistics(metadata.stats || {});
+    this.counters = counters;
+    //for backwards compatibility, remove in future version
+    this.updateStatistics = counters;
+    this.plan = metadata.plan || metadata.profile ? new Plan(metadata.plan || metadata.profile) : false;
+    this.profile = metadata.profile ? new ProfiledPlan(metadata.profile) : false;
+    this.notifications = this._buildNotifications(metadata.notifications);
+    this.server = new ServerInfo(metadata.server);
+    this.resultConsumedAfter = metadata.result_consumed_after;
+    this.resultAvailableAfter = metadata.result_available_after;
+  }
+
+  (0, _createClass3.default)(ResultSummary, [{
+    key: '_buildNotifications',
+    value: function _buildNotifications(notifications) {
+      if (!notifications) {
+        return [];
+      }
+      return notifications.map(function (n) {
+        return new Notification(n);
+      });
+    }
+
+    /**
+     * Check if the result summary has a plan
+     * @return {boolean}
+     */
+
+  }, {
+    key: 'hasPlan',
+    value: function hasPlan() {
+      return this.plan instanceof Plan;
+    }
+
+    /**
+     * Check if the result summary has a profile
+     * @return {boolean}
+     */
+
+  }, {
+    key: 'hasProfile',
+    value: function hasProfile() {
+      return this.profile instanceof ProfiledPlan;
+    }
+  }]);
+  return ResultSummary;
+}();
+
+/**
+  * Class for execution plan received by prepending Cypher with EXPLAIN.
+  * @access public
+  */
+/**
+ * Copyright (c) 2002-2017 "Neo Technology,","
  * Network Engine for Objects in Lund AB [http://neotechnology.com]
  *
  * This file is part of Neo4j.
@@ -17,82 +108,6 @@
  * limitations under the License.
  */
 
-'use strict';
-
-Object.defineProperty(exports, '__esModule', {
-  value: true
-});
-
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
-
-var _integer = require('./integer');
-
-/**
-  * A ResultSummary instance contains structured metadata for a {Result}.
-  * @access public
-  */
-
-var ResultSummary = (function () {
-  /**
-   * @constructor
-   * @param {string} statement - The statement this summary is for
-   * @param {Object} parameters - Parameters for the statement
-   * @param {Object} metadata - Statement metadata
-   */
-
-  function ResultSummary(statement, parameters, metadata) {
-    _classCallCheck(this, ResultSummary);
-
-    this.statement = { text: statement, parameters: parameters };
-    this.statementType = metadata.type;
-    this.updateStatistics = new StatementStatistics(metadata.stats || {});
-    this.plan = metadata.plan || metadata.profile ? new Plan(metadata.plan || metadata.profile) : false;
-    this.profile = metadata.profile ? new ProfiledPlan(metadata.profile) : false;
-    this.notifications = this._buildNotifications(metadata.notifications);
-  }
-
-  /**
-    * Class for execution plan received by prepending Cypher with EXPLAIN.
-    * @access public
-    */
-
-  _createClass(ResultSummary, [{
-    key: '_buildNotifications',
-    value: function _buildNotifications(notifications) {
-      if (!notifications) {
-        return [];
-      }
-      return notifications.map(function (n) {
-        return new Notification(n);
-      });
-    }
-
-    /**
-     * Check if the result summary has a plan
-     * @return {boolean}
-     */
-  }, {
-    key: 'hasPlan',
-    value: function hasPlan() {
-      return this.plan instanceof Plan;
-    }
-
-    /**
-     * Check if the result summary has a profile
-     * @return {boolean}
-     */
-  }, {
-    key: 'hasProfile',
-    value: function hasProfile() {
-      return this.profile instanceof ProfiledPlan;
-    }
-  }]);
-
-  return ResultSummary;
-})();
-
 var Plan =
 /**
  * Create a Plan instance
@@ -100,7 +115,7 @@ var Plan =
  * @param {Object} plan - Object with plan data
  */
 function Plan(plan) {
-  _classCallCheck(this, Plan);
+  (0, _classCallCheck3.default)(this, Plan);
 
   this.operatorType = plan.operatorType;
   this.identifiers = plan.identifiers;
@@ -108,13 +123,13 @@ function Plan(plan) {
   this.children = plan.children ? plan.children.map(function (child) {
     return new Plan(child);
   }) : [];
-}
+};
 
 /**
   * Class for execution plan received by prepending Cypher with PROFILE.
   * @access public
   */
-;
+
 
 var ProfiledPlan =
 /**
@@ -123,7 +138,7 @@ var ProfiledPlan =
  * @param {Object} profile - Object with profile data
  */
 function ProfiledPlan(profile) {
-  _classCallCheck(this, ProfiledPlan);
+  (0, _classCallCheck3.default)(this, ProfiledPlan);
 
   this.operatorType = profile.operatorType;
   this.identifiers = profile.identifiers;
@@ -133,25 +148,24 @@ function ProfiledPlan(profile) {
   this.children = profile.children ? profile.children.map(function (child) {
     return new ProfiledPlan(child);
   }) : [];
-}
+};
 
 /**
   * Get statistical information for a {Result}.
   * @access public
   */
-;
 
-var StatementStatistics = (function () {
+
+var StatementStatistics = function () {
   /**
    * Structurize the statistics
    * @constructor
    * @param {Object} statistics - Result statistics
    */
-
   function StatementStatistics(statistics) {
     var _this = this;
 
-    _classCallCheck(this, StatementStatistics);
+    (0, _classCallCheck3.default)(this, StatementStatistics);
 
     this._stats = {
       nodesCreated: 0,
@@ -166,7 +180,7 @@ var StatementStatistics = (function () {
       constraintsAdded: 0,
       constraintsRemoved: 0
     };
-    Object.keys(statistics).forEach(function (index) {
+    (0, _keys2.default)(statistics).forEach(function (index) {
       //To camelCase
       _this._stats[index.replace(/(\-\w)/g, function (m) {
         return m[1].toUpperCase();
@@ -175,21 +189,17 @@ var StatementStatistics = (function () {
   }
 
   /**
-    * Class for Cypher notifications
-    * @access public
-    */
-
-  /**
    * Did the database get updated?
    * @return {boolean}
    */
 
-  _createClass(StatementStatistics, [{
+
+  (0, _createClass3.default)(StatementStatistics, [{
     key: 'containsUpdates',
     value: function containsUpdates() {
       var _this2 = this;
 
-      return Object.keys(this._stats).reduce(function (last, current) {
+      return (0, _keys2.default)(this._stats).reduce(function (last, current) {
         return last + _this2._stats[current];
       }, 0) > 0;
     }
@@ -197,6 +207,7 @@ var StatementStatistics = (function () {
     /**
      * @return {Number} - Number of nodes created.
      */
+
   }, {
     key: 'nodesCreated',
     value: function nodesCreated() {
@@ -206,6 +217,7 @@ var StatementStatistics = (function () {
     /**
      * @return {Number} - Number of nodes deleted.
      */
+
   }, {
     key: 'nodesDeleted',
     value: function nodesDeleted() {
@@ -215,6 +227,7 @@ var StatementStatistics = (function () {
     /**
      * @return {Number} - Number of relationships created.
      */
+
   }, {
     key: 'relationshipsCreated',
     value: function relationshipsCreated() {
@@ -224,6 +237,7 @@ var StatementStatistics = (function () {
     /**
      * @return {Number} - Number of nodes deleted.
      */
+
   }, {
     key: 'relationshipsDeleted',
     value: function relationshipsDeleted() {
@@ -233,6 +247,7 @@ var StatementStatistics = (function () {
     /**
      * @return {Number} - Number of properties set.
      */
+
   }, {
     key: 'propertiesSet',
     value: function propertiesSet() {
@@ -242,6 +257,7 @@ var StatementStatistics = (function () {
     /**
      * @return {Number} - Number of labels added.
      */
+
   }, {
     key: 'labelsAdded',
     value: function labelsAdded() {
@@ -251,6 +267,7 @@ var StatementStatistics = (function () {
     /**
      * @return {Number} - Number of labels removed.
      */
+
   }, {
     key: 'labelsRemoved',
     value: function labelsRemoved() {
@@ -260,6 +277,7 @@ var StatementStatistics = (function () {
     /**
      * @return {Number} - Number of indexes added.
      */
+
   }, {
     key: 'indexesAdded',
     value: function indexesAdded() {
@@ -269,6 +287,7 @@ var StatementStatistics = (function () {
     /**
      * @return {Number} - Number of indexes removed.
      */
+
   }, {
     key: 'indexesRemoved',
     value: function indexesRemoved() {
@@ -278,6 +297,7 @@ var StatementStatistics = (function () {
     /**
      * @return {Number} - Number of contraints added.
      */
+
   }, {
     key: 'constraintsAdded',
     value: function constraintsAdded() {
@@ -287,25 +307,30 @@ var StatementStatistics = (function () {
     /**
      * @return {Number} - Number of contraints removed.
      */
+
   }, {
     key: 'constraintsRemoved',
     value: function constraintsRemoved() {
       return this._stats.constraintsRemoved;
     }
   }]);
-
   return StatementStatistics;
-})();
+}();
 
-var Notification = (function () {
+/**
+  * Class for Cypher notifications
+  * @access public
+  */
+
+
+var Notification = function () {
   /**
    * Create a Notification instance
    * @constructor
    * @param {Object} notification - Object with notification data
    */
-
   function Notification(notification) {
-    _classCallCheck(this, Notification);
+    (0, _classCallCheck3.default)(this, Notification);
 
     this.code = notification.code;
     this.title = notification.title;
@@ -314,7 +339,7 @@ var Notification = (function () {
     this.position = Notification._constructPosition(notification.position);
   }
 
-  _createClass(Notification, null, [{
+  (0, _createClass3.default)(Notification, null, [{
     key: '_constructPosition',
     value: function _constructPosition(pos) {
       if (!pos) {
@@ -327,9 +352,29 @@ var Notification = (function () {
       };
     }
   }]);
-
   return Notification;
-})();
+}();
+
+/**
+  * Class for exposing server info from a result.
+  * @access public
+  */
+
+
+var ServerInfo =
+/**
+ * Create a ServerInfo instance
+ * @constructor
+ * @param {Object} serverMeta - Object with serverMeta data
+ */
+function ServerInfo(serverMeta) {
+  (0, _classCallCheck3.default)(this, ServerInfo);
+
+  if (serverMeta) {
+    this.address = serverMeta.address;
+    this.version = serverMeta.version;
+  }
+};
 
 var statementType = {
   READ_ONLY: 'r',
@@ -338,8 +383,5 @@ var statementType = {
   SCHEMA_WRITE: 's'
 };
 
-exports['default'] = {
-  ResultSummary: ResultSummary,
-  statementType: statementType
-};
-module.exports = exports['default'];
+exports.statementType = statementType;
+exports.default = ResultSummary;

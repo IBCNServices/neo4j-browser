@@ -1,37 +1,21 @@
-/**
- * Copyright (c) 2002-2016 "Neo Technology,"
- * Network Engine for Objects in Lund AB [http://neotechnology.com]
- *
- * This file is part of Neo4j.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-// 64-bit Integer library, originally from Long.js by dcodeIO
-// https://github.com/dcodeIO/Long.js
-// License Apache 2
-
 'use strict';
 
-Object.defineProperty(exports, '__esModule', {
+Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.toString = exports.toNumber = exports.inSafeRange = exports.isInt = exports.int = undefined;
 
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+var _classCallCheck2 = require('babel-runtime/helpers/classCallCheck');
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
 
-var _error = require("./error");
+var _createClass2 = require('babel-runtime/helpers/createClass');
+
+var _createClass3 = _interopRequireDefault(_createClass2);
+
+var _error = require('./error');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
  * Constructs a 64 bit two's-complement integer, given its low and high 32 bit values as *signed* integers.
@@ -42,11 +26,12 @@ var _error = require("./error");
  * @param {number} low The low (signed) 32 bits of the long
  * @param {number} high The high (signed) 32 bits of the long
  * @constructor
+ *
+ * @deprecated This class will be removed or made internal in a future version of the driver.
  */
-
-var Integer = (function () {
+var Integer = function () {
   function Integer(low, high) {
-    _classCallCheck(this, Integer);
+    (0, _classCallCheck3.default)(this, Integer);
 
     /**
      * The low 32 bits as a signed value.
@@ -62,14 +47,6 @@ var Integer = (function () {
      */
     this.high = high | 0;
   }
-
-  /**
-   * An indicator used to reliably determine if an object is a Integer or not.
-   * @type {boolean}
-   * @const
-   * @expose
-   * @private
-   */
 
   // The internal representation of an Integer is the two given signed, 32-bit values.
   // We use 32-bit pieces because these are the size of integers on which
@@ -88,19 +65,26 @@ var Integer = (function () {
   // Common constant values ZERO, ONE, NEG_ONE, etc. are defined below the from*
   // methods on which they depend.
 
-  /**
-   * Converts the Integer to an exact javascript Number, assuming it is a 32 bit integer.
-   * @returns {number}
-   * @expose
-   */
 
-  _createClass(Integer, [{
+  (0, _createClass3.default)(Integer, [{
+    key: 'inSafeRange',
+    value: function inSafeRange() {
+      return this.greaterThanOrEqual(Integer.MIN_SAFE_VALUE) && this.lessThanOrEqual(Integer.MAX_SAFE_VALUE);
+    }
+    /**
+     * Converts the Integer to an exact javascript Number, assuming it is a 32 bit integer.
+     * @returns {number}
+     * @expose
+     */
+
+  }, {
     key: 'toInt',
     value: function toInt() {
       return this.low;
     }
   }, {
     key: 'toNumber',
+
 
     /**
      * Converts the Integer to a the nearest floating-point representation of this value (double, 53 bit mantissa).
@@ -119,6 +103,7 @@ var Integer = (function () {
      * @throws {RangeError} If `radix` is out of range
      * @expose
      */
+
   }, {
     key: 'toString',
     value: function toString(radix) {
@@ -148,8 +133,9 @@ var Integer = (function () {
             digits = intval.toString(radix);
         rem = remDiv;
         if (rem.isZero()) return digits + result;else {
-          while (digits.length < 6) digits = '0' + digits;
-          result = '' + digits + result;
+          while (digits.length < 6) {
+            digits = '0' + digits;
+          }result = '' + digits + result;
         }
       }
     }
@@ -159,6 +145,7 @@ var Integer = (function () {
      * @returns {number} Signed high bits
      * @expose
      */
+
   }, {
     key: 'getHighBits',
     value: function getHighBits() {
@@ -170,6 +157,7 @@ var Integer = (function () {
      * @returns {number} Signed low bits
      * @expose
      */
+
   }, {
     key: 'getLowBits',
     value: function getLowBits() {
@@ -181,13 +169,15 @@ var Integer = (function () {
      * @returns {number}
      * @expose
      */
+
   }, {
     key: 'getNumBitsAbs',
     value: function getNumBitsAbs() {
       if (this.isNegative()) return this.equals(Integer.MIN_VALUE) ? 64 : this.negate().getNumBitsAbs();
       var val = this.high != 0 ? this.high : this.low;
-      for (var bit = 31; bit > 0; bit--) if ((val & 1 << bit) != 0) break;
-      return this.high != 0 ? bit + 33 : bit + 1;
+      for (var bit = 31; bit > 0; bit--) {
+        if ((val & 1 << bit) != 0) break;
+      }return this.high != 0 ? bit + 33 : bit + 1;
     }
 
     /**
@@ -195,6 +185,7 @@ var Integer = (function () {
      * @returns {boolean}
      * @expose
      */
+
   }, {
     key: 'isZero',
     value: function isZero() {
@@ -206,6 +197,7 @@ var Integer = (function () {
      * @returns {boolean}
      * @expose
      */
+
   }, {
     key: 'isNegative',
     value: function isNegative() {
@@ -217,6 +209,7 @@ var Integer = (function () {
      * @returns {boolean}
      * @expose
      */
+
   }, {
     key: 'isPositive',
     value: function isPositive() {
@@ -228,6 +221,7 @@ var Integer = (function () {
      * @returns {boolean}
      * @expose
      */
+
   }, {
     key: 'isOdd',
     value: function isOdd() {
@@ -239,6 +233,7 @@ var Integer = (function () {
      * @returns {boolean}
      * @expose
      */
+
   }, {
     key: 'isEven',
     value: function isEven() {
@@ -246,6 +241,7 @@ var Integer = (function () {
     }
   }, {
     key: 'equals',
+
 
     /**
      * Tests if this Integer's value equals the specified's.
@@ -264,6 +260,7 @@ var Integer = (function () {
      * @returns {boolean}
      * @expose
      */
+
   }, {
     key: 'notEquals',
     value: function notEquals(other) {
@@ -276,6 +273,7 @@ var Integer = (function () {
      * @returns {boolean}
      * @expose
      */
+
   }, {
     key: 'lessThan',
     value: function lessThan(other) {
@@ -288,6 +286,7 @@ var Integer = (function () {
      * @returns {boolean}
      * @expose
      */
+
   }, {
     key: 'lessThanOrEqual',
     value: function lessThanOrEqual(other) {
@@ -300,6 +299,7 @@ var Integer = (function () {
      * @returns {boolean}
      * @expose
      */
+
   }, {
     key: 'greaterThan',
     value: function greaterThan(other) {
@@ -312,6 +312,7 @@ var Integer = (function () {
      * @returns {boolean}
      * @expose
      */
+
   }, {
     key: 'greaterThanOrEqual',
     value: function greaterThanOrEqual(other) {
@@ -325,6 +326,7 @@ var Integer = (function () {
      *  if the given one is greater
      * @expose
      */
+
   }, {
     key: 'compare',
     value: function compare(other) {
@@ -343,6 +345,7 @@ var Integer = (function () {
      * @returns {!Integer} Negated Integer
      * @expose
      */
+
   }, {
     key: 'negate',
     value: function negate() {
@@ -356,6 +359,7 @@ var Integer = (function () {
      * @returns {!Integer} Sum
      * @expose
      */
+
   }, {
     key: 'add',
     value: function add(addend) {
@@ -397,6 +401,7 @@ var Integer = (function () {
      * @returns {!Integer} Difference
      * @expose
      */
+
   }, {
     key: 'subtract',
     value: function subtract(subtrahend) {
@@ -410,6 +415,7 @@ var Integer = (function () {
      * @returns {!Integer} Product
      * @expose
      */
+
   }, {
     key: 'multiply',
     value: function multiply(multiplier) {
@@ -468,6 +474,7 @@ var Integer = (function () {
   }, {
     key: 'div',
 
+
     /**
      * Returns this Integer divided by the specified.
      * @param {!Integer|number|string} divisor Divisor
@@ -516,6 +523,7 @@ var Integer = (function () {
         var log2 = Math.ceil(Math.log(approx) / Math.LN2),
             delta = log2 <= 48 ? 1 : Math.pow(2, log2 - 48),
 
+
         // Decrease the approximation until it is smaller than the remainder.  Note
         // that if it is too large, the product overflows and is negative.
         approxRes = Integer.fromNumber(approx),
@@ -542,6 +550,7 @@ var Integer = (function () {
      * @returns {!Integer} Remainder
      * @expose
      */
+
   }, {
     key: 'modulo',
     value: function modulo(divisor) {
@@ -554,6 +563,7 @@ var Integer = (function () {
      * @returns {!Integer}
      * @expose
      */
+
   }, {
     key: 'not',
     value: function not() {
@@ -566,6 +576,7 @@ var Integer = (function () {
      * @returns {!Integer}
      * @expose
      */
+
   }, {
     key: 'and',
     value: function and(other) {
@@ -579,6 +590,7 @@ var Integer = (function () {
      * @returns {!Integer}
      * @expose
      */
+
   }, {
     key: 'or',
     value: function or(other) {
@@ -592,6 +604,7 @@ var Integer = (function () {
      * @returns {!Integer}
      * @expose
      */
+
   }, {
     key: 'xor',
     value: function xor(other) {
@@ -605,6 +618,7 @@ var Integer = (function () {
      * @returns {!Integer} Shifted Integer
      * @expose
      */
+
   }, {
     key: 'shiftLeft',
     value: function shiftLeft(numBits) {
@@ -618,6 +632,7 @@ var Integer = (function () {
      * @returns {!Integer} Shifted Integer
      * @expose
      */
+
   }, {
     key: 'shiftRight',
     value: function shiftRight(numBits) {
@@ -625,9 +640,38 @@ var Integer = (function () {
       if ((numBits &= 63) === 0) return this;else if (numBits < 32) return Integer.fromBits(this.low >>> numBits | this.high << 32 - numBits, this.high >> numBits);else return Integer.fromBits(this.high >> numBits - 32, this.high >= 0 ? 0 : -1);
     }
   }]);
-
   return Integer;
-})();
+}();
+
+/**
+ * An indicator used to reliably determine if an object is a Integer or not.
+ * @type {boolean}
+ * @const
+ * @expose
+ * @private
+ */
+/**
+ * Copyright (c) 2002-2017 "Neo Technology,","
+ * Network Engine for Objects in Lund AB [http://neotechnology.com]
+ *
+ * This file is part of Neo4j.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+// 64-bit Integer library, originally from Long.js by dcodeIO
+// https://github.com/dcodeIO/Long.js
+// License Apache 2
 
 Integer.__isInteger__;
 
@@ -755,6 +799,41 @@ Integer.fromValue = function (val) {
 };
 
 /**
+ * Converts the specified value to a number.
+ * @access private
+ * @param {!Integer|number|string|!{low: number, high: number}} val Value
+ * @returns {number}
+ * @expose
+ */
+Integer.toNumber = function (val) {
+  return Integer.fromValue(val).toNumber();
+};
+
+/**
+* Converts the specified value to a string.
+* @access private
+* @param {!Integer|number|string|!{low: number, high: number}} val Value
+* @param {number} radix optional radix for string conversion, defaults to 10
+* @returns {String}
+* @expose
+*/
+Integer.toString = function (val, radix) {
+  return Integer.fromValue(val).toString(radix);
+};
+
+/**
+ * Checks if the given value is in the safe range in order to be converted to a native number
+ * @access private
+ * @param {!Integer|number|string|!{low: number, high: number}} val Value
+ * @param {number} radix optional radix for string conversion, defaults to 10
+ * @returns {boolean}
+ * @expose
+ */
+Integer.inSafeRange = function (val) {
+  return Integer.fromValue(val).inSafeRange();
+};
+
+/**
  * @type {number}
  * @const
  * @inner
@@ -838,6 +917,20 @@ Integer.MAX_VALUE = Integer.fromBits(0xFFFFFFFF | 0, 0x7FFFFFFF | 0, false);
 Integer.MIN_VALUE = Integer.fromBits(0, 0x80000000 | 0, false);
 
 /**
+ * Minimum safe value.
+ * @type {!Integer}
+ * @expose
+ */
+Integer.MIN_SAFE_VALUE = Integer.fromBits(0x1 | 0, 0xFFFFFFFFFFE00000 | 0);
+
+/**
+* Maximum safe value.
+* @type {!Integer}
+* @expose
+*/
+Integer.MAX_SAFE_VALUE = Integer.fromBits(0xFFFFFFFF | 0, 0x1FFFFF | 0);
+
+/**
  * Cast value to Integer type.
  * @access public
  * @param {Mixed} value - The value to use.
@@ -848,14 +941,39 @@ var int = Integer.fromValue;
 /**
  * Check if a variable is of Integer type.
  * @access public
- * @param {Mixed} value - The varaible to check.
+ * @param {Mixed} value - The variable to check.
  * @return {Boolean} - Is it of the Integer type?
  */
 var isInt = Integer.isInteger;
 
-exports['default'] = {
-  Integer: Integer,
-  int: int,
-  isInt: isInt
-};
-module.exports = exports['default'];
+/**
+ * Check if a variable can be safely converted to a number
+ * @access public
+ * @param {Mixed} value - The variable to check
+ * @return {Boolean} - true if it is safe to call toNumber on variable otherwise false
+ */
+var inSafeRange = Integer.inSafeRange;
+
+/**
+ * Converts a variable to a number
+ * @access public
+ * @param {Mixed} value - The variable to convert
+ * @return {number} - the variable as a number
+ */
+var toNumber = Integer.toNumber;
+
+/**
+ * Converts the integer to a string representation
+ * @access public
+ * @param {Mixed} value - The variable to convert
+ * @param {number} radix - radix to use in string conversion, defaults to 10
+ * @return {String} - returns a string representation of the integer
+ */
+var toString = Integer.toString;
+
+exports.int = int;
+exports.isInt = isInt;
+exports.inSafeRange = inSafeRange;
+exports.toNumber = toNumber;
+exports.toString = toString;
+exports.default = Integer;

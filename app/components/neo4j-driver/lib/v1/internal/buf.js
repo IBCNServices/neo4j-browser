@@ -1,5 +1,38 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.alloc = exports.NodeBuffer = exports.CombinedBuffer = exports.SliceBuffer = exports.HeapBuffer = exports.BaseBuffer = undefined;
+
+var _get2 = require("babel-runtime/helpers/get");
+
+var _get3 = _interopRequireDefault(_get2);
+
+var _getPrototypeOf = require("babel-runtime/core-js/object/get-prototype-of");
+
+var _getPrototypeOf2 = _interopRequireDefault(_getPrototypeOf);
+
+var _possibleConstructorReturn2 = require("babel-runtime/helpers/possibleConstructorReturn");
+
+var _possibleConstructorReturn3 = _interopRequireDefault(_possibleConstructorReturn2);
+
+var _inherits2 = require("babel-runtime/helpers/inherits");
+
+var _inherits3 = _interopRequireDefault(_inherits2);
+
+var _classCallCheck2 = require("babel-runtime/helpers/classCallCheck");
+
+var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
+
+var _createClass2 = require("babel-runtime/helpers/createClass");
+
+var _createClass3 = _interopRequireDefault(_createClass2);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
- * Copyright (c) 2002-2016 "Neo Technology,"
+ * Copyright (c) 2002-2017 "Neo Technology,","
  * Network Engine for Objects in Lund AB [http://neotechnology.com]
  *
  * This file is part of Neo4j.
@@ -22,22 +55,6 @@
   *(via Buffer API).
   */
 
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
-
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-var _error = require('./../error');
-
 var _node = require("buffer");
 /**
   * Common base with default implementation for most buffer methods.
@@ -49,19 +66,18 @@ var _node = require("buffer");
   * @access private
   */
 
-var BaseBuffer = (function () {
+var BaseBuffer = function () {
   /**
    * Create a instance with the injected size.
    * @constructor
    * @param {Integer} size
    */
-
   function BaseBuffer(size) {
-    _classCallCheck(this, BaseBuffer);
+    (0, _classCallCheck3.default)(this, BaseBuffer);
 
     this.position = 0;
     this.length = size;
-    // Calling these out - this is the required
+    // Calling these out - this is the required 
     // methods a subclass needs to implement
     var getUInt8 = null;
     var getInt8 = null;
@@ -73,15 +89,11 @@ var BaseBuffer = (function () {
   }
 
   /**
-   * Basic buffer implementation that should work in most any modern JS env.
-   * @access private
-   */
-
-  /**
    * @param p
    */
 
-  _createClass(BaseBuffer, [{
+
+  (0, _createClass3.default)(BaseBuffer, [{
     key: "getInt16",
     value: function getInt16(p) {
       return this.getInt8(p) << 8 | this.getUInt8(p + 1);
@@ -90,6 +102,7 @@ var BaseBuffer = (function () {
     /**
      * @param p
      */
+
   }, {
     key: "getUInt16",
     value: function getUInt16(p) {
@@ -99,6 +112,7 @@ var BaseBuffer = (function () {
     /**
      * @param p
      */
+
   }, {
     key: "getInt32",
     value: function getInt32(p) {
@@ -108,6 +122,7 @@ var BaseBuffer = (function () {
     /**
      * @param p
      */
+
   }, {
     key: "getUInt32",
     value: function getUInt32(p) {
@@ -117,6 +132,7 @@ var BaseBuffer = (function () {
     /**
      * @param p
      */
+
   }, {
     key: "getInt64",
     value: function getInt64(p) {
@@ -129,6 +145,7 @@ var BaseBuffer = (function () {
      * @param start
      * @param length
      */
+
   }, {
     key: "getSlice",
     value: function getSlice(start, length) {
@@ -139,6 +156,7 @@ var BaseBuffer = (function () {
      * @param p
      * @param val
      */
+
   }, {
     key: "putInt16",
     value: function putInt16(p, val) {
@@ -150,6 +168,7 @@ var BaseBuffer = (function () {
      * @param p
      * @param val
      */
+
   }, {
     key: "putUInt16",
     value: function putUInt16(p, val) {
@@ -161,6 +180,7 @@ var BaseBuffer = (function () {
      * @param p
      * @param val
      */
+
   }, {
     key: "putInt32",
     value: function putInt32(p, val) {
@@ -174,6 +194,7 @@ var BaseBuffer = (function () {
      * @param p
      * @param val
      */
+
   }, {
     key: "putUInt32",
     value: function putUInt32(p, val) {
@@ -187,6 +208,7 @@ var BaseBuffer = (function () {
      * @param p
      * @param val
      */
+
   }, {
     key: "putInt64",
     value: function putInt64(p, val) {
@@ -204,6 +226,7 @@ var BaseBuffer = (function () {
      * @param position
      * @param other
      */
+
   }, {
     key: "putBytes",
     value: function putBytes(position, other) {
@@ -215,6 +238,7 @@ var BaseBuffer = (function () {
     /**
      * Read from state position.
      */
+
   }, {
     key: "readUInt8",
     value: function readUInt8() {
@@ -224,6 +248,7 @@ var BaseBuffer = (function () {
     /**
      * Read from state position.
      */
+
   }, {
     key: "readInt8",
     value: function readInt8() {
@@ -233,6 +258,7 @@ var BaseBuffer = (function () {
     /**
      * Read from state position.
      */
+
   }, {
     key: "readUInt16",
     value: function readUInt16() {
@@ -242,6 +268,7 @@ var BaseBuffer = (function () {
     /**
      * Read from state position.
      */
+
   }, {
     key: "readUInt32",
     value: function readUInt32() {
@@ -251,6 +278,7 @@ var BaseBuffer = (function () {
     /**
      * Read from state position.
      */
+
   }, {
     key: "readInt16",
     value: function readInt16() {
@@ -260,6 +288,7 @@ var BaseBuffer = (function () {
     /**
      * Read from state position.
      */
+
   }, {
     key: "readInt32",
     value: function readInt32() {
@@ -269,6 +298,7 @@ var BaseBuffer = (function () {
     /**
      * Read from state position.
      */
+
   }, {
     key: "readInt64",
     value: function readInt64() {
@@ -278,6 +308,7 @@ var BaseBuffer = (function () {
     /**
      * Read from state position.
      */
+
   }, {
     key: "readFloat64",
     value: function readFloat64() {
@@ -288,6 +319,7 @@ var BaseBuffer = (function () {
      * Write to state position.
      * @param val
      */
+
   }, {
     key: "writeUInt8",
     value: function writeUInt8(val) {
@@ -298,6 +330,7 @@ var BaseBuffer = (function () {
      * Write to state position.
      * @param val
      */
+
   }, {
     key: "writeInt8",
     value: function writeInt8(val) {
@@ -308,6 +341,7 @@ var BaseBuffer = (function () {
      * Write to state position.
      * @param val
      */
+
   }, {
     key: "writeInt16",
     value: function writeInt16(val) {
@@ -318,6 +352,7 @@ var BaseBuffer = (function () {
      * Write to state position.
      * @param val
      */
+
   }, {
     key: "writeInt32",
     value: function writeInt32(val) {
@@ -328,6 +363,7 @@ var BaseBuffer = (function () {
      * Write to state position.
      * @param val
      */
+
   }, {
     key: "writeUInt32",
     value: function writeUInt32(val) {
@@ -338,6 +374,7 @@ var BaseBuffer = (function () {
      * Write to state position.
      * @param val
      */
+
   }, {
     key: "writeInt64",
     value: function writeInt64(val) {
@@ -348,6 +385,7 @@ var BaseBuffer = (function () {
      * Write to state position.
      * @param val
      */
+
   }, {
     key: "writeFloat64",
     value: function writeFloat64(val) {
@@ -358,6 +396,7 @@ var BaseBuffer = (function () {
      * Write to state position.
      * @param val
      */
+
   }, {
     key: "writeBytes",
     value: function writeBytes(val) {
@@ -369,6 +408,7 @@ var BaseBuffer = (function () {
      * but simply provides a slice view of this buffer
      * @param length
      */
+
   }, {
     key: "readSlice",
     value: function readSlice(length) {
@@ -385,6 +425,7 @@ var BaseBuffer = (function () {
     /**
      * Get remaning
      */
+
   }, {
     key: "remaining",
     value: function remaining() {
@@ -394,6 +435,7 @@ var BaseBuffer = (function () {
     /**
      * Has remaning
      */
+
   }, {
     key: "hasRemaining",
     value: function hasRemaining() {
@@ -403,6 +445,7 @@ var BaseBuffer = (function () {
     /**
      * Reset position state
      */
+
   }, {
     key: "reset",
     value: function reset() {
@@ -413,6 +456,7 @@ var BaseBuffer = (function () {
      * Get string representation of buffer and it's state.
      * @return {string} Buffer as a string
      */
+
   }, {
     key: "toString",
     value: function toString() {
@@ -423,6 +467,7 @@ var BaseBuffer = (function () {
      * Get string representation of buffer.
      * @return {string} Buffer as a string
      */
+
   }, {
     key: "toHex",
     value: function toHex() {
@@ -438,28 +483,31 @@ var BaseBuffer = (function () {
       return out;
     }
   }]);
-
   return BaseBuffer;
-})();
+}();
 
-var HeapBuffer = (function (_BaseBuffer) {
-  _inherits(HeapBuffer, _BaseBuffer);
+/**
+ * Basic buffer implementation that should work in most any modern JS env.
+ * @access private
+ */
+
+
+var HeapBuffer = function (_BaseBuffer) {
+  (0, _inherits3.default)(HeapBuffer, _BaseBuffer);
 
   function HeapBuffer(arg) {
-    _classCallCheck(this, HeapBuffer);
+    (0, _classCallCheck3.default)(this, HeapBuffer);
 
     var buffer = arg instanceof ArrayBuffer ? arg : new ArrayBuffer(arg);
-    _get(Object.getPrototypeOf(HeapBuffer.prototype), "constructor", this).call(this, buffer.byteLength);
-    this._buffer = buffer;
-    this._view = new DataView(this._buffer);
+
+    var _this = (0, _possibleConstructorReturn3.default)(this, (HeapBuffer.__proto__ || (0, _getPrototypeOf2.default)(HeapBuffer)).call(this, buffer.byteLength));
+
+    _this._buffer = buffer;
+    _this._view = new DataView(_this._buffer);
+    return _this;
   }
 
-  /**
-   * Represents a view as slice of another buffer.
-   * @access private
-   */
-
-  _createClass(HeapBuffer, [{
+  (0, _createClass3.default)(HeapBuffer, [{
     key: "putUInt8",
     value: function putUInt8(position, val) {
       this._view.setUint8(position, val);
@@ -510,33 +558,36 @@ var HeapBuffer = (function (_BaseBuffer) {
      * Specific to HeapBuffer, this gets a DataView from the
      * current position and of the specified length. 
      */
+
   }, {
     key: "readView",
     value: function readView(length) {
       return new DataView(this._buffer, this._updatePos(length), length);
     }
   }]);
-
   return HeapBuffer;
-})(BaseBuffer);
+}(BaseBuffer);
 
-var SliceBuffer = (function (_BaseBuffer2) {
-  _inherits(SliceBuffer, _BaseBuffer2);
+/**
+ * Represents a view as slice of another buffer.
+ * @access private
+ */
+
+
+var SliceBuffer = function (_BaseBuffer2) {
+  (0, _inherits3.default)(SliceBuffer, _BaseBuffer2);
 
   function SliceBuffer(start, length, inner) {
-    _classCallCheck(this, SliceBuffer);
+    (0, _classCallCheck3.default)(this, SliceBuffer);
 
-    _get(Object.getPrototypeOf(SliceBuffer.prototype), "constructor", this).call(this, length);
-    this._start = start;
-    this._inner = inner;
+    var _this2 = (0, _possibleConstructorReturn3.default)(this, (SliceBuffer.__proto__ || (0, _getPrototypeOf2.default)(SliceBuffer)).call(this, length));
+
+    _this2._start = start;
+    _this2._inner = inner;
+    return _this2;
   }
 
-  /**
-   * Buffer that combines multiple buffers, exposing them as one single buffer.
-   * @access private
-   */
-
-  _createClass(SliceBuffer, [{
+  (0, _createClass3.default)(SliceBuffer, [{
     key: "putUInt8",
     value: function putUInt8(position, val) {
       this._inner.putUInt8(this._start + position, val);
@@ -567,30 +618,33 @@ var SliceBuffer = (function (_BaseBuffer2) {
       return this._inner.getFloat64(this._start + position);
     }
   }]);
-
   return SliceBuffer;
-})(BaseBuffer);
+}(BaseBuffer);
 
-var CombinedBuffer = (function (_BaseBuffer3) {
-  _inherits(CombinedBuffer, _BaseBuffer3);
+/**
+ * Buffer that combines multiple buffers, exposing them as one single buffer.
+ * @access private
+ */
+
+
+var CombinedBuffer = function (_BaseBuffer3) {
+  (0, _inherits3.default)(CombinedBuffer, _BaseBuffer3);
 
   function CombinedBuffer(buffers) {
-    _classCallCheck(this, CombinedBuffer);
+    (0, _classCallCheck3.default)(this, CombinedBuffer);
 
     var length = 0;
     for (var i = 0; i < buffers.length; i++) {
       length += buffers[i].length;
     }
-    _get(Object.getPrototypeOf(CombinedBuffer.prototype), "constructor", this).call(this, length);
-    this._buffers = buffers;
+
+    var _this3 = (0, _possibleConstructorReturn3.default)(this, (CombinedBuffer.__proto__ || (0, _getPrototypeOf2.default)(CombinedBuffer)).call(this, length));
+
+    _this3._buffers = buffers;
+    return _this3;
   }
 
-  /**
-   * Buffer used in a Node.js environment
-   * @access private
-   */
-
-  _createClass(CombinedBuffer, [{
+  (0, _createClass3.default)(CombinedBuffer, [{
     key: "getUInt8",
     value: function getUInt8(position) {
       // Surely there's a faster way to do this.. some sort of lookup table thing?
@@ -630,24 +684,30 @@ var CombinedBuffer = (function (_BaseBuffer3) {
       return b.getFloat64(0);
     }
   }]);
-
   return CombinedBuffer;
-})(BaseBuffer);
+}(BaseBuffer);
 
-var NodeBuffer = (function (_BaseBuffer4) {
-  _inherits(NodeBuffer, _BaseBuffer4);
+/**
+ * Buffer used in a Node.js environment
+ * @access private
+ */
+
+
+var NodeBuffer = function (_BaseBuffer4) {
+  (0, _inherits3.default)(NodeBuffer, _BaseBuffer4);
 
   function NodeBuffer(arg) {
-    _classCallCheck(this, NodeBuffer);
+    (0, _classCallCheck3.default)(this, NodeBuffer);
 
     var buffer = arg instanceof _node.Buffer ? arg : new _node.Buffer(arg);
-    _get(Object.getPrototypeOf(NodeBuffer.prototype), "constructor", this).call(this, buffer.length);
-    this._buffer = buffer;
+
+    var _this4 = (0, _possibleConstructorReturn3.default)(this, (NodeBuffer.__proto__ || (0, _getPrototypeOf2.default)(NodeBuffer)).call(this, buffer.length));
+
+    _this4._buffer = buffer;
+    return _this4;
   }
 
-  // Use HeapBuffer by default, unless Buffer API is available, see below
-
-  _createClass(NodeBuffer, [{
+  (0, _createClass3.default)(NodeBuffer, [{
     key: "getUInt8",
     value: function getUInt8(position) {
       return this._buffer.readUInt8(position);
@@ -685,7 +745,7 @@ var NodeBuffer = (function (_BaseBuffer4) {
         val._buffer.copy(this._buffer, position, val.position, val.position + bytesToCopy);
         val.position += bytesToCopy;
       } else {
-        throw (0, _error.newError)("Copying not yet implemented.");
+        (0, _get3.default)(NodeBuffer.prototype.__proto__ || (0, _getPrototypeOf2.default)(NodeBuffer.prototype), "putBytes", this).call(this, position, val);
       }
     }
   }, {
@@ -694,9 +754,11 @@ var NodeBuffer = (function (_BaseBuffer4) {
       return new NodeBuffer(this._buffer.slice(start, start + length));
     }
   }]);
-
   return NodeBuffer;
-})(BaseBuffer);
+}(BaseBuffer);
+
+// Use HeapBuffer by default, unless Buffer API is available, see below
+
 
 var _DefaultBuffer = HeapBuffer;
 try {
@@ -716,12 +778,9 @@ function alloc(size) {
   return new _DefaultBuffer(size);
 }
 
-exports["default"] = {
-  BaseBuffer: BaseBuffer,
-  HeapBuffer: HeapBuffer,
-  SliceBuffer: SliceBuffer,
-  CombinedBuffer: CombinedBuffer,
-  NodeBuffer: NodeBuffer,
-  alloc: alloc
-};
-module.exports = exports["default"];
+exports.BaseBuffer = BaseBuffer;
+exports.HeapBuffer = HeapBuffer;
+exports.SliceBuffer = SliceBuffer;
+exports.CombinedBuffer = CombinedBuffer;
+exports.NodeBuffer = NodeBuffer;
+exports.alloc = alloc;

@@ -1,5 +1,21 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _classCallCheck2 = require("babel-runtime/helpers/classCallCheck");
+
+var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
+
+var _createClass2 = require("babel-runtime/helpers/createClass");
+
+var _createClass3 = _interopRequireDefault(_createClass2);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
- * Copyright (c) 2002-2016 "Neo Technology,"
+ * Copyright (c) 2002-2017 "Neo Technology,","
  * Network Engine for Objects in Lund AB [http://neotechnology.com]
  *
  * This file is part of Neo4j.
@@ -17,17 +33,7 @@
  * limitations under the License.
  */
 
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-var Pool = (function () {
+var Pool = function () {
   /**
    * @param create  an allocation function that creates a new resource. It's given
    *                a single argument, a function that will return the resource to
@@ -40,50 +46,86 @@ var Pool = (function () {
    * @param maxIdle the max number of resources that are allowed idle in the pool at
    *                any time. If this threshold is exceeded, resources will be evicted.
    */
-
   function Pool(create) {
-    var destroy = arguments.length <= 1 || arguments[1] === undefined ? function () {
+    var destroy = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : function () {
       return true;
-    } : arguments[1];
-    var validate = arguments.length <= 2 || arguments[2] === undefined ? function () {
+    };
+    var validate = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : function () {
       return true;
-    } : arguments[2];
-    var maxIdle = arguments.length <= 3 || arguments[3] === undefined ? 50 : arguments[3];
-
-    _classCallCheck(this, Pool);
+    };
+    var maxIdle = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 50;
+    (0, _classCallCheck3.default)(this, Pool);
 
     this._create = create;
     this._destroy = destroy;
     this._validate = validate;
     this._maxIdle = maxIdle;
-    this._pool = [];
+    this._pools = {};
     this._release = this._release.bind(this);
   }
 
-  _createClass(Pool, [{
+  (0, _createClass3.default)(Pool, [{
     key: "acquire",
-    value: function acquire() {
-      if (this._pool.length > 0) {
-        return this._pool.pop();
-      } else {
-        return this._create(this._release);
+    value: function acquire(key) {
+      var resource = void 0;
+      var pool = this._pools[key];
+      if (!pool) {
+        pool = [];
+        this._pools[key] = pool;
+      }
+      while (pool.length) {
+        resource = pool.pop();
+
+        if (this._validate(resource)) {
+          return resource;
+        } else {
+          this._destroy(resource);
+        }
+      }
+
+      return this._create(key, this._release);
+    }
+  }, {
+    key: "purge",
+    value: function purge(key) {
+      var resource = void 0;
+      var pool = this._pools[key] || [];
+      while (pool.length) {
+        resource = pool.pop();
+        this._destroy(resource);
+      }
+      delete this._pools[key];
+    }
+  }, {
+    key: "purgeAll",
+    value: function purgeAll() {
+      for (var key in this._pools.keys) {
+        if (this._pools.hasOwnPropertykey) {
+          this.purge(key);
+        }
       }
     }
   }, {
+    key: "has",
+    value: function has(key) {
+      return key in this._pools;
+    }
+  }, {
     key: "_release",
-    value: function _release(resource) {
-      if (this._pool.length >= this._maxIdle || !this._validate(resource)) {
+    value: function _release(key, resource) {
+      var pool = this._pools[key];
+      if (!pool) {
+        //key has been purged, don't put it back
+        return;
+      }
+      if (pool.length >= this._maxIdle || !this._validate(resource)) {
         this._destroy(resource);
       } else {
-        this._pool.push(resource);
+        pool.push(resource);
       }
     }
   }]);
-
   return Pool;
-})();
+}();
 
-exports["default"] = {
-  Pool: Pool
-};
-module.exports = exports["default"];
+exports.default = Pool;

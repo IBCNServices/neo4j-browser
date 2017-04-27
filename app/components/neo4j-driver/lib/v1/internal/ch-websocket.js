@@ -1,44 +1,30 @@
-/**
- * Copyright (c) 2002-2016 "Neo Technology,"
- * Network Engine for Objects in Lund AB [http://neotechnology.com]
- *
- * This file is part of Neo4j.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-"use strict";
+'use strict';
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+var _classCallCheck2 = require('babel-runtime/helpers/classCallCheck');
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
 
-var _log = require("./log");
+var _createClass2 = require('babel-runtime/helpers/createClass');
 
-var _buf = require("./buf");
+var _createClass3 = _interopRequireDefault(_createClass2);
+
+var _buf = require('./buf');
 
 var _error = require('./../error');
+
+var _util = require('./util');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
  * Create a new WebSocketChannel to be used in web browsers.
  * @access private
  */
-
-var WebSocketChannel = (function () {
+var WebSocketChannel = function () {
 
   /**
    * Create new instance
@@ -46,21 +32,24 @@ var WebSocketChannel = (function () {
    * @param {string} opts.host - The host, including protocol to connect to.
    * @param {Integer} opts.port - The port to use.
    */
-
   function WebSocketChannel(opts) {
-    _classCallCheck(this, WebSocketChannel);
+    (0, _classCallCheck3.default)(this, WebSocketChannel);
+
 
     this._open = true;
     this._pending = [];
     this._error = null;
     this._handleConnectionError = this._handleConnectionError.bind(this);
 
+    this._encrypted = opts.encrypted;
+
     var scheme = "ws";
-    if (opts.encrypted) {
-      if (!opts.trust || opts.trust === "TRUST_SIGNED_CERTIFICATES") {
+    //Allow boolean for backwards compatibility
+    if (opts.encrypted === true || opts.encrypted === _util.ENCRYPTION_ON) {
+      if (!opts.trust || opts.trust === "TRUST_CUSTOM_CA_SIGNED_CERTIFICATES") {
         scheme = "wss";
       } else {
-        this._error = (0, _error.newError)("The browser version of this driver only supports one trust " + "strategy, 'TRUST_SIGNED_CERTIFICATES'. " + opts.trust + " is not supported. Please " + "either use TRUST_SIGNED_CERTIFICATES or disable encryption by setting " + "`encrypted:false` in the driver configuration.");
+        this._error = (0, _error.newError)("The browser version of this driver only supports one trust " + "strategy, 'TRUST_CUSTOM_CA_SIGNED_CERTIFICATES'. " + opts.trust + " is not supported. Please " + "either use TRUST_CUSTOM_CA_SIGNED_CERTIFICATES or disable encryption by setting " + "`encrypted:\"" + _util.ENCRYPTION_OFF + "\"` in the driver configuration.");
         return;
       }
     }
@@ -94,8 +83,8 @@ var WebSocketChannel = (function () {
     this._ws.onerror = this._handleConnectionError;
   }
 
-  _createClass(WebSocketChannel, [{
-    key: "_handleConnectionError",
+  (0, _createClass3.default)(WebSocketChannel, [{
+    key: '_handleConnectionError',
     value: function _handleConnectionError() {
       // onerror triggers on websocket close as well.. don't get me started.
       if (this._open) {
@@ -106,13 +95,19 @@ var WebSocketChannel = (function () {
         }
       }
     }
+  }, {
+    key: 'isEncrypted',
+    value: function isEncrypted() {
+      return this._encrypted;
+    }
 
     /**
      * Write the passed in buffer to connection
      * @param {HeapBuffer} buffer - Buffer to write
      */
+
   }, {
-    key: "write",
+    key: 'write',
     value: function write(buffer) {
       // If there is a pending queue, push this on that queue. This means
       // we are not yet connected, so we queue things locally.
@@ -129,24 +124,40 @@ var WebSocketChannel = (function () {
      * Close the connection
      * @param {function} cb - Function to call on close.
      */
+
   }, {
-    key: "close",
+    key: 'close',
     value: function close() {
-      var cb = arguments.length <= 0 || arguments[0] === undefined ? function () {
+      var cb = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : function () {
         return null;
-      } : arguments[0];
+      };
 
       this._open = false;
       this._ws.close();
       this._ws.onclose = cb;
     }
   }]);
-
   return WebSocketChannel;
-})();
+}(); /**
+      * Copyright (c) 2002-2017 "Neo Technology,","
+      * Network Engine for Objects in Lund AB [http://neotechnology.com]
+      *
+      * This file is part of Neo4j.
+      *
+      * Licensed under the Apache License, Version 2.0 (the "License");
+      * you may not use this file except in compliance with the License.
+      * You may obtain a copy of the License at
+      *
+      *     http://www.apache.org/licenses/LICENSE-2.0
+      *
+      * Unless required by applicable law or agreed to in writing, software
+      * distributed under the License is distributed on an "AS IS" BASIS,
+      * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+      * See the License for the specific language governing permissions and
+      * limitations under the License.
+      */
 
 var available = typeof WebSocket !== 'undefined';
 var _websocketChannelModule = { channel: WebSocketChannel, available: available };
 
-exports["default"] = _websocketChannelModule;
-module.exports = exports["default"];
+exports.default = _websocketChannelModule;

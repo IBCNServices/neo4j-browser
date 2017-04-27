@@ -1,94 +1,97 @@
-/**
- * Copyright (c) 2002-2016 "Neo Technology,"
- * Network Engine for Objects in Lund AB [http://neotechnology.com]
- *
- * This file is part of Neo4j.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.Structure = exports.Unpacker = exports.Packer = undefined;
 
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+var _keys = require("babel-runtime/core-js/object/keys");
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+var _keys2 = _interopRequireDefault(_keys);
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+var _typeof2 = require("babel-runtime/helpers/typeof");
 
-var _log = require("./log");
+var _typeof3 = _interopRequireDefault(_typeof2);
 
-var _buf = require("./buf");
+var _classCallCheck2 = require("babel-runtime/helpers/classCallCheck");
 
-var _utf8 = require("./utf8");
+var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
 
-var _utf82 = _interopRequireDefault(_utf8);
+var _createClass2 = require("babel-runtime/helpers/createClass");
+
+var _createClass3 = _interopRequireDefault(_createClass2);
+
+var _utf = require("./utf8");
+
+var _utf2 = _interopRequireDefault(_utf);
 
 var _integer = require("../integer");
 
-var _error = require('./../error');
+var _integer2 = _interopRequireDefault(_integer);
 
-var MAX_CHUNK_SIZE = 16383,
-    TINY_STRING = 0x80,
-    TINY_LIST = 0x90,
-    TINY_MAP = 0xA0,
-    TINY_STRUCT = 0xB0,
-    NULL = 0xC0,
-    FLOAT_64 = 0xC1,
-    FALSE = 0xC2,
-    TRUE = 0xC3,
-    INT_8 = 0xC8,
-    INT_16 = 0xC9,
-    INT_32 = 0xCA,
-    INT_64 = 0xCB,
-    STRING_8 = 0xD0,
-    STRING_16 = 0xD1,
-    STRING_32 = 0xD2,
-    LIST_8 = 0xD4,
-    LIST_16 = 0xD5,
-    LIST_32 = 0xD6,
-    MAP_8 = 0xD8,
-    MAP_16 = 0xD9,
-    MAP_32 = 0xDA,
-    STRUCT_8 = 0xDC,
-    STRUCT_16 = 0xDD;
+var _error = require("./../error");
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var TINY_STRING = 0x80; /**
+                         * Copyright (c) 2002-2017 "Neo Technology,","
+                         * Network Engine for Objects in Lund AB [http://neotechnology.com]
+                         *
+                         * This file is part of Neo4j.
+                         *
+                         * Licensed under the Apache License, Version 2.0 (the "License");
+                         * you may not use this file except in compliance with the License.
+                         * You may obtain a copy of the License at
+                         *
+                         *     http://www.apache.org/licenses/LICENSE-2.0
+                         *
+                         * Unless required by applicable law or agreed to in writing, software
+                         * distributed under the License is distributed on an "AS IS" BASIS,
+                         * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+                         * See the License for the specific language governing permissions and
+                         * limitations under the License.
+                         */
+
+var TINY_LIST = 0x90;
+var TINY_MAP = 0xA0;
+var TINY_STRUCT = 0xB0;
+var NULL = 0xC0;
+var FLOAT_64 = 0xC1;
+var FALSE = 0xC2;
+var TRUE = 0xC3;
+var INT_8 = 0xC8;
+var INT_16 = 0xC9;
+var INT_32 = 0xCA;
+var INT_64 = 0xCB;
+var STRING_8 = 0xD0;
+var STRING_16 = 0xD1;
+var STRING_32 = 0xD2;
+var LIST_8 = 0xD4;
+var LIST_16 = 0xD5;
+var LIST_32 = 0xD6;
+var MAP_8 = 0xD8;
+var MAP_16 = 0xD9;
+var MAP_32 = 0xDA;
+var STRUCT_8 = 0xDC;
+var STRUCT_16 = 0xDD;
 
 /**
   * A Structure have a signature and fields.
   * @access private
   */
 
-var Structure = (function () {
+var Structure = function () {
   /**
    * Create new instance
    */
-
   function Structure(signature, fields) {
-    _classCallCheck(this, Structure);
+    (0, _classCallCheck3.default)(this, Structure);
 
     this.signature = signature;
     this.fields = fields;
   }
 
-  /**
-    * Class to pack
-    * @access private
-    */
-
-  _createClass(Structure, [{
+  (0, _createClass3.default)(Structure, [{
     key: "toString",
     value: function toString() {
       var fieldStr = "";
@@ -101,63 +104,116 @@ var Structure = (function () {
       return "Structure(" + this.signature + ", [" + this.fields + "])";
     }
   }]);
-
   return Structure;
-})();
+}();
 
-var Packer = (function () {
+/**
+  * Class to pack
+  * @access private
+  */
+
+
+var Packer = function () {
   function Packer(channel) {
-    _classCallCheck(this, Packer);
+    (0, _classCallCheck3.default)(this, Packer);
 
     this._ch = channel;
   }
 
   /**
-    * Class to unpack
-    * @access private
-    */
+   * Creates a packable function out of the provided value
+   * @param x the value to pack
+   * @param onError callback for the case when value cannot be packed
+   * @returns Function
+   */
 
-  _createClass(Packer, [{
-    key: "pack",
-    value: function pack(x) {
+
+  (0, _createClass3.default)(Packer, [{
+    key: "packable",
+    value: function packable(x, onError) {
+      var _this = this;
+
       if (x === null) {
-        this._ch.writeUInt8(NULL);
+        return function () {
+          return _this._ch.writeUInt8(NULL);
+        };
       } else if (x === true) {
-        this._ch.writeUInt8(TRUE);
+        return function () {
+          return _this._ch.writeUInt8(TRUE);
+        };
       } else if (x === false) {
-        this._ch.writeUInt8(FALSE);
+        return function () {
+          return _this._ch.writeUInt8(FALSE);
+        };
       } else if (typeof x == "number") {
-        this.packFloat(x);
+        return function () {
+          return _this.packFloat(x);
+        };
       } else if (typeof x == "string") {
-        this.packString(x);
-      } else if (x instanceof _integer.Integer) {
-        this.packInteger(x);
+        return function () {
+          return _this.packString(x, onError);
+        };
+      } else if ((0, _integer.isInt)(x)) {
+        return function () {
+          return _this.packInteger(x);
+        };
       } else if (x instanceof Array) {
-        this.packListHeader(x.length);
-        for (var i = 0; i < x.length; i++) {
-          this.pack(x[i]);
-        }
+        return function () {
+          _this.packListHeader(x.length, onError);
+          for (var _i = 0; _i < x.length; _i++) {
+            _this.packable(x[_i] === undefined ? null : x[_i], onError)();
+          }
+        };
       } else if (x instanceof Structure) {
-        this.packStruct(x.signature, x.fields);
-      } else if (typeof x == "object") {
-        var keys = Object.keys(x);
-        this.packMapHeader(keys.length);
-        for (var i = 0; i < keys.length; i++) {
-          var key = keys[i];
-          this.packString(key);
-          this.pack(x[key]);
+        var packableFields = [];
+        for (var i = 0; i < x.fields.length; i++) {
+          packableFields[i] = this.packable(x.fields[i], onError);
         }
+        return function () {
+          return _this.packStruct(x.signature, packableFields);
+        };
+      } else if ((typeof x === "undefined" ? "undefined" : (0, _typeof3.default)(x)) == "object") {
+        return function () {
+          var keys = (0, _keys2.default)(x);
+
+          var count = 0;
+          for (var _i2 = 0; _i2 < keys.length; _i2++) {
+            if (x[keys[_i2]] !== undefined) {
+              count++;
+            }
+          }
+          _this.packMapHeader(count, onError);
+          for (var _i3 = 0; _i3 < keys.length; _i3++) {
+            var key = keys[_i3];
+            if (x[key] !== undefined) {
+              _this.packString(key);
+              _this.packable(x[key], onError)();
+            }
+          }
+        };
       } else {
-        throw (0, _error.newError)("Cannot pack this value: " + x);
+        if (onError) {
+          onError((0, _error.newError)("Cannot pack this value: " + x));
+        }
+        return function () {
+          return undefined;
+        };
       }
     }
+
+    /**
+     * Packs a struct
+     * @param signature the signature of the struct
+     * @param packableFields the fields of the struct, make sure you call `packable on all fields`
+     */
+
   }, {
     key: "packStruct",
-    value: function packStruct(signature, fields) {
-      fields = fields || [];
-      this.packStructHeader(fields.length, signature);
-      for (var i = 0; i < fields.length; i++) {
-        this.pack(fields[i]);
+    value: function packStruct(signature, packableFields, onError) {
+      packableFields = packableFields || [];
+      this.packStructHeader(packableFields.length, signature, onError);
+      for (var i = 0; i < packableFields.length; i++) {
+        packableFields[i]();
       }
     }
   }, {
@@ -191,8 +247,8 @@ var Packer = (function () {
     }
   }, {
     key: "packString",
-    value: function packString(x) {
-      var bytes = _utf82["default"].encode(x);
+    value: function packString(x, onError) {
+      var bytes = _utf2.default.encode(x);
       var size = bytes.length;
       if (size < 0x10) {
         this._ch.writeUInt8(TINY_STRING | size);
@@ -214,12 +270,12 @@ var Packer = (function () {
         this._ch.writeUInt8(size % 256);
         this._ch.writeBytes(bytes);
       } else {
-        throw (0, _error.newError)("UTF-8 strings of size " + size + " are not supported");
+        onError((0, _error.newError)("UTF-8 strings of size " + size + " are not supported"));
       }
     }
   }, {
     key: "packListHeader",
-    value: function packListHeader(size) {
+    value: function packListHeader(size, onError) {
       if (size < 0x10) {
         this._ch.writeUInt8(TINY_LIST | size);
       } else if (size < 0x100) {
@@ -236,12 +292,12 @@ var Packer = (function () {
         this._ch.writeUInt8((size / 256 >> 0) % 256);
         this._ch.writeUInt8(size % 256);
       } else {
-        throw (0, _error.newError)("Lists of size " + size + " are not supported");
+        onError((0, _error.newError)("Lists of size " + size + " are not supported"));
       }
     }
   }, {
     key: "packMapHeader",
-    value: function packMapHeader(size) {
+    value: function packMapHeader(size, onError) {
       if (size < 0x10) {
         this._ch.writeUInt8(TINY_MAP | size);
       } else if (size < 0x100) {
@@ -258,12 +314,12 @@ var Packer = (function () {
         this._ch.writeUInt8((size / 256 >> 0) % 256);
         this._ch.writeUInt8(size % 256);
       } else {
-        throw (0, _error.newError)("Maps of size " + size + " are not supported");
+        onError((0, _error.newError)("Maps of size " + size + " are not supported"));
       }
     }
   }, {
     key: "packStructHeader",
-    value: function packStructHeader(size, signature) {
+    value: function packStructHeader(size, signature, onError) {
       if (size < 0x10) {
         this._ch.writeUInt8(TINY_STRUCT | size);
         this._ch.writeUInt8(signature);
@@ -276,17 +332,22 @@ var Packer = (function () {
         this._ch.writeUInt8(size / 256 >> 0);
         this._ch.writeUInt8(size % 256);
       } else {
-        throw (0, _error.newError)("Structures of size " + size + " are not supported");
+        onError((0, _error.newError)("Structures of size " + size + " are not supported"));
       }
     }
   }]);
-
   return Packer;
-})();
+}();
 
-var Unpacker = (function () {
+/**
+  * Class to unpack
+  * @access private
+  */
+
+
+var Unpacker = function () {
   function Unpacker() {
-    _classCallCheck(this, Unpacker);
+    (0, _classCallCheck3.default)(this, Unpacker);
 
     // Higher level layers can specify how to map structs to higher-level objects.
     // If we recieve a struct that has a signature that does not have a mapper,
@@ -294,7 +355,7 @@ var Unpacker = (function () {
     this.structMappers = {};
   }
 
-  _createClass(Unpacker, [{
+  (0, _createClass3.default)(Unpacker, [{
     key: "unpackList",
     value: function unpackList(size, buffer) {
       var value = [];
@@ -354,13 +415,13 @@ var Unpacker = (function () {
       } else if (marker == INT_64) {
         var high = buffer.readInt32();
         var low = buffer.readInt32();
-        return new _integer.Integer(low, high);
+        return new _integer2.default(low, high);
       } else if (marker == STRING_8) {
-        return _utf82["default"].decode(buffer, buffer.readUInt8());
+        return _utf2.default.decode(buffer, buffer.readUInt8());
       } else if (marker == STRING_16) {
-        return _utf82["default"].decode(buffer, buffer.readUInt16());
+        return _utf2.default.decode(buffer, buffer.readUInt16());
       } else if (marker == STRING_32) {
-        return _utf82["default"].decode(buffer, buffer.readUInt32());
+        return _utf2.default.decode(buffer, buffer.readUInt32());
       } else if (marker == LIST_8) {
         return this.unpackList(buffer.readUInt8(), buffer);
       } else if (marker == LIST_16) {
@@ -381,7 +442,7 @@ var Unpacker = (function () {
       var markerHigh = marker & 0xF0;
       var markerLow = marker & 0x0F;
       if (markerHigh == 0x80) {
-        return _utf82["default"].decode(buffer, markerLow);
+        return _utf2.default.decode(buffer, markerLow);
       } else if (markerHigh == 0x90) {
         return this.unpackList(markerLow, buffer);
       } else if (markerHigh == 0xA0) {
@@ -393,13 +454,9 @@ var Unpacker = (function () {
       }
     }
   }]);
-
   return Unpacker;
-})();
+}();
 
-exports["default"] = {
-  Packer: Packer,
-  Unpacker: Unpacker,
-  Structure: Structure
-};
-module.exports = exports["default"];
+exports.Packer = Packer;
+exports.Unpacker = Unpacker;
+exports.Structure = Structure;

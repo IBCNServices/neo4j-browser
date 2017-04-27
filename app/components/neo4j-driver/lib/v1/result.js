@@ -1,5 +1,35 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _promise = require('babel-runtime/core-js/promise');
+
+var _promise2 = _interopRequireDefault(_promise);
+
+var _classCallCheck2 = require('babel-runtime/helpers/classCallCheck');
+
+var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
+
+var _createClass2 = require('babel-runtime/helpers/createClass');
+
+var _createClass3 = _interopRequireDefault(_createClass2);
+
+var _resultSummary = require('./result-summary');
+
+var _resultSummary2 = _interopRequireDefault(_resultSummary);
+
+var _connectionHolder = require('./internal/connection-holder');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
- * Copyright (c) 2002-2016 "Neo Technology,"
+  * A stream of {@link Record} representing the result of a statement.
+  * @access public
+  */
+/**
+ * Copyright (c) 2002-2017 "Neo Technology,","
  * Network Engine for Objects in Lund AB [http://neotechnology.com]
  *
  * This file is part of Neo4j.
@@ -17,30 +47,7 @@
  * limitations under the License.
  */
 
-'use strict';
-
-Object.defineProperty(exports, '__esModule', {
-  value: true
-});
-
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
-
-var _resultSummary = require('./result-summary');
-
-// Ensure Promise is available
-
-var _externalEs6Promise = require('../external/es6-promise');
-
-(0, _externalEs6Promise.polyfill)();
-
-/**
-  * A stream of {@link Record} representing the result of a statement.
-  * @access public
-  */
-
-var Result = (function () {
+var Result = function () {
   /**
    * Inject the observer to be used.
    * @constructor
@@ -48,15 +55,20 @@ var Result = (function () {
    * @param {StreamObserver} streamObserver
    * @param {mixed} statement - Cypher statement to execute
    * @param {Object} parameters - Map with parameters to use in statement
+   * @param metaSupplier function, when called provides metadata
+   * @param {ConnectionHolder} connectionHolder - to be notified when result is either fully consumed or error happened.
    */
-
-  function Result(streamObserver, statement, parameters) {
-    _classCallCheck(this, Result);
+  function Result(streamObserver, statement, parameters, metaSupplier, connectionHolder) {
+    (0, _classCallCheck3.default)(this, Result);
 
     this._streamObserver = streamObserver;
     this._p = null;
     this._statement = statement;
     this._parameters = parameters || {};
+    this._metaSupplier = metaSupplier || function () {
+      return {};
+    };
+    this._connectionHolder = connectionHolder || _connectionHolder.EMPTY_CONNECTION_HOLDER;
   }
 
   /**
@@ -65,14 +77,15 @@ var Result = (function () {
    * @access private
    */
 
-  _createClass(Result, [{
+
+  (0, _createClass3.default)(Result, [{
     key: '_createPromise',
     value: function _createPromise() {
       if (this._p) {
         return;
       }
       var self = this;
-      this._p = new Promise(function (resolve, reject) {
+      this._p = new _promise2.default(function (resolve, reject) {
         var records = [];
         var observer = {
           onNext: function onNext(record) {
@@ -97,6 +110,7 @@ var Result = (function () {
      * @param {function(error: {message:string, code:string})} onRejected - Function to be called upon errors.
      * @return {Promise} promise.
      */
+
   }, {
     key: 'then',
     value: function then(onFulfilled, onRejected) {
@@ -110,11 +124,12 @@ var Result = (function () {
      * @param {function(error: {message:string, code:string})} onRejected - Function to be called upon errors.
      * @return {Promise} promise.
      */
+
   }, {
     key: 'catch',
     value: function _catch(onRejected) {
       this._createPromise();
-      return this._p['catch'](onRejected);
+      return this._p.catch(onRejected);
     }
 
     /**
@@ -127,26 +142,49 @@ var Result = (function () {
      * @param {function(error: {message:string, code:string})} observer.onError - Handle errors.
      * @return
      */
+
   }, {
     key: 'subscribe',
     value: function subscribe(observer) {
       var _this = this;
 
       var onCompletedOriginal = observer.onCompleted;
+      var self = this;
       var onCompletedWrapper = function onCompletedWrapper(metadata) {
-        var sum = new _resultSummary.ResultSummary(_this._statement, _this._parameters, metadata);
-        onCompletedOriginal.call(observer, sum);
+
+        var additionalMeta = self._metaSupplier();
+        for (var key in additionalMeta) {
+          if (additionalMeta.hasOwnProperty(key)) {
+            metadata[key] = additionalMeta[key];
+          }
+        }
+        var sum = new _resultSummary2.default(_this._statement, _this._parameters, metadata);
+
+        // notify connection holder that the used connection is not needed any more because result has
+        // been fully consumed; call the original onCompleted callback after that
+        self._connectionHolder.releaseConnection().then(function () {
+          onCompletedOriginal.call(observer, sum);
+        });
       };
       observer.onCompleted = onCompletedWrapper;
-      observer.onError = observer.onError || function (err) {
-        console.log("Uncaught error when processing result: " + err);
+
+      var onErrorOriginal = observer.onError || function (error) {
+        console.log("Uncaught error when processing result: " + error);
       };
+
+      var onErrorWrapper = function onErrorWrapper(error) {
+        // notify connection holder that the used connection is not needed any more because error happened
+        // and result can't bee consumed any further; call the original onError callback after that
+        self._connectionHolder.releaseConnection().then(function () {
+          onErrorOriginal.call(observer, error);
+        });
+      };
+      observer.onError = onErrorWrapper;
+
       this._streamObserver.subscribe(observer);
     }
   }]);
-
   return Result;
-})();
+}();
 
-exports['default'] = Result;
-module.exports = exports['default'];
+exports.default = Result;
