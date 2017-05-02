@@ -1,20 +1,5 @@
 #nav
-  ul.nav.list-group
-    //- li.nav-header(ng-class='{active: showingDrawer("database") }')
-    //-   .cover(ng-click='toggleDrawer("database")')
-    //-   a Neo4j
-    //-     .logo(fancy-logo ng-class='{loading: currentFrame.isLoading}')
-    //-       .ball.one
-    //-       .ball.two
-    //-       .ball.three
-    li(ng-class='{active: showingDrawer("database") }', tooltip='Tengu',tooltip-placement='right', tooltip-enable='!showingDrawer("database")')
-      a.database.sl.sl-database(ng-click='toggleDrawer("database")')
-    //li(ng-class='{active: showingDrawer("scripts") }', tooltip='Favorites',tooltip-placement='right', tooltip-enable='!showingDrawer("scripts")')
-    //  a.favorites.sl.sl-star(ng-click='toggleDrawer("scripts")')
-    li(ng-class='{active: showingDrawer("info") }', tooltip='Documentation',tooltip-placement='right', tooltip-enable='!showingDrawer("info")')
-      a.guides.sl.sl-book(ng-click='toggleDrawer("info")')
   ul.nav.bottom
-    
     li.nav-user(ng-class='{active: showingDrawer("profile") }', tooltip='Cloud Services',tooltip-placement='right', tooltip-enable='!showingDrawer("profile")')
       a.cloud(ng-click='toggleDrawer("profile")')
         //

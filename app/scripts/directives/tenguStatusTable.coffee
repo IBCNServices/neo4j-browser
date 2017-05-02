@@ -66,7 +66,7 @@ angular.module('neo4jApp.directives')
             for app in result.applications
               html += "<tr>"
               html += "<td>" + app.name + "</td>"
-              html += "<td>" + app.status.message + "</td>"
+              html += "<td>" + app.status.current + " <code>" + app.status.message + "</code></td>"
               html += "<td>" + app.exposed + "</td>"
               html += "<td>" + app.charm + "</td>"
               if app.units? and app.units.length > 0
@@ -75,12 +75,12 @@ angular.module('neo4jApp.directives')
                   html += "<li>" + unit.name
                   if unit.machine? and unit.machine != ""
                     html += " [" + unit.machine + "]"
-                  if unit.ip? and unit.ip != ""
-                    html += " <code><small>" + unit.ip
+                  if unit['public-ip']? and unit['public-ip'] != ""
+                    html += " <code><small>" + unit['public-ip']
                     if unit.ports? and unit.ports != null and unit.ports.length > 0
                       html += "["
                       for port in unit.ports
-                        html += port + " "
+                        html += "<a target='_blank' href='http://" + unit['public-ip'] + ":" + port.number + "'>" + port.number + "</a> "
                       html += "]"
                     html += "</small></code>"
                   html += "</li>"
@@ -97,23 +97,32 @@ angular.module('neo4jApp.directives')
           html += "<h4>Machines</h4>"
           if result.machines? and result.machines.length > 0
             html += "<table class='table data'>"
-            html += "<thead><tr><th>ID</th><th>IP</th><th>State</th><th>Series</th><th>Instance-ID</th><th>Containers</th></tr></thead>"
+            html += "<thead><tr><th>ID</th><th>IP</th><th>Hardware</th><th>Series</th><th>Instance-ID</th><th>Containers</th></tr></thead>"
             html += "<tbody>"
             for machine in result.machines
-              html += "<tr>"
-              html += "<td>" + machine.name + "</td>"
-              html += "<td>" + machine.ip + "</td>"
-              html += "<td>" + unknown + "</td>"
-              html += "<td><div class='token token-label' style='background-color: rgb(104, 189, 246); color: rgb(255, 255, 255);''>" + machine.series + "</div></td>"
-              html += "<td>" + machine["instance-id"] + "</td>"
-              if machine.containers? and machine.containers != null and machine.containers.length > 0
-                html += "<td><ul>"
-                for container in machine.containers
-                  html += "<li>" + container.name + "&nbsp;" + container.series + "&nbsp;" + container.ip + "</td>"
-                html += "</ul></td>"
+              if machine.name?
+                html += "<tr>"
+                html += "<td>" + machine.name + "</td>"
+                if machine.ip?
+                  html += "<td><small>" + machine.ip.internal_ip + ", " + machine.ip.external_ip + "</small></td>"
+                else
+                  html += "<td>" + unknown + "</td>"
+                if machine['hardware-characteristics']?
+                  html += "<td><small>cpu cores: " + machine['hardware-characteristics']['cpu-cores'] + ", mem: " + machine['hardware-characteristics']['mem'] + " GiB</small></td>"
+                else
+                  html += "<td>" + unknown + "</td>"
+                html += "<td><div class='token token-label' style='background-color: rgb(104, 189, 246); color: rgb(255, 255, 255);''>" + machine.series + "</div></td>"
+                html += "<td>" + machine["instance-id"] + "</td>"
+                if machine.containers? and machine.containers != null and machine.containers.length > 0
+                  html += "<td><ul>"
+                  for container in machine.containers
+                    html += "<li>" + container.name + "&nbsp;" + container.series + "&nbsp;" + container.ip + "</td>"
+                  html += "</ul></td>"
+                else
+                  html += "<td><i>None</i></td>"
+                html += "</tr>"
               else
-                html += "<td><i>None</i></td>"
-              html += "</tr>"
+                html += "<tr><td colspan='6'>Machine not yet allocated</td></tr>"
             html += "</tbody>"
             html += "</table>"
           else

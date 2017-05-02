@@ -11,7 +11,7 @@ angular.module('neo4jApp.controllers')
     $scope.frame.resetError()
     $scope.newModel = null
     $scope.controller = false
-    $scope.controllers = false
+    $scope.controllers = []
     $scope.bundle = null
     $scope.ssh_key = null
 
@@ -39,10 +39,16 @@ angular.module('neo4jApp.controllers')
           }
           $http(req).then(
             (response) ->
-              #if response.data.controllers.length == 1
-              #  $scope.controller = response.data.controllers[0].name
-              #else
-              $scope.controllers = response.data.controllers
+              if response.data.access?
+                for controller in response.data.access
+                  angular.forEach(controller, (ctrl_data, ctrl_name) ->
+                    console.log ctrl_name
+                    $scope.controllers.push {
+                      name   : ctrl_name
+                      access : ctrl_data.access
+                      type   : ctrl_data.type
+                    }
+                  )
             , (r) ->
               console.log(r)
               $scope.frame.setError "There was an error in getting the Environments for this user: " + r.data

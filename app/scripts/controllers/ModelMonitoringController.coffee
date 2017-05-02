@@ -22,9 +22,9 @@ angular.module('neo4jApp.controllers')
     $scope.autoRefresh = true
     $scope.busyRefreshing = false
 
-    $scope.availableModes = ['up', 'cpu', 'mem']
+    $scope.availableModes = ['waiting']
+    $scope.tab = 'waiting'
     $scope.tab = $rootScope.stickyTab
-    $scope.tab = 'up'
 
     $scope.$watch 'frame.response', (resp) ->
       return unless resp and resp.model
@@ -35,14 +35,32 @@ angular.module('neo4jApp.controllers')
         $scope.application = resp.application
       $scope.req = resp.req
 
-      $scope.data = parseData(resp.data)
-      parseUp($scope.data)
-      parseCpu($scope.data)
-      parseMem($scope.data)
-      parseFs($scope.data)
+      $http($scope.req).then(
+        (response) ->
+          hasData = parseData(response.data)
+          console.log($scope.data)
+          if hasData
+            $scope.availableModes = ['up', 'cpu', 'mem']
+            $scope.tab = 'up'
 
-      $scope.status = 'monitoring-checking'
-      refreshLater()
+            parseUp($scope.data)
+            parseCpu($scope.data)
+            parseMem($scope.data)
+            parseFs($scope.data)
+
+            $scope.status = 'monitoring-checking'
+            refreshLater()
+          else
+            $scope.availableModes = ['install']
+            $scope.tab = 'install'
+        , (r) ->
+          if r.status == 404
+            console.log(r.data.msg)
+            $scope.frame.addErrorText "Could not find the Model or Application '" + modAndApp + "'"
+          else
+            console.log(r)
+            $scope.frame.addErrorText "Unknown error: [" + r.status + ", " + r.data + "] "
+      )
 
     $scope.setActive = (tab) ->
       $rootScope.stickyTab = $scope.tab = tab
@@ -53,53 +71,94 @@ angular.module('neo4jApp.controllers')
     $scope.isAvailable = (tab) ->
       tab in $scope.availableModes
 
+    $scope.addMonitoring = ->
+      $scope.status = 'monitoring-add'
+      req = {
+        "method"  : "PUT"
+        "url"     : $scope.req.url
+        "headers"  : $scope.req.headers
+      }
+
+      $http(req).then(
+        (response) ->
+          $scope.availableModes = ['up', 'cpu', 'mem']
+          $scope.tab = 'up'
+
+          parseData(resp.data)
+          parseUp($scope.data)
+          parseCpu($scope.data)
+          parseMem($scope.data)
+          parseFs($scope.data)
+
+          $scope.status = 'monitoring-checking'
+          refreshLater()
+        , (r) ->
+          console.log(r)
+          $scope.frame.addErrorText "Error: [" + r.status + ", " + r.statusText + "] "
+      )
+
     parseData = (rawData) ->
+      console.log rawData
       metricsList = ["up", "node_memory_MemAvailable", "node_memory_MemFree", "node_memory_MemTotal", "node_cpu", "node_filesystem_avail", "node_filesystem_free", "node_filesystem_size"]
       data = {}
+      hasData = true
       for m in metricsList
         data[m] = {}
         for d in rawData
           data[m][d.name] = {}
       for d in rawData
         if d.metrics? and d.metrics.data? and d.metrics.data.result? and d.metrics.data.resultType == "vector"
+          hasData = d.metrics.data.result.length > 0
           for m in d.metrics.data.result
             if m.metric.__name__ in metricsList
               data[m.metric.__name__][d.name][m.value[0]] = m.value[1]
-      data
+      $scope.data = data
+      hasData
+
 
     parseUp = (data) ->
-      $scope.upData = {}
+      upData = {}
       angular.forEach(data.up, (metrics, unit) ->
         angular.forEach(metrics, (value, ts) ->
-          $scope.upData[unit] = value
+          upData[unit] = value
         )
       )
+      $scope.upData = upData
 
     parseCpu = (data) ->
-      $scope.cpuData = {}
+      cpuData = {}
       angular.forEach(data.node_cpu, (metrics, unit) ->
         angular.forEach(metrics, (value, ts) ->
-          $scope.cpuData[unit] = value
+          cpuData[unit] = value
         )
       )
+      $scope.cpuData = cpuData
 
     parseMem = (data) ->
-      $scope.memData = {}
+      memData = {}
       angular.forEach(data.node_memory_MemAvailable, (metrics, unit) ->
         angular.forEach(metrics, (value, ts) ->
-          $scope.memData[unit] = {"available":Math.ceil(value/1024.0/1024.0)}
+          memData[unit] = {"available":Math.ceil(value/1024.0/1024.0)}
         )
       )
+      console.log(data.node_memory_MemAvailable)
       angular.forEach(data.node_memory_MemTotal, (metrics, unit) ->
         angular.forEach(metrics, (value, ts) ->
-          $scope.memData[unit].total = Math.ceil(value/1024.0/1024.0)
+          if memData[unit]?
+            memData[unit].total = Math.ceil(value/1024.0/1024.0)
+          else
+            memData[unit] = {"total" : Math.ceil(value/1024.0/1024.0)}
         )
       )
       angular.forEach(data.node_memory_MemFree, (metrics, unit) ->
         angular.forEach(metrics, (value, ts) ->
-          $scope.memData[unit].free = Math.ceil(value/1024.0/1024.0)
+          if memData[unit]?
+            memData[unit].free = Math.ceil(value/1024.0/1024.0)
+          else
+            memData[unit] = {"free" : Math.ceil(value/1024.0/1024.0)}
         )
       )
+      $scope.memData = memData
 
     $scope.memState = (value) ->
       percentage = value.available/value.total
@@ -130,7 +189,6 @@ angular.module('neo4jApp.controllers')
       angular.forEach($scope.fsData, (metrics, unit) ->
         $scope.fsData[unit].used = metrics.total - metrics.available
       )
-      console.log($scope.fsData)
 
     refreshModel = () ->
       $scope.busyRefreshing = true
@@ -138,7 +196,7 @@ angular.module('neo4jApp.controllers')
       if $scope.status == "monitoring-checking"
         $http($scope.req).then(
           (response) ->
-            $scope.data = parseData(response.data)
+            parseData(response.data)
             parseUp($scope.data)
             parseCpu($scope.data)
             parseMem($scope.data)

@@ -17,7 +17,7 @@ article.guide(ng-controller="TenguCtrl")
         br
 
       .details.col-sm-9(ng-show="static_is_authenticated")
-        .teaser.teaser-3
+        .teaser.teaser-md-3
           h3 Stream Processing
           p.lead Process continuous streams of data with Apache Storm.
           .icon-holder
@@ -25,11 +25,11 @@ article.guide(ng-controller="TenguCtrl")
             ul.topic-bullets
               li easy data-sink API
               li predefined Storm topology
-              li data will flow into Cassandra
+              li data will flow into Neo4J
             .clearfix
           button.btn.btn-cta(tengu-bundle="streaming") Go with the flow
 
-        .teaser.teaser-3
+        .teaser.teaser-md-3
           h3 Batch Processing
           p.lead Analyse large files with Apache Spark.
           .icon-holder
@@ -37,7 +37,7 @@ article.guide(ng-controller="TenguCtrl")
             ul.topic-bullets
               li get several Spark slaves
               li all spark libraries are ready to GO
-              li data will be dumped on HDFS
+              li start developing with the integrated Zeppelin
             .clearfix
           button.btn.btn-cta(tengu-bundle="microbatch") Flashing
       //

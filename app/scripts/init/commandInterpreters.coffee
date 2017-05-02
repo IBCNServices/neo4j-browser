@@ -449,7 +449,7 @@ angular.module('neo4jApp')
                     q.reject("Could not find the Bundle '" + bundle + "'")
                   else
                     console.log(r)
-                    q.reject("Unknown error: [" + r.status + ", " + r.statusText + "] ")
+                    q.reject("Unknown error: [" + r.status + ", " + r.data + "] ")
               )
             else
               q.resolve(
@@ -550,7 +550,7 @@ angular.module('neo4jApp')
                   q.reject("Could not find the Model '" + modelName + "'")
                 else
                   console.log(r)
-                  q.reject("Unknown error: [" + r.status + ", " + r.statusText + "] ")
+                  q.reject("Unknown error: [" + r.status + ", " + r.data + "] ")
             )
 
           q.promise
@@ -595,25 +595,13 @@ angular.module('neo4jApp')
                   }
                 }
 
-                $http(req).then(
-                  (response) ->
-                    data =
-                      model           : modAndApp[0]
-                      controller      : modAndCtrl[1]
-                      data            : response.data
-                      req             : req
-                    if modAndApp.length > 1
-                      data["application"] = modAndApp[1]
-
-                    q.resolve(data)
-                  , (r) ->
-                    if r.status == 404
-                      console.log(r.data.msg)
-                      q.reject("Could not find the Model or Application'" + modAndCtrl[0] + "'")
-                    else
-                      console.log(r)
-                      q.reject("Unknown error: [" + r.status + ", " + r.statusText + "] ")
-                )
+                data =
+                  model           : modAndApp[0]
+                  controller      : modAndCtrl[1]
+                  req             : req
+                if modAndApp.length > 1
+                  data["application"] = modAndApp[1]
+                q.resolve(data)
               else
                 q.reject("User must provide the name of both the controller and the model")
 

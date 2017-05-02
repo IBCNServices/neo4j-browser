@@ -4,6 +4,19 @@ div(ng-controller="ModelMonitoringController", fullscreen)
     .left-frame-toggle
       .left-toggle-menu.toggle(ng-if='availableModes.length > 0')
         .btn-group.toggle-buttons
+          .button-holder(ng-show="isAvailable('waiting')")
+            button.btn(ng-class='{active: isActive("waiting")}', ng-click='setActive("waiting")')
+              i.fa.fa-hourglass
+              span.mini-menu-item-text Waiting
+            br
+          .button-holder(ng-show="isAvailable('install')")
+            button.btn(ng-class='{active: isActive("install")}', ng-click='setActive("install")')
+              i.fa.fa-bar-chart
+              span.mini-menu-item-text 
+                | Add
+                br
+                | Monitoring
+            br
           .button-holder(ng-show="isAvailable('up')")
             button.btn(ng-class='{active: isActive("up")}', ng-click='setActive("up")')
               i.fa.fa-info
@@ -29,6 +42,36 @@ div(ng-controller="ModelMonitoringController", fullscreen)
     .right-inner-frame.no-indicator(ng-class='{"no-left-menu": availableModes.length < 1}')
       .inner
         .view-result(ng-class='{error: frame.hasErrors}')
+          .view-result-raw.result(ng-show='isActive("waiting") && !frame.isTerminating')
+            .raw-holder
+              article.help.no-data.has-status-bar
+                p.lead
+                  | .fa.fa-spinner.fa-spin.fa-2x 
+                  | We are loading your monitoring info.
+                br
+                br
+            include partials/error-status-bar
+            .status-bar(ng-show="!frame.hasErrors")
+              .status
+                include partials/raw-status
+                
+          .view-result-raw.result(ng-show='isActive("install") && !frame.isTerminating')
+            .raw-holder
+              article.help.no-data.has-status-bar
+                h3 This application is not yet being monitored. 
+                p.lead
+                  | Would you like to add monitoring for this application?
+                  br
+                  | This can take a up to few minutes.
+                button.btn.btn-default(id="add_monitoring", ng-hide="status == 'monitoring-add'", ng-click="addMonitoring()", style="margin: 0", ) Add Monitoring
+                .fa.fa-spinner.fa-spin.fa-2x(ng-show="status == 'monitoring-add'")
+                br
+                br
+            include partials/error-status-bar
+            .status-bar(ng-show="!frame.hasErrors")
+              .status
+                include partials/raw-status
+          
           .view-result-raw.result(ng-show='isActive("up") && !frame.isTerminating')
             .raw-holder
               article.help.no-data.has-status-bar(ng-hide="upData")

@@ -16,6 +16,7 @@ angular.module('neo4jApp.controllers')
       $scope.static_is_authenticated = false
       $scope.static_user = ''
       $scope.models = []
+      $scope.controllers = []
 
       $scope.$watch 'frame.response', (resp) ->
         return unless resp
@@ -28,17 +29,27 @@ angular.module('neo4jApp.controllers')
           $http(resp.userinforeq).then(
             (response) ->
               $scope.user_info = response.data
-              for ctrl in $scope.user_info.controllers
-                console.log ctrl
-                if ctrl.models?
-                  for model in ctrl.models
-                    console.log model
-                    $scope.models.push {
-                      name       : model.name
-                      controller : ctrl.name
-                      access     : model.access
-                      type       : ctrl.type
+              if $scope.user_info.access?
+                for controller in $scope.user_info.access
+                  angular.forEach(controller, (ctrl_data, ctrl_name) ->
+                    console.log ctrl_name
+                    $scope.controllers.push {
+                      name   : ctrl_name
+                      access : ctrl_data.access
+                      type   : ctrl_data.type
                     }
+                    if ctrl_data.models?
+                      for model in ctrl_data.models
+                        angular.forEach(model, (access, model_name) ->
+                          console.log model_name
+                          $scope.models.push {
+                            name       : model_name
+                            controller : ctrl_name
+                            access     : access
+                            type       : ctrl_data.type
+                          }
+                        )
+                  )
             , (r) ->
               console.log(r)
               $scope.frame.addErrorText "Unknown error: [" + r.status + ", " + r.statusText + "] "

@@ -114,7 +114,7 @@ angular.module('neo4jApp.controllers')
         $scope.tengu =
           license =
             type: "AGPLv3"
-            version: "0.3"
+            version: "0.4"
             url: "http://www.fsf.org/licensing/licenses/agpl-3.0.html"
             edition: 'Open Source'
             enterpriseEdition: no

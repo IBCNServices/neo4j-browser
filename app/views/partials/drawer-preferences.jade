@@ -68,11 +68,11 @@
           input.form-control.input#initCmd(placeholder="{{defaultBoltHost}}:7687", type='string', ng-model="settings.boltHost", ng-change="save(); updateBoltConnection()")
     .form-group
       label(for="sojoboUrl", tooltip="You walk up to the Sojobo to release the power of Tengu, please enter the Sojobo's full URL.", tooltip-placement="top")
-        | Sojobo/Hauchiwa URL
+        | Sojobo URL
         input.form-control.input#sojoboUrl(type='string', ng-model="settings.endpoint.tengu", ng-change="save()")
     .form-group
       label(for="sojoboApiKey", tooltip="The Sojobo is not accessible by everybody, please provide the api-key.", tooltip-placement="top")
-        | Sojobo/Hauchiwa URL
+        | Sojobo Api Key
         input.form-control.input#sojoboApiKey(type='string', ng-model="settings.apiKey", ng-change="save()")
     .form-group
       label(for="maxExecutionTime", tooltip="Query timeout in seconds.", tooltip-placement="top")
@@ -82,11 +82,6 @@
       label(for="heartbeat", tooltip="Check connection and update meta data with this interval (in seconds)", tooltip-placement="top")
         | Heartbeat interval
         input.form-control.input#heartbeatInterval(type='number', min="1", ng-model="settings.heartbeat", ng-change="save()")
-    .checkbox
-      label(for="authz")
-        input#authz(type='checkbox', ng-model="settings.needAuthZ", ng-change="save()")
-        span(tooltip="True if the user has to be authorized.", tooltip-placement="top")
-        | Authorization required
 
     //
       h5 Result Frames

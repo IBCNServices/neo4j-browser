@@ -6,13 +6,13 @@ div(ng-controller="SojoboAuthCtrl")
         article.help
           .container-fluid
             .section.row-fluid.summary(ng-show="!static_is_authenticated")
-              .summary.col-sm-3
+              .summary.col-sm-5
                 h3 Please Sign in with your Tengu Account
                 p.lead
                   | Almost all calls to Tengu's Sojobo require authentication.
                   | If you do not have credentials for Tengu, simply fill in your
                   | username and password and we will register your user.
-              .details.col-sm-9
+              .details.col-sm-7
                 .form
                   .row
                     .col-sm-5
@@ -47,8 +47,18 @@ div(ng-controller="SojoboAuthCtrl")
                     code
                       | {{static_user}}   
                   li
-                    p.lead
-                      | What is next? TODO
+                    h3 What is next?
+                    .row
+                      p.lead.col-sm-12.topic-bullets 
+                        a(play-topic="tengu") Get started 
+                        | with predefined models.
+                      p.lead.col-sm-12.topic-bullets
+                        | Create an 
+                        a(click-to-command=":tengu model create") empty model
+                      p.lead.col-sm-12.topic-bullets
+                        | Show your 
+                        a(click-to-command=":tengu user-info") user info
+                        
       .status-bar(ng-class='{error: frame.detailedErrorText, loading: frame.isLoading}')
         .status(ng-show="frame.detailedErrorText")
           .fa.fa-exclamation-triangle.icon-warning-sign &nbsp;
