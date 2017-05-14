@@ -1,0 +1,158 @@
+div(ng-controller="UserGrantController")
+  .outer
+    include partials/frame-common-actions
+    .left-frame-toggle
+      .left-toggle-menu.toggle(ng-if='availableModes.length > 0')
+        .btn-group.toggle-buttons
+          .button-holder(ng-show="isAvailable('controllers')")
+            button.btn(ng-class='{active: isActive("controllers")}', ng-click='setActive("controllers")')
+              i.fa.fa-cloud
+              span.mini-menu-item-text Env...
+            br
+          .button-holder(ng-show="isAvailable('models')")
+            button.btn(ng-class='{active: isActive("models")}', ng-click='setActive("models")')
+              i.fa.fa-sitemap
+              span.mini-menu-item-text Models
+            br
+          .button-holder(ng-show="isAvailable('user')")
+            button.btn(ng-class='{active: isActive("user")}', ng-click='setActive("user")')
+              i.fa.fa-user
+              span.mini-menu-item-text User
+    .right-inner-frame.no-indicator(ng-class='{"no-left-menu": availableModes.length < 1}')
+      .inner
+        .view-result(ng-class='{error: frame.hasErrors}')
+          .view-result-table.result(ng-show='isActive("controllers") && !frame.isTerminating')
+            .table-holder    
+              article.help.no-data
+                .container-fluid
+                  .section.row-fluid.summary(ng-show="!static_is_authenticated")
+                    .details
+                      h3 User is not signed in
+                      p.lead
+                        | You are not signed in. Please use your credentials to 
+                        code(exec-topic="signin") signin
+                        | .
+                  .section.row-fluid.summary(ng-show="static_is_authenticated && static_user")
+                    .details.col-sm-12
+                      | Here you can change the access levels of the different 
+                      | controllers the users (
+                      code {{static_user}}
+                      |  can see) currently have access to. 
+                      br
+                      br
+                    .details.col-sm-12(ng-show="access != {}", ng-repeat="(user_name, user) in access | orderBy : user_name")
+                      h3 
+                        | ACL for the environments of 
+                        code {{user_name}}
+                      table.table.table-condensed(ng-if="user.controllers != {}")
+                        thead
+                          td Environment
+                          td Access level
+                        tr(ng-repeat="(ctrl_name, ctrl) in user.controllers | orderBy : ctrl_name")
+                          th 
+                            img(ng-src="images/{{ctrl.type}}.svg")
+                            | &nbsp;{{ctrl_name}}
+                          td 
+                            select(ng-model="ctrl.access", ng-options="acl for acl in controller_acl_options", ng-change="changeControllerACL(user_name, ctrl.name, ctrl.access)")
+                      p.lead(ng-if="user.controllers == {}") 
+                        | No environments to show.
+                    .details.col-sm-9(ng-show="access == {}")
+                      p.lead
+                        | We are loading the ACLs for the environments and the models.
+          .view-result-table.result(ng-show='isActive("models") && !frame.isTerminating')
+            .table-holder    
+              article.help.no-data
+                .container-fluid
+                  .section.row-fluid.summary(ng-show="!static_is_authenticated")
+                    .details
+                      h3 User is not signed in
+                      p.lead
+                        | You are not signed in. Please use your credentials to 
+                        code(exec-topic="signin") signin
+                        | .
+                  .section.row-fluid.summary(ng-show="static_is_authenticated && static_user")
+                    .details.col-sm-12
+                      | Here you can change the access levels of the different 
+                      | models the users (
+                      code {{static_user}}
+                      |  can see) currently have access to. 
+                      br
+                      br
+                    .details.col-sm-12(ng-show="access != {}", ng-repeat="(user_name, user) in access | orderBy : user_name")
+                      h3 
+                        | ACL for the models of 
+                        code {{user_name}}
+                      table.table.table-condensed(ng-if="user.models != {}")
+                        thead
+                          td Model
+                          td Environment
+                          td Access level
+                        tr(ng-repeat="(model_name, model) in user.models | orderBy : model_name")
+                          th 
+                            | &nbsp;{{model_name}}
+                          td
+                            img(ng-src="images/{{model.type}}.svg")
+                            | &nbsp;{{model.controller}}
+                          td 
+                            select(ng-model="model.access", ng-options="acl for acl in model_acl_options", ng-change="changeModelACL(user_name, model_name, model.controller, model.access)")
+                      p.lead(ng-if="user.models == {}") 
+                        | No models to show.
+                    .details.col-sm-9(ng-hide="access == {}")
+                      p.lead
+                        | We are loading the ACLs for the environments and the models. 
+          .view-result-table.result(ng-show='isActive("user") && !frame.isTerminating')
+            .table-holder    
+              article.help.no-data
+                .container-fluid
+                  .section.row-fluid.summary(ng-show="!static_is_authenticated")
+                    .details
+                      h3 User is not signed in
+                      p.lead
+                        | You are not signed in. Please use your credentials to 
+                        code(exec-topic="signin") signin
+                        | .
+                  .section.row-fluid.summary(ng-show="static_is_authenticated && static_user")
+                    .details.col-sm-12
+                      | Here you can set the access levels for the models the 
+                      | selected user currently does not have access to.
+                      br
+                      | Only the models visible to 
+                      code {{static_user}}
+                      |  are shown here.
+                      br
+                      | Please select a user for which you want to set the access levels: 
+                      select(ng-model="selectedUser", ng-options="user for user in otherUsers", ng-change="userSelected(selectedUser)")
+                      br
+                      br
+                    .details.col-sm-12(ng-show="selectedUser && selectedUser != '?'")
+                      p.lead
+                        | Selected user: {{selectedUser}}
+                      table.table.table-condensed(ng-show="access[selectedUser]")
+                        thead
+                          td Model
+                          td Environment
+                          td Access level
+                        tr(ng-repeat="(model_name, model) in access[static_user].models")
+                          th 
+                            | &nbsp;{{model_name}}
+                          td
+                            img(ng-src="images/{{model.type}}.svg")
+                            | &nbsp;{{model.controller}}
+                          td 
+                            select(ng-model="selectedUserModelACL[model_name]", ng-value = "access[selectedUser].models[model_name].access", ng-options="acl for acl in model_acl_options", ng-change="changeModelACL(selectedUser, model_name, model.controller, selectedUserModelACL[model_name])")
+                      p.lead(ng-if="user.models == {}") 
+                        | No models to show.
+                    .details.col-sm-9(ng-show="access.length == {}")
+                      p.lead
+                        | We are loading the ACLs for the environments and the models.  
+      .status-bar(ng-class='{error: frame.detailedErrorText, loading: frame.isLoading}')
+        .status(ng-show="frame.detailedErrorText")
+          .fa.fa-exclamation-triangle.icon-warning-sign &nbsp;
+          {{frame.detailedErrorText}}
+          div(ng-hide='frame.hasErrors')
+            div(ng-show='frame.response')
+              .fa.fa-ok
+              | Logged in as {{frame.response.name}} ({{frame.response.identities[0].provider}})
+        span(ng-show='frame.isLoading')
+          .fa.fa-spinner.fa-spin
+          | Loading user info...

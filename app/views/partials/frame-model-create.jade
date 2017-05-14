@@ -23,7 +23,7 @@ article.help(ng-controller="ModelCreateController")
                 | Name of the Environment
               input.form-control(type='text', id="controller", disabled="true", on-enter="focus", ng-model="controller", style="margin: 0", ng-show="controller && !controllers", tabindex="2")
               select.form-control(id="controller", on-enter="focus", ng-model="controller", style="margin: 0", ng-show="controllers", tabindex="2")
-                option(ng-repeat="ctrl in controllers", value="{{ctrl.name}}")
+                option(ng-repeat="ctrl in controllers | orderBy: ctrl.name", value="{{ctrl.name}}", style="background-image:url('images/{{ctrl.type}}.svg');")
                   | {{ctrl.name}} on [{{ctrl.type}}]
               br
               br

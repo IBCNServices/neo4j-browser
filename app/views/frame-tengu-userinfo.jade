@@ -28,7 +28,7 @@ div(ng-controller="UserInfoCtrl")
                   tr(ng-repeat="model in models")
                     th {{model.name}}
                     td 
-                      img(src="images/{{model.type}}.svg") 
+                      img(ng-src="images/{{model.type}}.svg") 
                       &nbsp;{{model.controller}}
                     td {{model.access}}
                     td
@@ -39,6 +39,7 @@ div(ng-controller="UserInfoCtrl")
                           a.sl-delete(delete-model="{{model.name}}@{{model.controller}}", tooltip="Delete the model")
                 p.lead(ng-if="models.length == 0")
                   | You don't have any models yet.
+                  br
                   br
                   | Do you want to create a new model?
                   br
@@ -53,12 +54,13 @@ div(ng-controller="UserInfoCtrl")
                       tr(ng-repeat="controller in controllers")
                         th {{controller.name}}
                         td 
-                          img(src="images/{{controller.type}}.svg") 
+                          img(ng-src="images/{{controller.type}}.svg") 
                         td {{controller.access}}
                     
               .details.col-sm-9(ng-hide="user_info")
                 p.lead
-                  | We are loading your environments and models.
+                  .fa.fa-spinner.fa-spin
+                  |  We are loading your environments and models.
       .status-bar(ng-class='{error: frame.detailedErrorText, loading: frame.isLoading}')
         .status(ng-show="frame.detailedErrorText")
           .fa.fa-exclamation-triangle.icon-warning-sign &nbsp;

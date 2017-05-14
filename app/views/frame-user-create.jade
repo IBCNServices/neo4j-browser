@@ -1,0 +1,44 @@
+div
+  .outer
+    include partials/frame-common-actions
+    .inner
+      .view-result
+      article.help(ng-controller="UserCreateController")
+        .container-fluid
+          .section.row-fluid.summary(ng-show="status == null")
+            .summary.col-sm-3
+              h3 We are preparing the creation of your user
+          .section.row-fluid.summary(ng-show="status == 'start' || status == 'creating.user'")
+            .summary.col-sm-3
+              h3 Create a new User
+              p.lead You have to set the username and the password.
+            .details.col-sm-9
+              .form
+                .row
+                  .col-sm-5
+                    p
+                      | The username
+                    input.form-control(type='text', id="username", on-enter="focus", on-enter-target-id="password", ng-model="newUser", style="margin: 0", tabindex="1")
+                    br
+                .row
+                  .col-sm-5
+                    p
+                      | The password
+                    input.form-control(type='password', id="password", on-enter="focus", ng-model="newPassword", style="margin: 0", tabindex="2")
+                    br
+                    br
+                .row
+                  .col-sm-5
+                    button.btn.btn-default(id="add_user", ng-hide="status == 'creating.user'", ng-click="createUser()", style="margin: 0", ) Add User
+                    .fa.fa-spinner.fa-spin.fa-2x(ng-show="status == 'creating.user'")
+          .section.row-fluid.summary(ng-show="status == 'finished'")
+            p.lead
+              | The User <code>{{newUser}}</code> is created. 
+            h4 What's next?
+            p
+              | This newly created user does not have access to any Environments or Models.
+              | Change the User's access rights: <code ng-click="grant()">:tengu user grant {{newUser}}</code>
+      .status-bar(ng-class='{error: frame.detailedErrorText, loading: frame.isLoading}')
+        .status(ng-show="frame.detailedErrorText")
+          .fa.fa-exclamation-triangle.icon-warning-sign &nbsp;
+          {{frame.detailedErrorText}}

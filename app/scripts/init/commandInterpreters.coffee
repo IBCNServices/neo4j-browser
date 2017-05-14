@@ -396,6 +396,56 @@ angular.module('neo4jApp')
           q.promise
       ]
 
+    FrameProvider.interpreters.push
+      type: 'account'
+      templateUrl: 'views/frame-user-create.html'
+      matches: (input) ->
+        pattern = new RegExp("^#{cmdchar}tengu user create")
+        input.match(pattern)
+      exec: ['CurrentUser', (CurrentUser) ->
+        (input, q) ->
+          if CurrentUser.isAuthenticated()
+            q.resolve("User authorized.")
+          else
+            Frame.createOne({input:"#{cmdchar}signin"})
+            q.reject("User is not authorized.")
+
+          q.promise
+      ]
+
+    FrameProvider.interpreters.push
+      type: 'account'
+      templateUrl: 'views/frame-user-grant.html'
+      matches: (input) ->
+        pattern = new RegExp("^#{cmdchar}tengu user grant")
+        input.match(pattern)
+      exec: ['CurrentUser', 'Frame', 'Settings', '$http', (CurrentUser, Frame, Settings, $http) ->
+        (input, q) ->
+          if CurrentUser.isAuthenticated()
+            url = Settings.endpoint.tengu + "/users"
+            basicAuth = CurrentUser.getToken('token')
+
+            req = {
+              "method"  : "GET"
+              "url"     : url
+              "headers"  : {
+                "Content-Type"  : "application/json"
+                "api-key"       : Settings.apiKey
+                "Authorization" : "Basic " + basicAuth
+              }
+            }
+
+            q.resolve(
+              authenticated: yes
+              userlistreq : req
+            )
+          else
+            Frame.createOne({input:"#{cmdchar}signin"})
+            q.reject("User is not authorized.")
+
+          q.promise
+      ]
+
     # Tengu model create handler
     FrameProvider.interpreters.push
       type: 'tengu'
