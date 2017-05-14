@@ -19,7 +19,7 @@ angular.module('neo4jApp.controllers')
     $scope.memData = null
     $scope.fsData = null
     $scope.status = "init"
-    $scope.autoRefresh = true
+    $scope.autoRefresh = false
     $scope.busyRefreshing = false
 
     $scope.availableModes = ['waiting']
@@ -40,13 +40,13 @@ angular.module('neo4jApp.controllers')
           hasData = parseData(response.data)
           console.log($scope.data)
           if hasData
-            $scope.availableModes = ['up', 'cpu', 'mem']
+            $scope.availableModes = ['up', 'cpu', 'mem', 'fs']
             $scope.tab = 'up'
 
-            parseUp($scope.data)
-            parseCpu($scope.data)
-            parseMem($scope.data)
-            parseFs($scope.data)
+            $scope.upData = parseUp($scope.data)
+            $scope.cpuData = parseCpu($scope.data)
+            $scope.memData = parseMem($scope.data)
+            $scope.fsData = parseFs($scope.data)
 
             $scope.status = 'monitoring-checking'
             refreshLater()
@@ -81,7 +81,7 @@ angular.module('neo4jApp.controllers')
 
       $http(req).then(
         (response) ->
-          $scope.availableModes = ['up', 'cpu', 'mem']
+          $scope.availableModes = ['up', 'cpu', 'mem', 'fs']
           $scope.tab = 'up'
 
           parseData(resp.data)
@@ -99,69 +99,63 @@ angular.module('neo4jApp.controllers')
 
     parseData = (rawData) ->
       console.log rawData
-      metricsList = ["up", "node_memory_MemAvailable", "node_memory_MemFree", "node_memory_MemTotal", "node_cpu", "node_filesystem_avail", "node_filesystem_free", "node_filesystem_size"]
+      metricsList = ["disk", "cpu_load", "memory", "keepalive"]
       data = {}
-      hasData = true
+      hasData = false
       for m in metricsList
         data[m] = {}
-        for d in rawData
-          data[m][d.name] = {}
-      for d in rawData
-        if d.metrics? and d.metrics.data? and d.metrics.data.result? and d.metrics.data.resultType == "vector"
-          hasData = d.metrics.data.result.length > 0
-          for m in d.metrics.data.result
-            if m.metric.__name__ in metricsList
-              data[m.metric.__name__][d.name][m.value[0]] = m.value[1]
+      angular.forEach(rawData, (raw_i, unit) ->
+        for d in raw_i
+          if d.type? and d.type in metricsList
+            hasData = true
+            data[d.type][$scope.model+"/"+unit] = d.result
+      )
       $scope.data = data
       hasData
 
 
     parseUp = (data) ->
+      #e.g. Keepalive sent from client 4 seconds ago
       upData = {}
-      angular.forEach(data.up, (metrics, unit) ->
-        angular.forEach(metrics, (value, ts) ->
-          upData[unit] = value
-        )
+      angular.forEach(data.keepalive, (metric, unit) ->
+        upData[unit] = metric.startsWith('Keepalive sent from client')
       )
-      $scope.upData = upData
+      upData
 
     parseCpu = (data) ->
+      #e.g. CheckLoad OK: Total load average (1 CPU): 0.09, 1.42, 1.49\n
       cpuData = {}
-      angular.forEach(data.node_cpu, (metrics, unit) ->
-        angular.forEach(metrics, (value, ts) ->
-          cpuData[unit] = value
-        )
+      angular.forEach(data.cpu_load, (metric, unit) ->
+        numberOfCPU = metric.substring(metric.indexOf('(')+1, metric.indexOf(' CPU'))
+        percentages = metric.substring(metric.lastIndexOf(':')+2).split(',')
+        cpuData[unit] =
+          cpu : percentages
+          nr  : numberOfCPU
       )
-      $scope.cpuData = cpuData
+      console.log(cpuData)
+      cpuData
 
     parseMem = (data) ->
+      #e.g. juju-297e3c-6.memory.total 1778352128 1494790616\njuju-297e3c-6.memory.free 579596288 1494790616\njuju-297e3c-6.memory.buffers 135917568 1494790616\njuju-297e3c-6.memory.cached 758579200 1494790616\njuju-297e3c-6.memory.swapTotal 0 1494790616\njuju-297e3c-6.memory.swapFree 0 1494790616\njuju-297e3c-6.memory.dirty 49152 1494790616\njuju-297e3c-6.memory.swapUsed 0 1494790616\njuju-297e3c-6.memory.used 1198755840 1494790616\njuju-297e3c-6.memory.usedWOBuffersCaches 304259072 1494790616\njuju-297e3c-6.memory.freeWOBuffersCaches 1474093056 1494790616\n
       memData = {}
-      angular.forEach(data.node_memory_MemAvailable, (metrics, unit) ->
-        angular.forEach(metrics, (value, ts) ->
-          memData[unit] = {"available":Math.ceil(value/1024.0/1024.0)}
-        )
+      angular.forEach(data.memory, (metric, unit) ->
+        memData[unit] = {}
+        for line in metric.split('\n')
+          if line.indexOf("total") != -1
+            tokens = line.split(' ')
+            memData[unit].total = Math.ceil(tokens[1]/1024.0/1024.0)
+          if line.indexOf("free") != -1
+            tokens = line.split(' ')
+            memData[unit].free = Math.ceil(tokens[1]/1024.0/1024.0)
+          if line.indexOf("used") != -1
+            tokens = line.split(' ')
+            memData[unit].used = Math.ceil(tokens[1]/1024.0/1024.0)
       )
-      console.log(data.node_memory_MemAvailable)
-      angular.forEach(data.node_memory_MemTotal, (metrics, unit) ->
-        angular.forEach(metrics, (value, ts) ->
-          if memData[unit]?
-            memData[unit].total = Math.ceil(value/1024.0/1024.0)
-          else
-            memData[unit] = {"total" : Math.ceil(value/1024.0/1024.0)}
-        )
-      )
-      angular.forEach(data.node_memory_MemFree, (metrics, unit) ->
-        angular.forEach(metrics, (value, ts) ->
-          if memData[unit]?
-            memData[unit].free = Math.ceil(value/1024.0/1024.0)
-          else
-            memData[unit] = {"free" : Math.ceil(value/1024.0/1024.0)}
-        )
-      )
-      $scope.memData = memData
+      console.log(memData)
+      memData
 
     $scope.memState = (value) ->
-      percentage = value.available/value.total
+      percentage = value.free/value.total
       if (percentage < 0.2)
         return "panel-danger"
       else if (percentage < 0.4)
@@ -170,25 +164,31 @@ angular.module('neo4jApp.controllers')
         return "panel-success"
 
     parseFs = (data) ->
-      $scope.fsData = {}
-      angular.forEach(data.node_filesystem_avail, (metrics, unit) ->
-        angular.forEach(metrics, (value, ts) ->
-          $scope.fsData[unit] = {"available": parseFloat(value)}
-        )
+      #e.g. CheckDisk OK: All disk usage under 85% and inode usage under 85%\n
+      fsData = {}
+      angular.forEach(data.disk, (metric, unit) ->
+        state = metric.substring('CheckDisk '.length, metric.indexOf(':')).toLowerCase()
+        if state == "ok"
+          usaged = metric.substring(metric.indexOf('under ')+'under '.length, metric.indexOf('%'))
+          usagei = metric.substring(metric.lastIndexOf('under ')+'under '.length, metric.lastIndexOf('%'))
+          usage  = [usaged, usagei]
+        else
+          usage = null
+        fsData[unit] =
+          state  : state
+          usage  : usage
+          report : metric
       )
-      angular.forEach(data.node_filesystem_size, (metrics, unit) ->
-        angular.forEach(metrics, (value, ts) ->
-          $scope.fsData[unit].total = parseFloat(value)
-        )
-      )
-      angular.forEach(data.node_filesystem_free, (metrics, unit) ->
-        angular.forEach(metrics, (value, ts) ->
-          $scope.fsData[unit].free = parseFloat(value)
-        )
-      )
-      angular.forEach($scope.fsData, (metrics, unit) ->
-        $scope.fsData[unit].used = metrics.total - metrics.available
-      )
+      console.log fsData
+      fsData
+
+    $scope.fsState = (value) ->
+      if value.state == "critical"
+        return "panel-danger"
+      else if value.state == "waring"
+        return "panel-warning"
+      else
+        return "panel-success"
 
     refreshModel = () ->
       $scope.busyRefreshing = true

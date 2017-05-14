@@ -132,7 +132,10 @@ div(ng-controller="ModelMonitoringController", fullscreen)
                           .col-xs-3
                             i.fa.fa-dashboard.fa-5x
                           .col-xs-9.text-right
-                            b.h3 {{value}} %
+                            b.h3 
+                              | {{value.cpu[0]}} %
+                              br
+                              i {{value.nr}} CPU
                             div {{name}}
                 br
                 br
@@ -162,7 +165,7 @@ div(ng-controller="ModelMonitoringController", fullscreen)
                           .col-xs-3
                             i.fa.fa-ticket.fa-5x
                           .col-xs-9.text-right
-                            b.h3 {{value.total - value.available}} / {{value.total}} MB
+                            b.h3 {{value.used}} MBi / {{value.total}} MBi
                             div {{name}}
                 br
                 br
@@ -186,14 +189,19 @@ div(ng-controller="ModelMonitoringController", fullscreen)
                 br
                 .row(ng-repeat="(name, value) in fsData")
                   .col-md-6
-                    .panel(ng-class="memState(value)")
+                    .panel(ng-class="fsState(value)")
                       .panel-heading
                         .row
                           .col-xs-3
                             i.fa.fa-tasks.fa-5x
-                          .col-xs-9.text-right
-                            b.h3 {{value.free/1024.0/1024.0}} MB
+                          .col-xs-9.text-right(ng-show="value.usage != null")
+                            b.h3 usage under {{value.usage[0]}} %
                             div {{name}}
+                          .col-xs-7.text-right(ng-show="value.usage == null")
+                            b.h3 usage too high
+                            div {{name}}
+                          .col-xs-2.text-right(ng-show="value.usage == null")
+                            a.fa.fa-question-circle(tooltip="{{value.report}}", tooltip-placement="right")
                 br
                 br
             include partials/error-status-bar

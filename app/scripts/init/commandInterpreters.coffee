@@ -626,6 +626,7 @@ angular.module('neo4jApp')
               console.log(modAndCtrl)
               if modAndCtrl.length > 1
                 modAndApp = modAndCtrl[0].split('/')
+                #url = "http://104.154.38.39/monitoring/controllers/dev-gce/models/default/applications/sensu-base"
                 if modAndApp.length > 1
                   url = Settings.endpoint.tengu + "/monitoring/controllers/" + modAndCtrl[1] + "/models/" + modAndApp[0] + "/applications/" + modAndApp[1]
                 else
