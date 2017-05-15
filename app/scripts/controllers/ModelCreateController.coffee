@@ -77,6 +77,56 @@ angular.module('neo4jApp.controllers')
       else
         deployModel()
 
+    recurrentLookup = (req) ->
+      console.log("start recurring for "+req.url)
+      $http(req).then(
+        (response) ->
+          if response.data.status == "ready"
+            console.log("Model ("+req.url+") ready")
+            if $scope.bundle?
+              $scope.status = "creating.bundle"
+
+              static_user = CurrentUser.getToken('profile').name
+              basicAuth = CurrentUser.getToken('token')
+
+              req = {
+                "method"  : "POST"
+                "url"     : Settings.endpoint.tengu + "/tengu/controllers/" + $scope.controller + "/models/" + $scope.newModel
+                "headers" : {
+                  "Content-Type"  : "application/json"
+                  "api-key"       : Settings.apiKey
+                  "Authorization" : "Basic " + basicAuth
+                }
+                "data"    : {
+                  "bundle" : $scope.bundle
+                }
+              }
+
+              $http(req).then(
+                (response) ->
+                  $scope.status = "finished"
+                  $scope.frame.resetError()
+                  $scope.focusEditor()
+                , (r) ->
+                  console.log(r)
+                  $scope.status = "start"
+                  $scope.frame.setError "There was an error in deploying the bundle: " + r.data
+              )
+            else
+              $scope.status = "finished"
+              $scope.focusEditor()
+              $scope.frame.resetError()
+          else
+            $timeout(() ->
+              recurrentLookup(req)
+            , 2000)
+        , (r) ->
+          console.log(r)
+          $scope.error.push(msgError)
+          $scope.frame.setError "There was an error in checking the ACL: " + r.data
+      )
+
+
     deployModel = ->
       static_user = CurrentUser.getToken('profile').name
       basicAuth = CurrentUser.getToken('token')
@@ -98,32 +148,12 @@ angular.module('neo4jApp.controllers')
         (response) ->
           #Add ssh_key
           $scope.status = "created.model"
-
           if $scope.bundle?
             $scope.status = "creating.bundle"
-            req = {
-              "method"  : "POST"
-              "url"     : Settings.endpoint.tengu + "/tengu/controllers/" + $scope.controller + "/models/" + $scope.newModel
-              "headers" : {
-                "Content-Type"  : "application/json"
-                "api-key"       : Settings.apiKey
-                "Authorization" : "Basic " + basicAuth
-              }
-              "data"    : {
-                "bundle" : $scope.bundle
-              }
-            }
-
-            $http(req).then(
-              (response) ->
-                $scope.status = "finished"
-                $scope.frame.resetError()
-                $scope.focusEditor()
-              , (r) ->
-                console.log(r)
-                $scope.status = "start"
-                $scope.frame.setError "There was an error in deploying the bundle: " + r.data
-            )
+            req.method = "GET"
+            req.data = null
+            req.url = req.url + "/" + $scope.newModel
+            recurrentLookup(req)
           else
             $scope.status = "finished"
             $scope.focusEditor()

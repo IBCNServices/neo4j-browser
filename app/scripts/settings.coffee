@@ -36,7 +36,8 @@ angular.module('neo4jApp.settings', ['neo4jApp.utils'])
       tengu: "http://35.185.162.239"#"https://collision-backend.tengu.io"#"http://104.197.215.6"#"https://demobackend.tengu.io"
       #bundles: "https://api.jujucharms.com/charmstore/v5/~tengu-bot/{{bundlename}}/archive/bundle.yaml"
       #bundles: "https://raw.githubusercontent.com/IBCNServices/tengu-charms/master/bundles/{{bundlename}}/bundle.json"
-      bundles: "https://raw.githubusercontent.com/IBCNServices/bundle-{{bundlename}}/master/bundle.json"
+      #bundles: "https://raw.githubusercontent.com/IBCNServices/bundle-{{bundlename}}/master/bundle.json"
+      bundles: "https://raw.githubusercontent.com/tengu-team/bundle-{{bundlename}}/master/bundle.json"
       #mappings: "https://api.jujucharms.com/charmstore/v5/~tengu-bot/{{bundlename}}/archive/mapping.json"
       mappings: "https://raw.githubusercontent.com/IBCNServices/tengu-charms/master/bundles/{{bundlename}}/mapping.json"
     needAuthZ: true
