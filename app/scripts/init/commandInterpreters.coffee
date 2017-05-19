@@ -468,6 +468,27 @@ angular.module('neo4jApp')
           q.promise
       ]
 
+    FrameProvider.interpreters.push
+      type: 'tengu'
+      templateUrl: 'views/frame-controller-create.html'
+      matches:  (input) ->
+        pattern = new RegExp("^#{cmdchar}tengu environment create")
+        input.match(pattern)
+      exec: ['CurrentUser', 'Settings', '$http', (CurrentUser, Settings, $http) ->
+        (input, q) ->
+          controller = input[('tengu environment create'.length+1)..].trim() or null
+
+          if !CurrentUser.isAuthenticated()
+            Frame.createOne({input:"#{cmdchar}signin"})
+            q.reject("User is not authorized to create Environments.")
+          else
+            q.resolve(
+              controller : controller
+            )
+
+          q.promise
+      ]
+
     # Tengu model create handler
     FrameProvider.interpreters.push
       type: 'tengu'

@@ -1,0 +1,185 @@
+div(ng-controller="ControllerCreateController")
+  .outer
+    include partials/frame-common-actions
+    .left-frame-toggle
+      .left-toggle-menu.toggle(ng-if='availableModes.length > 0')
+        .btn-group.toggle-buttons
+          .button-holder(ng-show="isAvailable('aws')")
+            button.btn(ng-class='{active: isActive("aws")}', ng-click='setActive("aws")')
+              i
+                img(ng-src="images/aws.svg") 
+              span.mini-menu-item-text AWS
+            br
+          .button-holder(ng-show="isAvailable('google')")
+            button.btn(ng-class='{active: isActive("google")}', ng-click='setActive("google")')
+              i
+                img(ng-src="images/google.svg") 
+              span.mini-menu-item-text Google
+            br
+          .button-holder(ng-show="isAvailable('creating')")
+            button.btn(ng-class='{active: isActive("creating")}', ng-click='setActive("creating")')
+              i.fa.fa-spinner.fa-spin.fa-2x
+              span.mini-menu-item-text Busy
+            br
+    .right-inner-frame.no-indicator(ng-class='{"no-left-menu": availableModes.length < 1}')
+      .inner
+        .view-result(ng-class='{error: frame.hasErrors}')
+          .view-result-raw.result(ng-show='isActive("aws") && !frame.isTerminating')
+            .raw-holder
+              article.help.no-data.has-status-bar(ng-show="status == null")
+                h3 We are preparing the creation of your Environment
+                p.fa.fa-spinner.fa-spin.fa-2x
+                br
+                br
+              article.help.no-data.has-status-bar(ng-show="status == 'start' || status == 'creating.controller'")
+                .container-fluid
+                  .section.row-fluid.summary
+                    h3 Create a new Environment on Amazon
+                    p.lead
+                      | You have to set the name of the new Environment. You also 
+                      | have to tell us in which Amazon region the Environment has to be 
+                      | set up. Next to this, you also have to give the Access Key and
+                      | Secret Key. Be aware that this account has sufficient permissions.
+                    br
+                    br
+                  .section.row-fluid.summary
+                    .form
+                      .row
+                        .col-sm-6
+                          p
+                            | Name of the new Environment
+                          input.form-control(type='text', id="controller", on-enter="focus", on-enter-target-id="region", ng-model="controller", style="margin: 0", tabindex="1")
+                          br
+                        .col-sm-6
+                          p
+                            | The full Region name
+                          input.form-control(type='text', id="region", on-enter="focus", on-enter-target-id="access_key", ng-model="region", style="margin: 0", tabindex="2")
+                          br
+                      .row
+                        .col-sm-12
+                          p
+                            | Your AWS Access Key
+                          input.form-control(type='text', id="access_key", on-enter="focus", on-enter-target-id="secret_key", ng-model="access_key", style="margin: 0", tabindex="3")
+                          br
+                      .row
+                        .col-sm-12
+                          p
+                            | Your AWS Secret Key
+                          input.form-control(type='text', id="secret_key", on-enter="focus", on-enter-target-id="region", ng-model="secret_key", style="margin: 0", tabindex="4")
+                          br
+                          br
+                      .row
+                        .col-sm-6
+                          button.btn.btn-default(id="bootstrap_controller", ng-hide="status == 'creating.controller'", ng-click="createController('aws')", style="margin: 0", ) Start
+                          .fa.fa-spinner.fa-spin.fa-2x(ng-show="status == 'creating.controller'")
+        .status-bar(ng-class='{error: frame.detailedErrorText, loading: frame.isLoading}', ng-show='isActive("aws")')
+          .status(ng-show="frame.detailedErrorText")
+            .fa.fa-exclamation-triangle.icon-warning-sign &nbsp;
+            {{frame.detailedErrorText}}
+            div(ng-hide='frame.hasErrors')
+              div(ng-show='frame.response')
+                .fa.fa-ok
+                | Logged in as {{frame.response.name}} ({{frame.response.identities[0].provider}})
+          span(ng-show='frame.isLoading')
+            .fa.fa-spinner.fa-spin
+            | Loading user info...
+          br
+                
+    .right-inner-frame.no-indicator(ng-class='{"no-left-menu": availableModes.length < 1}')
+      .inner
+        .view-result(ng-class='{error: frame.hasErrors}')
+          .view-result-raw.result(ng-show='isActive("google") && !frame.isTerminating')
+            .raw-holder
+              article.help.no-data.has-status-bar(ng-show="status == null")
+                h3 We are preparing the creation of your Environment
+                p.fa.fa-spinner.fa-spin.fa-2x
+                br
+                br
+              article.help.no-data.has-status-bar(ng-show="status == 'start' || status == 'creating.controller'")
+                .container-fluid
+                  .section.row-fluid.summary
+                    h3 Create a new Environment on Google Cloud
+                    p.lead
+                      | You have to set the name of the new Environment. You also 
+                      | have to tell us in which GCE region the Environment has to be 
+                      | set up. Next to this, you also have to copy-paste the json you 
+                      | received when creating the account for this Environment.
+                      br
+                      br
+                  .section.row-fluid.summary
+                    .form
+                      .row
+                        .col-sm-6
+                          p
+                            | Name of the new Environment
+                          input.form-control(type='text', id="controller", on-enter="focus", on-enter-target-id="region", ng-model="controller", style="margin: 0", tabindex="1")
+                          br
+                        .col-sm-6
+                          p
+                            | The full Region name
+                          input.form-control(type='text', id="region", on-enter="focus", on-enter-target-id="access_key", ng-model="region", style="margin: 0", tabindex="2")
+                          br
+                      .row
+                        .col-sm-12
+                          p
+                            | Your Google credentials.
+                          small Simply copy paste your JSON.
+                          textarea.form-control(id="credentials", on-enter="focus", on-enter-target-id="bootstrap_controller", ng-model="credentials", style="margin: 0", tabindex="4")
+                          br
+                          br
+                      .row
+                        .col-sm-6
+                          button.btn.btn-default(id="bootstrap_controller", ng-hide="status == 'creating.controller'", ng-click="createController('google')", style="margin: 0", ) Start
+                          .fa.fa-spinner.fa-spin.fa-2x(ng-show="status == 'creating.controller'")
+        .status-bar(ng-class='{error: frame.detailedErrorText, loading: frame.isLoading}', ng-show='isActive("google")')
+          .status(ng-show="frame.detailedErrorText")
+            .fa.fa-exclamation-triangle.icon-warning-sign &nbsp;
+            {{frame.detailedErrorText}}
+            div(ng-hide='frame.hasErrors')
+              div(ng-show='frame.response')
+                .fa.fa-ok
+                | Logged in as {{frame.response.name}} ({{frame.response.identities[0].provider}})
+          span(ng-show='frame.isLoading')
+            .fa.fa-spinner.fa-spin
+            | Loading user info...
+          br
+                  
+    .right-inner-frame.no-indicator(ng-class='{"no-left-menu": availableModes.length < 1}')
+      .inner
+        .view-result(ng-class='{error: frame.hasErrors}')
+          .view-result-raw.result(ng-show='isActive("creating") && !frame.isTerminating')
+            .raw-holder
+              article.help.no-data.has-status-bar(ng-show="status == null")
+                h3 We are preparing the creation of your Environment
+                p.fa.fa-spinner.fa-spin.fa-2x
+                br
+                br
+              article.help.no-data.has-status-bar(ng-show="status == 'finished'")
+                p.lead
+                  | The Environment <code>{{controller}}</code> is being created. 
+                  | This might take a while. Sit back and relax.
+                .section.row-fluid.summary
+                  h4 What's next?
+                  p
+                    | Check the status of your deployment: <code ng-click="checkStatus()">:tengu model status {{newModel}}@{{controller}}</code>
+                    p
+                      ul
+                        li 
+                          | Here you can see the link to your model's Juju GUI. You can easily login using the same user credentials
+                          | you used to create the model.
+                        li 
+                          | You can also see a graph model of your deployed model and services. And inspect the status of the different
+                          | services.
+        .status-bar(ng-class='{error: frame.detailedErrorText, loading: frame.isLoading}', ng-show='isActive("creating")')
+          .status(ng-show="frame.detailedErrorText")
+            .fa.fa-exclamation-triangle.icon-warning-sign &nbsp;
+            {{frame.detailedErrorText}}
+            div(ng-hide='frame.hasErrors')
+              div(ng-show='frame.response')
+                .fa.fa-ok
+                | Logged in as {{frame.response.name}} ({{frame.response.identities[0].provider}})
+          span(ng-show='frame.isLoading')
+            .fa.fa-spinner.fa-spin
+            | Loading user info...
+          br
+    
