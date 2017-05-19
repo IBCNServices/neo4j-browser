@@ -108,7 +108,7 @@ angular.module('neo4jApp.directives')
                 else
                   html += "<td>" + unknown + "</td>"
                 if machine['hardware-characteristics']?
-                  html += "<td><small>cpu cores: " + machine['hardware-characteristics']['cpu-cores'] + ", mem: " + machine['hardware-characteristics']['mem'] + " GiB</small></td>"
+                  html += "<td><small>cpu cores: " + machine['hardware-characteristics']['cpu-cores'] + ", mem: " + machine['hardware-characteristics']['mem'] + " MiB</small></td>"
                 else
                   html += "<td>" + unknown + "</td>"
                 html += "<td><div class='token token-label' style='background-color: rgb(104, 189, 246); color: rgb(255, 255, 255);''>" + machine.series + "</div></td>"

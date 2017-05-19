@@ -108,7 +108,10 @@ angular.module('neo4jApp.controllers')
         for d in raw_i
           if d.type? and d.type in metricsList
             hasData = true
-            data[d.type][$scope.model+"/"+unit] = d.result
+            if $scope.application?
+              data[d.type][$scope.application+"/"+unit] = d.result
+            else
+              data[d.type][$scope.model+"/"+unit] = d.result
       )
       $scope.data = data
       hasData

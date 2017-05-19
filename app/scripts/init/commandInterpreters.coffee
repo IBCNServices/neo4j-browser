@@ -415,6 +415,28 @@ angular.module('neo4jApp')
 
     FrameProvider.interpreters.push
       type: 'account'
+      templateUrl: 'views/frame-user-delete.html'
+      matches: (input) ->
+        pattern = new RegExp("^#{cmdchar}tengu user delete")
+        input.match(pattern)
+      exec: ['CurrentUser', (CurrentUser) ->
+        (input, q) ->
+          user = topicalize(input[('tengu user delete'.length+1)..]) or 'blank'
+          if !CurrentUser.isAuthenticated()
+            Frame.createOne({input:"#{cmdchar}signin"})
+            q.reject("User is not authorized to talk to the Sojobo.")
+          else if user == 'blank'
+            q.reject("Tell us which user you like to remove.")
+          else
+            q.resolve(
+              user : user
+            )
+
+          q.promise
+      ]
+
+    FrameProvider.interpreters.push
+      type: 'account'
       templateUrl: 'views/frame-user-grant.html'
       matches: (input) ->
         pattern = new RegExp("^#{cmdchar}tengu user grant")

@@ -155,7 +155,7 @@ div(ng-controller="ModelMonitoringController", fullscreen)
               article.help.no-data.has-status-bar(ng-show="memData")
                 h3 The Memory usage of your application's units
                 p.lead
-                  | Currently you see the used memory and total memory in MB.
+                  | Currently you see the used memory and total memory in MiB.
                 br
                 .row(ng-repeat="(name, value) in memData")
                   .col-md-6
@@ -165,7 +165,7 @@ div(ng-controller="ModelMonitoringController", fullscreen)
                           .col-xs-3
                             i.fa.fa-ticket.fa-5x
                           .col-xs-9.text-right
-                            b.h3 {{value.used}} MBi / {{value.total}} MBi
+                            b.h3 {{value.used}} MiB / {{value.total}} MiB
                             div {{name}}
                 br
                 br

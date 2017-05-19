@@ -1,0 +1,37 @@
+div
+  .outer
+    include partials/frame-common-actions
+    .inner
+      .view-result
+        article.help(ng-controller="UserDeleteController")
+          .container-fluid
+            .section.row-fluid.summary(ng-show="status == 'init'")
+              p.lead Preparing deleting a user.
+              p
+            .section.row-fluid.summary(ng-show="status == 'confirm' || status == 'deleting'")
+              h3 
+                | Remove user 
+                code {{user}}
+              p.lead Are you sure you want to remove this user?
+              .form
+                .row
+                  .col-sm-5
+                    button.btn.btn-default(id="delete", ng-hide="status == 'deleting'", ng-click="removeUser()", style="margin: 0", ) Yes
+                    .fa.fa-spinner.fa-spin.fa-2x(ng-show="status == 'deleting'")
+            .section.row-fluid.summary(ng-show="status == 'deleted'")
+              h3 Success!
+              p.lead 
+                | User
+                code {{user}}
+                | was successfuly removed.
+            .section.row-fluid.summary(ng-show="status == 'error'")
+              h3 Something went wrong :(
+              p.lead
+                | While removing the user 
+                code {{model}}
+                | there was an error.
+              p {{errorMessage}}
+      .status-bar(ng-class='{error: frame.detailedErrorText, loading: frame.isLoading}')
+        .status(ng-show="frame.detailedErrorText")
+          .fa.fa-exclamation-triangle.icon-warning-sign &nbsp;
+          {{frame.detailedErrorText}}
