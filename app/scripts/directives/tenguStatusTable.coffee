@@ -77,11 +77,12 @@ angular.module('neo4jApp.directives')
                     html += " [" + unit.machine + "]"
                   if unit['public-ip']? and unit['public-ip'] != ""
                     html += " <code><small>" + unit['public-ip']
-                    if unit.ports? and unit.ports != null and unit.ports.length > 0
+                    if app.exposed and unit.ports? and unit.ports != null and unit.ports.length > 0
                       html += "["
                       for port in unit.ports
                         html += "<a target='_blank' href='http://" + unit['public-ip'] + ":" + port.number + "'>" + port.number + "</a> "
                       html += "]"
+                    html += " <a target='_blank' href='ssh://ubuntu@" + unit['public-ip'] + "' tooltip='Connect via SSH'><i class='fa fa-terminal' aria-hidden='true'></i></a>"
                     html += "</small></code>"
                   html += "</li>"
                 html += "</ul></td>"
