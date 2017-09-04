@@ -12,6 +12,8 @@ angular.module('neo4jApp.controllers')
     $scope.newModel = null
     $scope.controller = false
     $scope.controllers = []
+    $scope.credential = false
+    $scope.credentials = []
     $scope.bundle = null
     $scope.ssh_key = null
 
@@ -39,16 +41,19 @@ angular.module('neo4jApp.controllers')
           }
           $http(req).then(
             (response) ->
-              if response.data.access?
-                for controller in response.data.access
-                  angular.forEach(controller, (ctrl_data, ctrl_name) ->
-                    console.log ctrl_name
-                    $scope.controllers.push {
-                      name   : ctrl_name
-                      access : ctrl_data.access
-                      type   : ctrl_data.type
-                    }
-                  )
+              if response.data.controllers?
+                for controller in response.data.controllers
+                  $scope.controllers.push {
+                    name   : controller.name
+                    access : controller.access
+                    type   : controller.type
+                  }
+              if response.data.credentials?
+                for creds in response.data.credentials
+                  $scope.credentials.push {
+                    name   : creds.name
+                  }
+
             , (r) ->
               console.log(r)
               $scope.frame.setError "There was an error in getting the Environments for this user: " + r.data
@@ -68,8 +73,8 @@ angular.module('neo4jApp.controllers')
         $scope.frame.addErrorText 'You have to enter a name for the Model. '
       if not $scope.controller || not $scope.controller.length
         $scope.frame.addErrorText 'You have to provide the environment to deploy this Model to. '
-      #if $scope.ssh_key? && not ssh_key_pattern.test($scope.ssh_key)
-      #  $scope.frame.addErrorText 'The SSH key field does not have the correct format. '
+      if not $scope.credential || not $scope.credential.length
+        $scope.frame.addErrorText 'You have to provide the credential to deploy this Model to. '
 
       if $scope.frame.getDetailedErrorText().length
         $scope.status = "start"
@@ -77,7 +82,7 @@ angular.module('neo4jApp.controllers')
       else
         deployModel()
 
-    recurrentLookup = (req) ->
+    recurrentLookup = (req, retry) ->
       console.log("start recurring for "+req.url)
       $http(req).then(
         (response) ->
@@ -117,13 +122,20 @@ angular.module('neo4jApp.controllers')
               $scope.focusEditor()
               $scope.frame.resetError()
           else
-            $timeout(() ->
-              recurrentLookup(req)
-            , 2000)
+            if retry > 0
+              $timeout(() ->
+                recurrentLookup(req, retry-1)
+              , 2000)
+            else
+              $scope.frame.setError "Getting the model in the correct state, took longer than expected."
         , (r) ->
           console.log(r)
-          $scope.error.push(msgError)
-          $scope.frame.setError "There was an error in checking the ACL: " + r.data
+          if retry == 0
+            $scope.frame.setError "There was an error in checking the model: " + r.data
+          else
+            $timeout(() ->
+              recurrentLookup(req, retry-1)
+            , 2000)
       )
 
 
@@ -140,7 +152,8 @@ angular.module('neo4jApp.controllers')
           "Authorization" : "Basic " + basicAuth
         }
         "data"    : {
-          "model"    : $scope.newModel
+          "model"       : $scope.newModel
+          "credential"  : $scope.credential
         }
       }
 
@@ -153,7 +166,7 @@ angular.module('neo4jApp.controllers')
             req.method = "GET"
             req.data = null
             req.url = req.url + "/" + $scope.newModel
-            recurrentLookup(req)
+            recurrentLookup(req, 100)
           else
             $scope.status = "finished"
             $scope.focusEditor()

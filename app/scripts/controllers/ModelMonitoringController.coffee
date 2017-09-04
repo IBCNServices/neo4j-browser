@@ -50,6 +50,11 @@ angular.module('neo4jApp.controllers')
 
             $scope.status = 'monitoring-checking'
             refreshLater()
+          else if response.data.units?
+            $scope.availableModes = ['up', 'cpu', 'mem', 'fs']
+            $scope.tab = 'up'
+            $scope.status = 'monitoring-checking'
+            refreshLater()
           else
             $scope.availableModes = ['install']
             $scope.tab = 'install'
@@ -84,7 +89,7 @@ angular.module('neo4jApp.controllers')
           $scope.availableModes = ['up', 'cpu', 'mem', 'fs']
           $scope.tab = 'up'
 
-          parseData(resp.data)
+          parseData(response.data)
           parseUp($scope.data)
           parseCpu($scope.data)
           parseMem($scope.data)

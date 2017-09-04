@@ -26,6 +26,14 @@ article.help(ng-controller="ModelCreateController")
                 option(ng-repeat="ctrl in controllers | orderBy: ctrl.name", value="{{ctrl.name}}", style="background-image:url('images/{{ctrl.type}}.svg');")
                   | {{ctrl.name}} on [{{ctrl.type}}]
               br
+          .row
+            .col-sm-5
+              p
+                | Name of the Credentials
+              select.form-control(id="credential", on-enter="focus", ng-model="credential", style="margin: 0", ng-show="credentials", tabindex="3")
+                option(ng-repeat="cred in credentials | orderBy: cred.name", value="{{cred.name}}")
+                  | {{cred.name}}
+              br
               br
           .row
             .col-sm-5

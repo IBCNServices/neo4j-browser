@@ -191,6 +191,7 @@ angular.module('neo4jApp.controllers')
     'Editor'
     ($scope, Utils, Settings, Editor) ->
       $scope.unauthorized = yes
+      $scope.apis = []
 
       if cmdParam = Utils.getUrlParam('cmd', window.location.href)
         return unless cmdParam[0] is 'play'

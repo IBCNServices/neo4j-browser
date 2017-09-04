@@ -21,16 +21,17 @@ div(ng-controller="ModelController", fullscreen)
     .right-inner-frame.no-indicator(ng-class='{"no-left-menu": availableModes.length < 1}')
       .inner
         .view-result(ng-class='{error: frame.hasErrors}')
-          .view-result-raw.result(ng-show='isActive("model") && !frame.isTerminating')
-            .raw-holder
-              article.help.no-data.has-status-bar(ng-show="status == 'init'")
+          .view-result-table.result(ng-show='isActive("model") && !frame.isTerminating')
+            .table-holder(ng-show="status == 'init'")
+              article.guide.no-data.has-status-bar
                 h3 Your Model's information is being retrieved.
                 p.lead
                   | Please wait a little longer.
                   | You can use the Auto-refresh functionality or submit another retry manually.
                 br
                 br
-              article.help.no-data.has-status-bar(ng-show="status == 'model-check'")
+            .table-holder(ng-show="status == 'model-check'")
+              article.guide
                 h3(ng-show="controller")
                   | The Model 
                   code {{modelName}} 
@@ -87,11 +88,63 @@ div(ng-controller="ModelController", fullscreen)
               .status
                 include partials/inspector
                        
-          .view-result-table.result(ng-show='isActive("table") && !frame.isTerminating')
-            .table-holder
-              article.help.no-data.has-status-bar(ng-hide="status == 'model-check'")
+          .view-result-raw.result(ng-show='isActive("table") && !frame.isTerminating')
+            .raw-holder
+              article.guide.no-data.has-status-bar(ng-hide="status == 'model-check'")
                 p No status info yet.
-              tengu-status-table(table-data='model', ng-show="status == 'model-check'")
+              article.guide(ng-show="status == 'model-check'")
+                h3 Model: {{model.name}}
+                br
+                h4 Applications
+                br
+                p.lead(ng-hide="model.applications != null && model.applications.length > 0")
+                  | No applications deployed yet.
+                table.data(ng-show="model.applications != null && model.applications.length > 0")
+                  thead
+                    th Name
+                    th Status
+                    th Exposed
+                    th Charm 
+                    th Units
+                  tr(ng-repeat="app in model.applications")
+                    td {{app.name}}
+                    td 
+                      | {{app.status.current}}
+                      code {{app.status.message}}
+                    td {{app.exposed}}
+                    td {{app.charm}}
+                    td
+                      tengu-unit-status(table-data='app')
+                br
+                h4 Machines
+                br
+                p.lead(ng-hide="model.machines != null && model.machines.length > 0")
+                  | No machines created yet.
+                table.data(ng-show="model.machines != null && model.machines.length > 0")
+                  thead
+                    th ID
+                    th IP
+                    th Hardware
+                    th Series
+                    th Instance-ID 
+                    th Containers
+                  tr(ng-repeat="machine in model.machines")
+                    td(ng-show="machine.name != null") {{machine.name}}
+                    td(ng-hide="machine.name != null") Machine not yet allocated
+                    td(ng-show="machine.ip != null")
+                      small {{machine.ip.internal_ip}}, {{machine.ip.external_ip}}
+                    td(ng-hide="machine.ip != null")
+                      code unknown
+                    td(ng-show="machine['hardware-characteristics'] != null")
+                      small cpu cores: {{machine['hardware-characteristics']['cpu-cores']}}, mem: {{machine['hardware-characteristics']['mem']}} MiB
+                    td(ng-hide="machine['hardware-characteristics'] != null")
+                      code unknown
+                    td {{machine.series}}
+                    td {{machine["instance-id"]}}
+                    td(ng-show="machine.containers != null")
+                      ul
+                        li(ng-repeat="container in machine.containers") {{container.name}}&nbsp;{{container.series}}&nbsp;{{container.ip}}
+                    td(ng-hide="machine.containers != null") None
             .status-bar
               .status
                 include partials/result-status 

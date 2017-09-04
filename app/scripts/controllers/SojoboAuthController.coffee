@@ -15,6 +15,10 @@ angular.module('neo4jApp.controllers')
     ($scope, CurrentUser, Frame, Settings, $http, $timeout) ->
       $scope.username = ''
       $scope.password = ''
+      $scope.sshKey = ''
+      $scope.credential = ''
+      $scope.name = ''
+      $scope.type = ''
       $scope.static_user = ''
 
       $scope.$watch 'frame.response', (resp) ->
@@ -78,7 +82,78 @@ angular.module('neo4jApp.controllers')
             )
           , (r) ->
             console.log(r)
-            $scope.frame.setError "There was an error in creating the Model: " + r.data
+            $scope.frame.setError "There was an error in changing the Password: " + r.data
+        )
+
+      $scope.addSshKey = () ->
+        if not $scope.sshKey? || not $scope.sshKey.length
+          $scope.frame.addErrorText 'You have to provide a valid SSH-key.'
+        return if $scope.frame.getDetailedErrorText().length
+
+        url = Settings.endpoint.tengu + "/users/" + $scope.static_user + "/ssh"
+        basicAuth = CurrentUser.getToken('token')
+
+        req = {
+          "method"  : "POST"
+          "url"     : url
+          "headers"  : {
+            "Content-Type"  : "application/json"
+            "api-key"       : Settings.apiKey
+            "Authorization" : "Basic " + basicAuth
+          }
+          "data"    : {
+            "ssh-key"    : $scope.sshKey
+          }
+        }
+
+        $http(req).then(
+          (response) ->
+            Frame.createOne({input:"#{Settings.cmdchar}tengu user info"})
+          , (r) ->
+            console.log(r)
+            $scope.frame.setError "There was an error in adding the SSH-key: " + r.data
+        )
+
+      $scope.addCredential = () ->
+        if not $scope.name? || not $scope.name.length
+          $scope.frame.addErrorText 'You have to provide a unique name.'
+        if not $scope.type? || not $scope.type.length
+          $scope.frame.addErrorText 'You have to set the cloud type.'
+        if not $scope.credential? || not $scope.credential.length
+          $scope.frame.addErrorText 'You have to provide a correct Credential.'
+        return if $scope.frame.getDetailedErrorText().length
+
+        try
+          credential_json = JSON.parse($scope.credential)
+
+        catch error
+          $scope.frame.addErrorText 'There was a syntax error in the credential you provided: ' + error + '. '
+          return
+
+        url = Settings.endpoint.tengu + "/users/" + $scope.static_user + "/credentials"
+        basicAuth = CurrentUser.getToken('token')
+
+        req = {
+          "method"  : "POST"
+          "url"     : url
+          "headers"  : {
+            "Content-Type"  : "application/json"
+            "api-key"       : Settings.apiKey
+            "Authorization" : "Basic " + basicAuth
+          }
+          "data"    : {
+            "name"        : $scope.name
+            "c_type"      : $scope.type
+            "credentials" : credential_json
+          }
+        }
+
+        $http(req).then(
+          (response) ->
+            Frame.createOne({input:"#{Settings.cmdchar}tengu user info"})
+          , (r) ->
+            console.log(r)
+            $scope.frame.setError "There was an error in adding the credential: " + r.data
         )
 
   ]

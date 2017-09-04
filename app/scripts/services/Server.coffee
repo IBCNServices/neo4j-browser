@@ -129,9 +129,12 @@ angular.module('neo4jApp.services')
         status: (params = '')->
           # User a smaller timeout for status requests so IE10 detects when the
           # server goes down faster.
-          #@options "#{Settings.endpoint.rest}/", { timeout: (Settings.heartbeat * 1000)}
-          #@get "#{Settings.endpoint.tengu}/", { timeout: (Settings.heartbeat * 1000)}
-          @options "#{Settings.endpoint.tengu}/", { timeout: (Settings.heartbeat * 1000)}
+          #@options "#{Settings.endpoint.tengu}/", { timeout: (Settings.heartbeat * 1000)}
+          headers = {
+            "Content-Type"  : "application/json"
+            "api-key"       : Settings.apiKey
+          }
+          @get "#{Settings.endpoint.tengu}/", { timeout: (Settings.heartbeat * 1000), headers: headers}
 
         log: (path) ->
           @get(path).then((r)-> console.log (r))

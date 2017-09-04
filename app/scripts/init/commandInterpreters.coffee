@@ -350,7 +350,7 @@ angular.module('neo4jApp')
       type: 'account'
       templateUrl: 'views/frame-tengu-userinfo.html'
       matches: (input) ->
-        pattern = new RegExp("^#{cmdchar}tengu user-info")
+        pattern = new RegExp("^#{cmdchar}tengu user info")
         input.match(pattern)
       exec: ['CurrentUser', 'Frame', 'Settings', '$http', (CurrentUser, Frame, Settings, $http) ->
         (input, q) ->
@@ -383,15 +383,61 @@ angular.module('neo4jApp')
       type: 'account'
       templateUrl: 'views/frame-tengu-changepassword.html'
       matches: (input) ->
-        pattern = new RegExp("^#{cmdchar}tengu change-user-password")
+        pattern = new RegExp("^#{cmdchar}tengu user change-password")
         input.match(pattern)
       exec: ['CurrentUser', '$http', (CurrentUser, $http) ->
         (input, q) ->
           if CurrentUser.isAuthenticated()
-            q.resolve("User authorized.")
+            q.resolve(
+              authenticated: yes
+            )
           else
             Frame.createOne({input:"#{cmdchar}signin"})
-            q.reject("User is not authorized.")
+            q.resolve(
+              authenticated: no
+            )
+
+          q.promise
+      ]
+
+    FrameProvider.interpreters.push
+      type: 'account'
+      templateUrl: 'views/frame-tengu-add-credential.html'
+      matches: (input) ->
+        pattern = new RegExp("^#{cmdchar}tengu user add-credential")
+        input.match(pattern)
+      exec: ['CurrentUser', '$http', (CurrentUser, $http) ->
+        (input, q) ->
+          if CurrentUser.isAuthenticated()
+            q.resolve(
+              authenticated: yes
+            )
+          else
+            Frame.createOne({input:"#{cmdchar}signin"})
+            q.resolve(
+              authenticated: no
+            )
+
+          q.promise
+      ]
+
+    FrameProvider.interpreters.push
+      type: 'account'
+      templateUrl: 'views/frame-tengu-add-ssh-key.html'
+      matches: (input) ->
+        pattern = new RegExp("^#{cmdchar}tengu user add-ssh-key")
+        input.match(pattern)
+      exec: ['CurrentUser', '$http', (CurrentUser, $http) ->
+        (input, q) ->
+          if CurrentUser.isAuthenticated()
+            q.resolve(
+              authenticated: yes
+            )
+          else
+            Frame.createOne({input:"#{cmdchar}signin"})
+            q.resolve(
+              authenticated: no
+            )
 
           q.promise
       ]
@@ -521,29 +567,54 @@ angular.module('neo4jApp')
 
             if bundle?
               if bundle.startsWith('http')
-                url = bundle
+                req = {
+                  "method"  : "GET"
+                  "url"     : bundle
+                }
+                $http(req).then(
+                  (response) ->
+                    console.log response
+                    q.resolve(
+                      modelName  : modelName
+                      controller : controller
+                      bundle     : response.data
+                    )
+                  , (r) ->
+                    if r.status == 404
+                      q.reject("Could not find the Bundle '" + bundle + "'")
+                    else
+                      console.log(r)
+                      q.reject("Unknown error: [" + r.status + ", " + r.data + "] ")
+                )
               else
-                url = Settings.endpoint.bundles.replace('{{bundlename}}', bundle)
-              console.log url
-              req = {
-                "method"  : "GET"
-                "url"     : url
-              }
-              $http(req).then(
-                (response) ->
-                  console.log response
-                  q.resolve(
-                    modelName  : modelName
-                    controller : controller
-                    bundle     : response.data
-                  )
-                , (r) ->
-                  if r.status == 404
-                    q.reject("Could not find the Bundle '" + bundle + "'")
-                  else
-                    console.log(r)
-                    q.reject("Unknown error: [" + r.status + ", " + r.data + "] ")
-              )
+                basicAuth = CurrentUser.getToken('token')
+
+                req = {
+                  "method"  : "GET"
+                  "url"     : Settings.endpoint.tengu + "/bundles/bundle-" + bundle
+                  "headers"  : {
+                    "Content-Type"  : "application/json"
+                    "api-key"       : Settings.apiKey
+                    "Authorization" : "Basic " + basicAuth
+                  }
+                }
+                $http(req).then(
+                  (response) ->
+                    if response.data.json?
+                      q.resolve(
+                        modelName  : modelName
+                        controller : controller
+                        bundle     : response.data.json
+                      )
+                    else
+                      q.reject("The json attribute of the bundle is empty")
+                  , (r) ->
+                    if r.status == 404
+                      q.reject("Could not find the Bundle '" + bundle + "'")
+                    else
+                      console.log(r)
+                      q.reject("Unknown error: [" + r.status + ", " + r.data + "] ")
+                )
             else
               q.resolve(
                 modelName  : modelName

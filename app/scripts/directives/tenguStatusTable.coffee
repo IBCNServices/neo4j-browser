@@ -117,7 +117,7 @@ angular.module('neo4jApp.directives')
                 if machine.containers? and machine.containers != null and machine.containers.length > 0
                   html += "<td><ul>"
                   for container in machine.containers
-                    html += "<li>" + container.name + "&nbsp;" + container.series + "&nbsp;" + container.ip + "</td>"
+                    html += "<li>" + container.name + "&nbsp;" + container.series + "&nbsp;" + container.ip + "</li>"
                   html += "</ul></td>"
                 else
                   html += "<td><i>None</i></td>"

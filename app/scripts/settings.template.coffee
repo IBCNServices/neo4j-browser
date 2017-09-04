@@ -36,8 +36,6 @@ angular.module('neo4jApp.settings', ['neo4jApp.utils'])
       tengu: "{{sojobo_url}}"
       bundles: "{{bundles_url}}"
       mappings: "{{mappings_url}}"
-    needAuthZ: true
-    useSojobo: true
     apiKey: "{{api_key}}"
     featureflags: 'FEATURE_FLAG_AUTH'
     host: baseURL

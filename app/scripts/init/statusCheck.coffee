@@ -45,6 +45,7 @@ angular.module('neo4jApp').run([
       Server.status('?t='+ts).success(
         (r) ->
           $scope.offline = no
+          $scope.apis = r["used_apis"]
           timer = $timeout($scope.check, Settings.heartbeat * 1000)
           r
       ).error(

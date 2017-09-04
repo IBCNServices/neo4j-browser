@@ -1,0 +1,47 @@
+div(ng-controller="SojoboAuthCtrl")
+  .outer
+    include partials/frame-common-actions
+    .inner
+      .view-result
+        article.help
+          .container-fluid
+            .section.row-fluid.summary(ng-show="!static_is_authenticated")
+              .summary.col-sm-3
+                h3 User is not signed in
+                p.lead
+                  | There is currently no user signed in. Please use your 
+                  | credentials to 
+                  code(exec-topic="signin") signin
+                  | .
+            .section.row-fluid.summary(ng-show="static_is_authenticated && static_user")
+              .summary.col-sm-3
+                h3 Welcome 
+                  b {{static_user}}
+                p.lead
+                  | Lovely to see you.
+              .details.col-sm-9
+                .form
+                  .row
+                    .col-sm-5
+                      | SSH-key
+                      br
+                      input.form-control(id="ssh-key", on-enter="click", on-enter-target-id="connect_button", type='input', ng-model="sshKey", style="margin: 0")
+                      br
+                  .row.form-info
+                    .col-sm-5
+                      | Please provide a correct public SSH-key.
+                  .row
+                    .col-sm-5
+                      br
+                      button.btn.btn-default(id="connect_button", ng-click="addSshKey()", style="margin: 0") Add SSH-key
+      .status-bar(ng-class='{error: frame.detailedErrorText, loading: frame.isLoading}')
+        .status(ng-show="frame.detailedErrorText")
+          .fa.fa-exclamation-triangle.icon-warning-sign &nbsp;
+          {{frame.detailedErrorText}}
+          div(ng-hide='frame.hasErrors')
+            div(ng-show='frame.response')
+              .fa.fa-ok
+              | Logged in as {{frame.response.name}} ({{frame.response.identities[0].provider}})
+        span(ng-show='frame.isLoading')
+          .fa.fa-spinner.fa-spin
+          | Initated login...

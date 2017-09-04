@@ -1,74 +1,179 @@
-div(ng-controller="UserInfoCtrl")
+div(ng-controller="UserInfoCtrl", fullscreen)
   .outer
     include partials/frame-common-actions
-    .inner
-      .view-result
-        article.help
-          .container-fluid
-            .section.row-fluid.summary(ng-show="!static_is_authenticated")
-              .details
+    .left-frame-toggle
+      .left-toggle-menu.toggle(ng-if='availableModes.length > 0')
+        .btn-group.toggle-buttons
+          .button-holder(ng-show="isAvailable('info')")
+            button.btn(ng-class='{active: isActive("info")}', ng-click='setActive("info")')
+              i.fa.fa-info
+              span.mini-menu-item-text Info
+            br
+          .button-holder(ng-show="isAvailable('keys')")
+            button.btn(ng-class='{active: isActive("keys")}', ng-click='setActive("keys")')
+              i.fa.fa-key
+              span.mini-menu-item-text SSH-...
+            br
+          .button-holder(ng-show="isAvailable('creds')")
+            button.btn(ng-class='{active: isActive("creds")}', ng-click='setActive("creds")')
+              i.fa.fa-lock
+              span.mini-menu-item-text Cred...
+    .right-inner-frame.no-indicator(ng-class='{"no-left-menu": availableModes.length < 1}')
+      .inner
+        .view-result(ng-class='{error: frame.hasErrors}')
+          .view-result-table.result(ng-show='isActive("info") && !frame.isTerminating')
+            .table-holder(ng-show="!static_is_authenticated")
+              article.guide.no-data.has-status-bar
                 h3 User is not signed in
                 p.lead
                   | You are not signed in. Please use your credentials to 
                   code(exec-topic="signin") signin
                   | .
-            .section.row-fluid.summary(ng-show="static_is_authenticated && static_user")
-              .summary.col-sm-3
-                h3 Welcome 
-                  b {{static_user}}
+                br
+                br
+            .table-holder(ng-show="static_is_authenticated && static_user")
+              article.guide
+                .summary.col-sm-3
+                  h3 Welcome 
+                    b {{static_user}}
+                  p.lead
+                    | Lovely to see you.
+                .details.col-sm-9(ng-hide="user_info")
+                  p.lead
+                    .fa.fa-spinner.fa-spin
+                    |  We are loading your environments and models.
+                .details.col-sm-9(ng-show="user_info")
+                  p.lead(ng-show="controllers == null || controllers.length == 0")
+                    | There is not yet an environment available for you. Want to
+                    | create one?
+                    br
+                    a(click-to-command=":tengu environment create") 
+                      | Create a brand new environment
+                  table.table.table-condensed(ng-hide="controllers == null || controllers.length == 0")
+                    thead
+                      th Environment
+                      th Type
+                      th Access level
+                    tr(ng-repeat="controller in controllers")
+                      td {{controller.name}}
+                      td 
+                        img(ng-src="images/{{controller.type}}.svg") 
+                      td {{controller.access}}
+                  p(ng-show="controllers != null && controllers.length > 0 && (models == null || models.length == 0)")
+                    | Ow, it seems like you don't have any models yet.
+                    br
+                    | Do you want to create a new model?
+                    br
+                    a(play-topic="tengu") Get started!
+                  table.table.table-condensed(ng-show="controllers != null && controllers.length > 0 && models != null && models.length > 0")
+                    thead
+                      th Model
+                      th Environment
+                      th Access level
+                      th &nbsp;
+                    tr(ng-repeat="model in models")
+                      td {{model.name}}
+                      td 
+                        img(ng-src="images/{{model.type}}.svg") 
+                        &nbsp;{{model.controller}}
+                      td {{model.access}}
+                      td
+                        ul.actions.list-inline
+                          li 
+                            a.sl-show(view-model="{{model.name}}@{{model.controller}}", tooltip="Show model status")
+                          li
+                            a.sl-delete(delete-model="{{model.name}}@{{model.controller}}", tooltip="Delete the model")
+            .status-bar(ng-show="!frame.hasErrors")
+              .status
+                include partials/result-status
+        
+          .view-result-table.result(ng-show='isActive("keys") && !frame.isTerminating')
+            .table-holder(ng-show="!static_is_authenticated")
+              article.guide.no-data.has-status-bar
+                h3 User is not signed in
                 p.lead
-                  | Lovely to see you.
-              .details.col-sm-9(ng-show="user_info")
-                table.table.table-condensed(ng-if="models != null && models.length > 0")
-                  thead
-                    td Model
-                    td Environment
-                    td Access level
-                    td &nbsp;
-                  tr(ng-repeat="model in models")
-                    th {{model.name}}
-                    td 
-                      img(ng-src="images/{{model.type}}.svg") 
-                      &nbsp;{{model.controller}}
-                    td {{model.access}}
-                    td
-                      ul.actions.list-inline
-                        li 
-                          a.sl-show(view-model="{{model.name}}@{{model.controller}}", tooltip="Show model status")
-                        li
-                          a.sl-delete(delete-model="{{model.name}}@{{model.controller}}", tooltip="Delete the model")
-                p.lead(ng-if="models.length == 0")
-                  | You don't have any models yet.
-                  br
-                  br
-                  | Do you want to create a new model?
-                  br
-                  a(play-topic="tengu") Get started!
-                  p(ng-if="models.length == 0 && controllers != null && controllers.length > 0")
-                    | There are already some environment availble for you:
-                    table.table.table-condensed(ng-if="models.length == 0 && controllers != null && controllers.length > 0")
-                      thead
-                        td Environment
-                        td Type
-                        td Access level
-                      tr(ng-repeat="controller in controllers")
-                        th {{controller.name}}
-                        td 
-                          img(ng-src="images/{{controller.type}}.svg") 
-                        td {{controller.access}}
-                    
-              .details.col-sm-9(ng-hide="user_info")
+                  | You are not signed in. Please use your credentials to 
+                  code(exec-topic="signin") signin
+                  | .
+                br
+                br
+            .table-holder(ng-show="static_is_authenticated && static_user")
+              article.guide
+                .summary.col-sm-3
+                  h3 Welcome 
+                    b {{static_user}}
+                  p.lead
+                    | Lovely to see you.
+                .details.col-sm-9(ng-hide="user_info")
+                  p.lead
+                    .fa.fa-spinner.fa-spin
+                    |  We are loading your info about your SSH keys.
+                .details.col-sm-9(ng-show="user_info")
+                  p.lead(ng-show="sshKeys == null || sshKeys.length == 0")
+                    | You don't have any registered SSH-keys. Want to add one?
+                    br
+                    a(click-to-command=":tengu user add-ssh-key") 
+                      | Add your public SSH key
+                  table.table.table-condensed(ng-hide="sshKeys == null || sshKeys.length == 0")
+                    thead
+                      td Your SSH keys                      
+                    tr(ng-repeat="key in sshKeys")
+                      td.code(style='word-break: break-all; font-family: Menlo, Monaco, Consolas, "Courier New", monospace;') {{key}}
+                    tr
+                      td
+                        br
+                        | Want to add extra SSH keys?
+                        br
+                        a(click-to-command=":tengu user add-ssh-key")
+                          | Add an extra public SSH key
+            .status-bar(ng-show="!frame.hasErrors")
+              .status
+                include partials/result-status
+              
+          .view-result-table.result(ng-show='isActive("creds") && !frame.isTerminating')
+            .table-holder(ng-show="!static_is_authenticated")
+              article.guide.no-data.has-status-bar
+                h3 User is not signed in
                 p.lead
-                  .fa.fa-spinner.fa-spin
-                  |  We are loading your environments and models.
-      .status-bar(ng-class='{error: frame.detailedErrorText, loading: frame.isLoading}')
-        .status(ng-show="frame.detailedErrorText")
-          .fa.fa-exclamation-triangle.icon-warning-sign &nbsp;
-          {{frame.detailedErrorText}}
-          div(ng-hide='frame.hasErrors')
-            div(ng-show='frame.response')
-              .fa.fa-ok
-              | Logged in as {{frame.response.name}} ({{frame.response.identities[0].provider}})
-        span(ng-show='frame.isLoading')
-          .fa.fa-spinner.fa-spin
-          | Loading user info...
+                  | You are not signed in. Please use your credentials to 
+                  code(exec-topic="signin") signin
+                  | .
+                br
+                br
+            .table-holder(ng-show="static_is_authenticated && static_user")
+              article.guide
+                .summary.col-sm-3
+                  h3 Welcome 
+                    b {{static_user}}
+                  p.lead
+                    | Lovely to see you.
+                .details.col-sm-9(ng-hide="user_info")
+                  p.lead
+                    .fa.fa-spinner.fa-spin
+                    |  We are loading your cloud credentials.
+                .details.col-sm-9(ng-show="user_info")
+                  p.lead(ng-show="credentials == null || credentials.length == 0")
+                    | You don't have any registered cloud credentials. Want to add one?
+                    br
+                    a(click-to-command=":tengu user add-credential") 
+                      | Add a cloud credential
+                  table.table.table-condensed(ng-hide="credentials == null || credentials.length == 0")
+                    thead
+                      th Credential name
+                      th Cloud
+                      th Type
+                    tr(ng-repeat="cred in credentials")
+                      td {{cred.name}}
+                      td 
+                        img(ng-src="images/{{cred.cloud}}.svg") 
+                      td {{cred.type}}
+                    tr
+                      td(colspan="3")
+                        br
+                        | Want to add extra cloud credentials?
+                        br
+                        a(click-to-command=":tengu user add-credential")
+                          | Add an extra cloud credential
+            .status-bar(ng-show="!frame.hasErrors")
+              .status
+                include partials/result-status 

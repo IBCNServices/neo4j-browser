@@ -158,18 +158,6 @@ div(ng-controller="ControllerCreateController")
                 p.lead
                   | The Environment <code>{{controller}}</code> is being created. 
                   | This might take a while. Sit back and relax.
-                .section.row-fluid.summary
-                  h4 What's next?
-                  p
-                    | Check the status of your deployment: <code ng-click="checkStatus()">:tengu model status {{newModel}}@{{controller}}</code>
-                    p
-                      ul
-                        li 
-                          | Here you can see the link to your model's Juju GUI. You can easily login using the same user credentials
-                          | you used to create the model.
-                        li 
-                          | You can also see a graph model of your deployed model and services. And inspect the status of the different
-                          | services.
         .status-bar(ng-class='{error: frame.detailedErrorText, loading: frame.isLoading}', ng-show='isActive("creating")')
           .status(ng-show="frame.detailedErrorText")
             .fa.fa-exclamation-triangle.icon-warning-sign &nbsp;
